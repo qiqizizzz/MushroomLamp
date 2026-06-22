@@ -1,0 +1,16 @@
+﻿/*
+* ┌──────────────────────────────────┐
+* │  描    述: 视图类型
+* │  类    名: ViewType.cs
+* │  创    建: By qiqizizzz
+* └──────────────────────────────────┘
+*/
+
+namespace MVC
+{
+    public enum ViewType
+    {
+        LoadingView = 0,
+        MainMenuView = 1
+    }
+}
