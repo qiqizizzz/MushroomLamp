@@ -40,6 +40,9 @@
 # Cursor editor config and skills
 .cursor/
 
+# Ultimate Editor Enhancer local scene backups
+SceneBackups/
+
 # Gradle cache directory
 .gradle/
 
