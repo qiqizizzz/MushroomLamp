@@ -16,6 +16,11 @@ namespace Common.Defines
         public const string MainMenuOpenSettings = "MainMenuOpenSettings";
         public const string MainMenuExit = "MainMenuExit";
 
+        // 烹饪玩法事件
+        public const string OpenCookView = "OpenCookView";
+        public const string StartCookRun = "StartCookRun";
+        public const string AdvanceCookTurn = "AdvanceCookTurn";
+
         // 场景事件
         public const string LoadingScene = "LoadingScene";
     }

@@ -8,6 +8,7 @@
 
 using System;
 using Common.Defines;
+using Module.Cook;
 using Module.GameUI;
 using Module.Loading;
 using MVC;
@@ -68,5 +69,6 @@ public class GameScene : MonoBehaviour
     {
         GameApp.ControllerManager.Register(ControllerType.GameUI, new GameUIController());
         GameApp.ControllerManager.Register(ControllerType.Loading, new LoadingController());
+        GameApp.ControllerManager.Register(ControllerType.Cook, new CookController());
     }
 }

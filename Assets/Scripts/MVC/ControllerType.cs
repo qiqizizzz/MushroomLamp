@@ -11,6 +11,7 @@ namespace MVC
     public enum ControllerType
     {
         GameUI = 0,
-        Loading = 1
+        Loading = 1,
+        Cook = 2
     }
 }
