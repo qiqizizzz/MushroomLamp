@@ -11,7 +11,6 @@ namespace MVC
     public enum ViewType
     {
         LoadingView = 0,
-        MainMenuView = 1,
-        SelectBoxView = 2
+        MainMenuView = 1
     }
 }
