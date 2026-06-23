@@ -12,6 +12,7 @@ namespace Common.Defines
     {
         // UI预制体，对应 Resources 下的路径
         public const string UI_LoadingView = "UI/LoadingView";
-        public const string UI_MainMenuView = "UI/MainMenuView";
+        public const string UI_MainMenuView = "UI/View/MainMenuView";
+        public const string UI_MenuButton = "UI/Button/MenuButton";
     }
 }
