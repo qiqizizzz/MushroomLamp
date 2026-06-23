@@ -27,6 +27,14 @@ namespace Module.GameUI
                 Sorting_Order = 0
             });
 
+            GameApp.ViewManager.Register(ViewType.SelectBoxView, new ViewInfo
+            {
+                PrefabName = AddressDefines.UI_SelectBoxView,
+                parentTf = GameApp.ViewManager.canvasTf,
+                controller = this,
+                Sorting_Order = 0
+            });
+
             InitModuleEvent();
             InitGlobalEvent();
         }
@@ -54,8 +62,8 @@ namespace Module.GameUI
 
         private void onMainMenuStart(object[] args)
         {
-            var view = GameApp.ViewManager.GetView<MVC.View.IBaseView>(ViewType.MainMenuView);
-            view?.LoadScene(SceneDefines.MainGame);
+            GameApp.ViewManager.Close(ViewType.MainMenuView);
+            GameApp.ViewManager.Open(ViewType.SelectBoxView, args);
         }
 
         private void onMainMenuOpenSettings(object[] args)
