@@ -6,9 +6,12 @@
 * └──────────────────────────────────┘
 */
 
+using Common;
 using Common.Defines;
 using MVC;
 using MVC.Controller;
+using MVC.Extensions;
+using UnityEngine;
 
 namespace Module.GameUI
 {
@@ -31,17 +34,42 @@ namespace Module.GameUI
         public override void InitModuleEvent()
         {
             RegisterFunc(EventDefines.OpenMainMenuView, openMainMenuView);
+            RegisterFunc(EventDefines.MainMenuStart, onMainMenuStart);
+            RegisterFunc(EventDefines.MainMenuOpenSettings, onMainMenuOpenSettings);
+            RegisterFunc(EventDefines.MainMenuExit, onMainMenuExit);
         }
 
         public override void RemoveModuleEvent()
         {
             UnRegisterFunc(EventDefines.OpenMainMenuView, openMainMenuView);
+            UnRegisterFunc(EventDefines.MainMenuStart, onMainMenuStart);
+            UnRegisterFunc(EventDefines.MainMenuOpenSettings, onMainMenuOpenSettings);
+            UnRegisterFunc(EventDefines.MainMenuExit, onMainMenuExit);
         }
 
-        // 打开主菜单界面
         private void openMainMenuView(object[] args)
         {
             GameApp.ViewManager.Open(ViewType.MainMenuView, args);
+        }
+
+        private void onMainMenuStart(object[] args)
+        {
+            var view = GameApp.ViewManager.GetView<MVC.View.IBaseView>(ViewType.MainMenuView);
+            view?.LoadScene(SceneDefines.MainGame);
+        }
+
+        private void onMainMenuOpenSettings(object[] args)
+        {
+            QLog.Info($"[{nameof(GameUIController)}] 设置（占位）");
+        }
+
+        private void onMainMenuExit(object[] args)
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
     }
 }

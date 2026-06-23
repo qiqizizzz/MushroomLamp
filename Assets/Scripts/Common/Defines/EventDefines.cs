@@ -12,6 +12,9 @@ namespace Common.Defines
     {
         // UI事件
         public const string OpenMainMenuView = "OpenMainMenuView";
+        public const string MainMenuStart = "MainMenuStart";
+        public const string MainMenuOpenSettings = "MainMenuOpenSettings";
+        public const string MainMenuExit = "MainMenuExit";
 
         // 场景事件
         public const string LoadingScene = "LoadingScene";
