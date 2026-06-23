@@ -20,23 +20,45 @@ namespace Module.View
     public class SelectBoxView : BaseView
     {
         private const float LineHeight = 72f;
+        private const float SelectedDifficultyScale = 1.08f;
 
         private Transform _lineContent;
         private TextMeshProUGUI _txtTitle;
+        private TextMeshProUGUI _txtBoxName;
+        private Image _imgBackground;
+
+        private Button _btnEasy;
+        private Button _btnNormal;
+        private Button _btnHard;
+        private Button _btnStart;
+        private Button _btnLeft;
+        private Button _btnRight;
+
         private readonly List<Transform> _emptySlots = new();
         private readonly List<TextLineItem> _lineItems = new();
 
         public override void InitUI()
         {
             _txtTitle = Find<TextMeshProUGUI>("Left/Txt_Title");
+            _txtBoxName = Find<TextMeshProUGUI>("Left/Txt_Info");
+            _imgBackground = Find<Image>("Img_Background");
             _lineContent = Find<Transform>("Left/ScrollView/Viewport/Content");
+
+            _btnEasy = Find<Button>("Right/ButtonGroup/Btn_Easy");
+            _btnNormal = Find<Button>("Right/ButtonGroup/Btn_Normal");
+            _btnHard = Find<Button>("Right/ButtonGroup/Btn_Hard");
+            _btnStart = Find<Button>("Right/Btn_Start");
+            _btnLeft = Find<Button>("Bottom/Btn_Left");
+            _btnRight = Find<Button>("Bottom/Btn_Right");
+
+            bindButtons();
             collectEmptySlots();
         }
 
         public override void Open(params object[] args)
         {
-            SelectBoxJsonConfig config = resolveConfig(args);
-            refreshLeftPanel(config);
+            if (args != null && args.Length > 0 && args[0] is SelectBoxModel model)
+                Refresh(model);
         }
 
         public override void Close(params object[] args)
@@ -45,26 +67,78 @@ namespace Module.View
             base.Close(args);
         }
 
-        private SelectBoxJsonConfig resolveConfig(object[] args)
+        public void Refresh(SelectBoxModel model)
         {
-            if (args != null && args.Length > 0 && args[0] is SelectBoxJsonConfig config)
-                return config;
+            if (model == null) return;
 
-            return JsonConfigLoader.LoadFromConfig<SelectBoxJsonConfig>(AddressDefines.Config_SelectBox);
-        }
+            SelectBoxCatalogEntry entry = model.GetCurrentBoxEntry();
+            SelectBoxDetailJsonConfig detail = model.GetCurrentBoxDetail();
 
-        private void refreshLeftPanel(SelectBoxJsonConfig config)
-        {
-            if (config == null)
+            if (detail == null)
             {
-                QLog.Warning($"[{nameof(SelectBoxView)}] 未找到 JSON 配置，请检查 Assets/Config/{AddressDefines.Config_SelectBox}.json");
+                QLog.Warning($"[{nameof(SelectBoxView)}] 未找到 box 子表配置 index={model.SelectedBoxIndex}");
                 return;
             }
 
-            if (_txtTitle != null)
-                _txtTitle.text = string.IsNullOrEmpty(config.summaryTitle) ? "简介" : config.summaryTitle;
+            refreshBackground(detail.backgroundPath);
+            refreshHeader(entry, detail);
+            refreshLines(detail.ToRuntimeLines());
+            refreshDifficultyButtons(model.Difficulty);
+        }
 
-            refreshLines(config.ToRuntimeLines());
+        private void bindButtons()
+        {
+            bindButton(_btnEasy, () => ApplyFunc(EventDefines.SelectBoxSetDifficulty, SelectDifficulty.Easy));
+            bindButton(_btnNormal, () => ApplyFunc(EventDefines.SelectBoxSetDifficulty, SelectDifficulty.Normal));
+            bindButton(_btnHard, () => ApplyFunc(EventDefines.SelectBoxSetDifficulty, SelectDifficulty.Hard));
+            bindButton(_btnStart, () => ApplyFunc(EventDefines.SelectBoxStart));
+            bindButton(_btnLeft, () => ApplyFunc(EventDefines.SelectBoxChangeBox, -1));
+            bindButton(_btnRight, () => ApplyFunc(EventDefines.SelectBoxChangeBox, 1));
+        }
+
+        private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
+        {
+            if (button == null || action == null) return;
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(action);
+        }
+
+        private void refreshBackground(string backgroundPath)
+        {
+            if (_imgBackground == null) return;
+
+            Sprite sprite = ArtAssetLoader.LoadSprite(backgroundPath);
+            if (sprite == null)
+            {
+                QLog.Warning($"[{nameof(SelectBoxView)}] 背景图加载失败：{backgroundPath}");
+                return;
+            }
+
+            _imgBackground.sprite = sprite;
+        }
+
+        private void refreshHeader(SelectBoxCatalogEntry entry, SelectBoxDetailJsonConfig detail)
+        {
+            if (_txtBoxName != null)
+                _txtBoxName.text = entry?.displayName ?? string.Empty;
+
+            if (_txtTitle != null)
+                _txtTitle.text = string.IsNullOrEmpty(detail.summaryTitle) ? "简介" : detail.summaryTitle;
+        }
+
+        private void refreshDifficultyButtons(SelectDifficulty difficulty)
+        {
+            setDifficultySelected(_btnEasy, difficulty == SelectDifficulty.Easy);
+            setDifficultySelected(_btnNormal, difficulty == SelectDifficulty.Normal);
+            setDifficultySelected(_btnHard, difficulty == SelectDifficulty.Hard);
+        }
+
+        private static void setDifficultySelected(Button button, bool selected)
+        {
+            if (button == null) return;
+            button.transform.localScale = selected
+                ? Vector3.one * SelectedDifficultyScale
+                : Vector3.one;
         }
 
         private void collectEmptySlots()
@@ -134,7 +208,6 @@ namespace Module.View
             rebuildScrollContent();
         }
 
-        // EmptyGo 只是占位容器，VerticalLayoutGroup 只统计它的高度，不会读子节点 TextLine
         private static void setupLineInSlot(Transform slot, GameObject lineObj)
         {
             LayoutElement slotLayout = slot.GetComponent<LayoutElement>();

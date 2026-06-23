@@ -17,7 +17,7 @@ namespace Common.Defines
         public const string UI_TextLine = "UI/TextLine/TextLine";
         public const string UI_MenuButton = "UI/Button/MenuButton";
 
-        // JSON 配置，对应 Assets/Config/SelectBoxConfig.json（不含扩展名）
-        public const string Config_SelectBox = "SelectBoxConfig";
+        // JSON 配置，对应 Assets/Config/（不含扩展名）
+        public const string Config_SelectBoxCatalog = "SelectBoxCatalog";
     }
 }

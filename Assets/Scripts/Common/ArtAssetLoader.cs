@@ -28,18 +28,43 @@ namespace Common
 #if UNITY_EDITOR
         private static Sprite loadFromAssetDatabase(string assetsRelativePath)
         {
-            string assetPath = assetsRelativePath.StartsWith("Assets/")
+            string basePath = assetsRelativePath.StartsWith("Assets/")
                 ? assetsRelativePath
                 : $"Assets/{assetsRelativePath}";
 
-            if (!hasImageExtension(assetPath))
-                assetPath += ".png";
+            foreach (string assetPath in enumerateCandidateAssetPaths(basePath))
+            {
+                Sprite sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+                if (sprite != null)
+                    return sprite;
 
-            Sprite sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-            if (sprite == null)
-                QLog.Error($"[{nameof(ArtAssetLoader)}] 未找到 Art 资源：{assetPath}");
+                Texture2D texture = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                if (texture != null)
+                {
+                    return Sprite.Create(
+                        texture,
+                        new Rect(0f, 0f, texture.width, texture.height),
+                        new Vector2(0.5f, 0.5f),
+                        100f
+                    );
+                }
+            }
 
-            return sprite;
+            QLog.Error($"[{nameof(ArtAssetLoader)}] 未找到 Art 资源：{basePath}");
+            return null;
+        }
+
+        private static string[] enumerateCandidateAssetPaths(string basePath)
+        {
+            if (hasImageExtension(basePath))
+                return new[] { basePath };
+
+            return new[]
+            {
+                $"{basePath}.png",
+                $"{basePath}.jpg",
+                $"{basePath}.jpeg"
+            };
         }
 #endif
 

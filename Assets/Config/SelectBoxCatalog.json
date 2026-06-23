@@ -1,0 +1,20 @@
+{
+  "defaultBoxId": "herb",
+  "boxes": [
+    {
+      "id": "herb",
+      "displayName": "草本药箱",
+      "configFile": "Boxes/SelectBox_herb"
+    },
+    {
+      "id": "mineral",
+      "displayName": "矿物药箱",
+      "configFile": "Boxes/SelectBox_mineral"
+    },
+    {
+      "id": "spice",
+      "displayName": "香料药箱",
+      "configFile": "Boxes/SelectBox_spice"
+    }
+  ]
+}

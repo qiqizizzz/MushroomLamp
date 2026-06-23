@@ -10,6 +10,7 @@ using System;
 using Common.Defines;
 using Module.GameUI;
 using Module.Loading;
+using Module.Select;
 using MVC;
 using UnityEngine;
 
@@ -68,5 +69,6 @@ public class GameScene : MonoBehaviour
     {
         GameApp.ControllerManager.Register(ControllerType.GameUI, new GameUIController());
         GameApp.ControllerManager.Register(ControllerType.Loading, new LoadingController());
+        GameApp.ControllerManager.Register(ControllerType.SelectBox, new SelectBoxController());
     }
 }

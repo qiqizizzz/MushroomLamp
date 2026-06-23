@@ -1,6 +1,6 @@
 /*
  * ┌──────────────────────────────────┐
- * │  描    述: 材料箱 JSON 配置结构
+ * │  描    述: 材料箱 JSON 配置结构（主表 + 子表）
  * │  类    名: SelectBoxJsonConfig.cs
  * └──────────────────────────────────┘
  */
@@ -11,6 +11,22 @@ using UnityEngine;
 
 namespace Module.Select
 {
+    [Serializable]
+    public class SelectBoxCatalogEntry
+    {
+        public string id;
+        public string displayName;
+        // 相对 Assets/Config/ 的路径（不含 .json）
+        public string configFile;
+    }
+
+    [Serializable]
+    public class SelectBoxCatalogJsonConfig
+    {
+        public string defaultBoxId;
+        public SelectBoxCatalogEntry[] boxes;
+    }
+
     [Serializable]
     public class SelectMaterialLineJsonData
     {
@@ -35,8 +51,10 @@ namespace Module.Select
     }
 
     [Serializable]
-    public class SelectBoxJsonConfig
+    public class SelectBoxDetailJsonConfig
     {
+        // 背景图路径，相对 Assets，如 Art/BG_img/bg_SelectView
+        public string backgroundPath;
         public string summaryTitle = "简介";
         public SelectMaterialLineJsonData[] lines;
 

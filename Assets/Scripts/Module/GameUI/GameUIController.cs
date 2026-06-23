@@ -27,14 +27,6 @@ namespace Module.GameUI
                 Sorting_Order = 0
             });
 
-            GameApp.ViewManager.Register(ViewType.SelectBoxView, new ViewInfo
-            {
-                PrefabName = AddressDefines.UI_SelectBoxView,
-                parentTf = GameApp.ViewManager.canvasTf,
-                controller = this,
-                Sorting_Order = 0
-            });
-
             InitModuleEvent();
             InitGlobalEvent();
         }
@@ -63,7 +55,7 @@ namespace Module.GameUI
         private void onMainMenuStart(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.MainMenuView);
-            GameApp.ViewManager.Open(ViewType.SelectBoxView, args);
+            ApplyControllerFunc(ControllerType.SelectBox, EventDefines.OpenSelectBoxView, args);
         }
 
         private void onMainMenuOpenSettings(object[] args)
