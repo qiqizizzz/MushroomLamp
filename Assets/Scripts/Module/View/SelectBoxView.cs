@@ -34,6 +34,8 @@ namespace Module.View
         private Button _btnLeft;
         private Button _btnRight;
 
+        private Button _btnReturn;
+
         private readonly List<Transform> _emptySlots = new();
         private readonly List<TextLineItem> _lineItems = new();
 
@@ -51,6 +53,8 @@ namespace Module.View
             _btnLeft = Find<Button>("Bottom/Btn_Left");
             _btnRight = Find<Button>("Bottom/Btn_Right");
 
+            _btnReturn = Find<Button>("Left/Btn_Return");
+            
             bindButtons();
             collectEmptySlots();
         }
@@ -94,6 +98,7 @@ namespace Module.View
             bindButton(_btnStart, () => ApplyFunc(EventDefines.SelectBoxStart));
             bindButton(_btnLeft, () => ApplyFunc(EventDefines.SelectBoxChangeBox, -1));
             bindButton(_btnRight, () => ApplyFunc(EventDefines.SelectBoxChangeBox, 1));
+            bindButton(_btnReturn, () => ApplyFunc(EventDefines.SelectBoxReturn));
         }
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)

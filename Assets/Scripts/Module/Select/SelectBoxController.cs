@@ -33,6 +33,7 @@ namespace Module.Select
         public override void InitModuleEvent()
         {
             RegisterFunc(EventDefines.OpenSelectBoxView, openSelectBoxView);
+            RegisterFunc(EventDefines.SelectBoxReturn, onReturn);
             RegisterFunc(EventDefines.SelectBoxSetDifficulty, onSetDifficulty);
             RegisterFunc(EventDefines.SelectBoxChangeBox, onChangeBox);
             RegisterFunc(EventDefines.SelectBoxStart, onStart);
@@ -41,6 +42,7 @@ namespace Module.Select
         public override void RemoveModuleEvent()
         {
             UnRegisterFunc(EventDefines.OpenSelectBoxView, openSelectBoxView);
+            UnRegisterFunc(EventDefines.SelectBoxReturn, onReturn);
             UnRegisterFunc(EventDefines.SelectBoxSetDifficulty, onSetDifficulty);
             UnRegisterFunc(EventDefines.SelectBoxChangeBox, onChangeBox);
             UnRegisterFunc(EventDefines.SelectBoxStart, onStart);
@@ -66,6 +68,12 @@ namespace Module.Select
             model.SetDifficulty(difficulty);
             QLog.Info($"[{nameof(SelectBoxController)}] 选择难度：{difficulty}");
             refreshView();
+        }
+
+        private void onReturn(object[] args)
+        {
+            GameApp.ViewManager.Close(ViewType.SelectBoxView);
+            ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView, args);
         }
 
         private void onChangeBox(object[] args)

@@ -18,6 +18,7 @@ namespace Common.Defines
 
         // 材料箱选择
         public const string OpenSelectBoxView = "OpenSelectBoxView";
+        public const string SelectBoxReturn = "SelectBoxReturn";
         public const string SelectBoxSetDifficulty = "SelectBoxSetDifficulty";
         public const string SelectBoxChangeBox = "SelectBoxChangeBox";
         public const string SelectBoxStart = "SelectBoxStart";
