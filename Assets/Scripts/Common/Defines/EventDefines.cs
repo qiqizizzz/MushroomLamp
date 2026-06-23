@@ -21,6 +21,15 @@ namespace Common.Defines
         public const string StartCookRun = "StartCookRun";
         public const string AdvanceCookTurn = "AdvanceCookTurn";
 
+        // 材料箱选择
+        public const string OpenSelectBoxView = "OpenSelectBoxView";
+        public const string SelectBoxReturn = "SelectBoxReturn";
+        public const string SelectBoxSetDifficulty = "SelectBoxSetDifficulty";
+        public const string SelectBoxChangeBox = "SelectBoxChangeBox";
+        public const string SelectBoxStart = "SelectBoxStart";
+        // 下一模块就绪后使用
+        public const string SelectBoxStartGame = "SelectBoxStartGame";
+
         // 场景事件
         public const string LoadingScene = "LoadingScene";
     }

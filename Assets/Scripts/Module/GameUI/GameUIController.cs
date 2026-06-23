@@ -54,8 +54,8 @@ namespace Module.GameUI
 
         private void onMainMenuStart(object[] args)
         {
-            var view = GameApp.ViewManager.GetView<MVC.View.IBaseView>(ViewType.MainMenuView);
-            view?.LoadScene(SceneDefines.MainGame);
+            GameApp.ViewManager.Close(ViewType.MainMenuView);
+            ApplyControllerFunc(ControllerType.SelectBox, EventDefines.OpenSelectBoxView, args);
         }
 
         private void onMainMenuOpenSettings(object[] args)

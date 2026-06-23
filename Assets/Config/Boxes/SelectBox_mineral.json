@@ -1,0 +1,26 @@
+{
+  "backgroundPath": "Art/BG_img/bg_SelectView",
+  "summaryTitle": "矿物清单",
+  "lines": [
+    {
+      "iconPath": "Art/Card_img/potato",
+      "label": "石英",
+      "count": 4
+    },
+    {
+      "iconPath": "Art/Card_img/mushroom",
+      "label": "硫磺",
+      "count": 2
+    },
+    {
+      "iconPath": "Art/Card_img/pumpkin",
+      "label": "硝石",
+      "count": 1
+    },
+    {
+      "iconPath": "Art/Card_img/carrot",
+      "label": "盐晶",
+      "count": 3
+    }
+  ]
+}
