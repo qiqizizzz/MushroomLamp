@@ -17,8 +17,11 @@ namespace Common.Defines
         public const string UI_CookView = "UI/View/CookView";
         public const string UI_TextLine = "UI/TextLine/TextLine";
         public const string UI_MenuButton = "UI/Button/MenuButton";
+        public const string UI_ShopView = "UI/View/ShopView";
 
         // JSON 配置，对应 Assets/Config/（不含扩展名）
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";
+        public const string Config_CardParamCatalog = "CardParamCatalog";
+        public const string Config_ItemParamCatalog = "ItemParamCatalog";
     }
 }

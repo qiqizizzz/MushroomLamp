@@ -1,0 +1,26 @@
+{
+  "defaultItemId": "herb_tea",
+  "items": [
+    {
+      "id": "herb_tea",
+      "name": "草本茶",
+      "iconPath": "Art/Card_img/mushroom",
+      "description": "恢复类道具：草本茶",
+      "price": 2
+    },
+    {
+      "id": "healing_powder",
+      "name": "止血粉",
+      "iconPath": "Art/Card_img/potato",
+      "description": "恢复类道具：止血粉",
+      "price": 3
+    },
+    {
+      "id": "stamina_dish",
+      "name": "补给餐",
+      "iconPath": "Art/Card_img/pumpkin",
+      "description": "恢复类道具：补给餐",
+      "price": 4
+    }
+  ]
+}
