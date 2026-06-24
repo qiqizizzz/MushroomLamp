@@ -30,11 +30,14 @@ namespace Module.View
         private Transform _slotRoot;
         private Transform _handContent;
         private Transform _dragRoot;
+        private Transform _processArea;
 
+        private TextMeshProUGUI _txtMagicBox;
         private Button _btnUndo;
         private Button _btnClear;
         private Button _btnSkip;
         private Button _btnSettle;
+        private Button _btnMagicBox;
 
         private CookModel _cookModel;
         private readonly CookSlotItem[] _slotItems = new CookSlotItem[9];
@@ -53,14 +56,18 @@ namespace Module.View
             _slotRoot = Find<Transform>("Center/Grid");
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
             _dragRoot = Find<Transform>("DragRoot");
+            _processArea = Find<Transform>("Right/Grinder");
+            _txtMagicBox = Find<TextMeshProUGUI>("Right/MagicBox/Txt_Info");
 
             _btnUndo = Find<Button>("Bottom/ActionBar/Btn_Undo");
             _btnClear = Find<Button>("Bottom/ActionBar/Btn_Clear");
             _btnSkip = Find<Button>("Bottom/ActionBar/Btn_Skip");
             _btnSettle = Find<Button>("Bottom/ActionBar/Btn_Settle");
+            _btnMagicBox = Find<Button>("Right/MagicBox/Btn_Touch");
 
             bindButtons();
             initSlots();
+            initProcessArea();
         }
 
         // 获取拖拽层
@@ -101,12 +108,23 @@ namespace Module.View
             return true;
         }
 
+        // 尝试加工材料
+        public bool TryProcessMaterial(CookMaterialItem materialItem)
+        {
+            if (materialItem == null) return false;
+            if (!canProcessMaterial(materialItem.MaterialId)) return false;
+
+            ApplyFunc(EventDefines.CookProcessMaterial, materialItem.MaterialId);
+            return true;
+        }
+
         private void bindButtons()
         {
             bindButton(_btnUndo, () => ApplyFunc(EventDefines.CookUndoMaterial));
             bindButton(_btnClear, () => ApplyFunc(EventDefines.CookClearMaterials));
             bindButton(_btnSkip, () => ApplyFunc(EventDefines.CookSkipTurn));
             bindButton(_btnSettle, () => ApplyFunc(EventDefines.CookSettleTurn));
+            bindButton(_btnMagicBox, () => ApplyFunc(EventDefines.CookTouchMagicBox));
         }
 
         private void initSlots()
@@ -132,6 +150,17 @@ namespace Module.View
             }
         }
 
+        private void initProcessArea()
+        {
+            if (_processArea == null) return;
+
+            CookProcessAreaItem processAreaItem = _processArea.GetComponent<CookProcessAreaItem>();
+            if (processAreaItem == null)
+                processAreaItem = _processArea.gameObject.AddComponent<CookProcessAreaItem>();
+
+            processAreaItem.Init(this);
+        }
+
         private void refreshTop(CookModel cookModel)
         {
             if (_txtTurn != null)
@@ -153,10 +182,13 @@ namespace Module.View
                 _txtOrder.text = $"{cookModel.BoxName}\n{cookModel.GetTargetText()}\n拖拽材料到法阵后投入锅中";
 
             if (_txtPreview != null)
-                _txtPreview.text = $"预估火候\n{cookModel.PreviewValue}";
+                _txtPreview.text = cookModel.GetPreviewText();
 
             if (_txtTip != null)
                 _txtTip.text = cookModel.LastTip;
+
+            if (_txtMagicBox != null)
+                _txtMagicBox.text = cookModel.MagicBoxStatusText;
 
             if (_imgHeatFill != null)
             {
@@ -210,6 +242,9 @@ namespace Module.View
 
             if (_btnSettle != null)
                 _btnSettle.interactable = cookModel.CanSettle;
+
+            if (_btnMagicBox != null)
+                _btnMagicBox.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
         }
 
         private void clearHand()
@@ -242,6 +277,21 @@ namespace Module.View
             {
                 if (_cookModel.HandMaterials[i].RuntimeId == materialId)
                     return true;
+            }
+
+            return false;
+        }
+
+        private bool canProcessMaterial(int materialId)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive) return false;
+
+            for (int i = 0; i < _cookModel.HandMaterials.Count; i++)
+            {
+                CookMaterialData materialData = _cookModel.HandMaterials[i];
+                if (materialData.RuntimeId != materialId) continue;
+
+                return materialData.CanProcess && !materialData.IsProcessed;
             }
 
             return false;

@@ -38,6 +38,8 @@ namespace Module.Cook
             RegisterFunc(EventDefines.OpenCookView, openCookView);
             RegisterFunc(EventDefines.StartCookRun, startCookRun);
             RegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
+            RegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
+            RegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
             RegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
             RegisterFunc(EventDefines.CookClearMaterials, clearMaterials);
             RegisterFunc(EventDefines.CookSkipTurn, skipTurn);
@@ -49,6 +51,8 @@ namespace Module.Cook
             UnRegisterFunc(EventDefines.OpenCookView, openCookView);
             UnRegisterFunc(EventDefines.StartCookRun, startCookRun);
             UnRegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
+            UnRegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
+            UnRegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
             UnRegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
             UnRegisterFunc(EventDefines.CookClearMaterials, clearMaterials);
             UnRegisterFunc(EventDefines.CookSkipTurn, skipTurn);
@@ -93,6 +97,24 @@ namespace Module.Cook
             if (args[0] is not int materialId || args[1] is not int slotIndex) return;
 
             cookModel.PlaceMaterial(materialId, slotIndex);
+            refreshCookView();
+        }
+
+        // 加工手牌材料
+        private void processMaterial(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            if (args == null || args.Length < 1) return;
+            if (args[0] is not int materialId) return;
+
+            cookModel.ProcessMaterial(materialId);
+            refreshCookView();
+        }
+
+        // 触碰魔盒
+        private void touchMagicBox(object[] args)
+        {
+            GetCookModel().TouchMagicBox();
             refreshCookView();
         }
 
