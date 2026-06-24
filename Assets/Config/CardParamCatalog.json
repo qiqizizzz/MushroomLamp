@@ -1,0 +1,33 @@
+{
+  "defaultCardId": "herb_carrot",
+  "cards": [
+    {
+      "id": "herb_carrot",
+      "name": "胡萝卜",
+      "iconPath": "Art/Card_img/carrot",
+      "description": "草本卡牌：胡萝卜",
+      "price": 1
+    },
+    {
+      "id": "herb_potato",
+      "name": "土豆",
+      "iconPath": "Art/Card_img/potato",
+      "description": "草本卡牌：土豆",
+      "price": 1
+    },
+    {
+      "id": "herb_mushroom",
+      "name": "蘑菇",
+      "iconPath": "Art/Card_img/mushroom",
+      "description": "草本卡牌：蘑菇",
+      "price": 2
+    },
+    {
+      "id": "herb_pumpkin",
+      "name": "南瓜",
+      "iconPath": "Art/Card_img/pumpkin",
+      "description": "草本卡牌：南瓜",
+      "price": 3
+    }
+  ]
+}
