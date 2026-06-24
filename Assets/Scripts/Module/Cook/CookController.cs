@@ -24,7 +24,7 @@ namespace Module.Cook
 
             GameApp.ViewManager.Register(ViewType.CookView, new ViewInfo
             {
-                PrefabName = string.Empty,
+                PrefabName = AddressDefines.UI_CookView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
                 Sorting_Order = 10
@@ -37,14 +37,22 @@ namespace Module.Cook
         {
             RegisterFunc(EventDefines.OpenCookView, openCookView);
             RegisterFunc(EventDefines.StartCookRun, startCookRun);
-            RegisterFunc(EventDefines.AdvanceCookTurn, advanceCookTurn);
+            RegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
+            RegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
+            RegisterFunc(EventDefines.CookClearMaterials, clearMaterials);
+            RegisterFunc(EventDefines.CookSkipTurn, skipTurn);
+            RegisterFunc(EventDefines.CookSettleTurn, settleTurn);
         }
 
         public override void RemoveModuleEvent()
         {
             UnRegisterFunc(EventDefines.OpenCookView, openCookView);
             UnRegisterFunc(EventDefines.StartCookRun, startCookRun);
-            UnRegisterFunc(EventDefines.AdvanceCookTurn, advanceCookTurn);
+            UnRegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
+            UnRegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
+            UnRegisterFunc(EventDefines.CookClearMaterials, clearMaterials);
+            UnRegisterFunc(EventDefines.CookSkipTurn, skipTurn);
+            UnRegisterFunc(EventDefines.CookSettleTurn, settleTurn);
         }
 
         public override void OpenView(IBaseView view)
@@ -68,7 +76,8 @@ namespace Module.Cook
         private void startCookRun(object[] args)
         {
             CookModel cookModel = GetCookModel();
-            cookModel.StartRun();
+            CookRunStartData startData = args != null && args.Length > 0 ? args[0] as CookRunStartData : null;
+            cookModel.StartRun(startData);
 
             GameApp.ViewManager.Open(ViewType.CookView, args);
             refreshCookView();
@@ -76,15 +85,47 @@ namespace Module.Cook
             QLog.Info($"[{nameof(CookController)}] 开始烹饪玩法");
         }
 
-        // 推进烹饪回合
-        private void advanceCookTurn(object[] args)
+        // 放置材料到法阵
+        private void placeMaterial(object[] args)
         {
             CookModel cookModel = GetCookModel();
-            bool canContinue = cookModel.AdvanceTurn();
+            if (args == null || args.Length < 2) return;
+            if (args[0] is not int materialId || args[1] is not int slotIndex) return;
+
+            cookModel.PlaceMaterial(materialId, slotIndex);
+            refreshCookView();
+        }
+
+        // 撤回最近一次放置
+        private void undoMaterial(object[] args)
+        {
+            GetCookModel().UndoLastPlace();
+            refreshCookView();
+        }
+
+        // 清空法阵材料
+        private void clearMaterials(object[] args)
+        {
+            GetCookModel().ClearPlacedMaterials();
+            refreshCookView();
+        }
+
+        // 跳过当前回合
+        private void skipTurn(object[] args)
+        {
+            GetCookModel().SkipTurn();
+            refreshCookView();
+        }
+
+        // 结算当前回合
+        private void settleTurn(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            CookRoundResult result = cookModel.SettleTurn();
             refreshCookView();
 
-            if (!canContinue)
-                QLog.Info($"[{nameof(CookController)}] 当天烹饪结束，分数：{cookModel.GetScoreText()}");
+            if (result != null && !cookModel.IsRunActive)
+                QLog.Info($"[{nameof(CookController)}] 烹饪结束，分数：{cookModel.GetScoreText()}");
         }
 
         // 刷新烹饪玩法视图

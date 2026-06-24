@@ -7,6 +7,7 @@
 
 using Common;
 using Common.Defines;
+using Module.Cook;
 using Module.View;
 using MVC;
 using MVC.Controller;
@@ -96,14 +97,47 @@ namespace Module.Select
         {
             SelectBoxModel model = ensureModel();
             SelectBoxCatalogEntry entry = model.GetCurrentBoxEntry();
+            SelectBoxDetailJsonConfig detail = model.GetCurrentBoxDetail();
 
             QLog.Info(
-                $"[{nameof(SelectBoxController)}] 开始游戏（占位） " +
+                $"[{nameof(SelectBoxController)}] 开始游戏 " +
                 $"难度={model.Difficulty} boxId={entry?.id} boxName={entry?.displayName} " +
                 $"boxIndex={model.SelectedBoxIndex}/{model.BoxCount}");
 
-            // TODO: 下一模块就绪后，通过事件传递 difficulty + boxId
-            // ApplyControllerFunc(ControllerType.XXX, EventDefines.SelectBoxStartGame, model.Difficulty, entry.id);
+            GameApp.ViewManager.Close(ViewType.SelectBoxView);
+            ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, buildCookStartData(model, entry, detail));
+        }
+
+        // 构建烹饪玩法启动数据
+        private static CookRunStartData buildCookStartData(
+            SelectBoxModel model,
+            SelectBoxCatalogEntry entry,
+            SelectBoxDetailJsonConfig detail)
+        {
+            CookRunStartData startData = new CookRunStartData
+            {
+                Difficulty = model.Difficulty,
+                BoxId = entry?.id,
+                BoxName = entry?.displayName
+            };
+
+            SelectMaterialLineData[] lines = detail?.ToRuntimeLines();
+            if (lines == null) return startData;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                SelectMaterialLineData line = lines[i];
+                if (line == null || string.IsNullOrWhiteSpace(line.label)) continue;
+
+                startData.Materials.Add(new CookMaterialSeedData
+                {
+                    MaterialName = line.label,
+                    Count = line.count,
+                    Icon = line.icon
+                });
+            }
+
+            return startData;
         }
 
         private SelectBoxModel ensureModel()

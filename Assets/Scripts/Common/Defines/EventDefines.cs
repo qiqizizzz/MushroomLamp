@@ -19,7 +19,11 @@ namespace Common.Defines
         // 烹饪玩法事件
         public const string OpenCookView = "OpenCookView";
         public const string StartCookRun = "StartCookRun";
-        public const string AdvanceCookTurn = "AdvanceCookTurn";
+        public const string CookPlaceMaterial = "CookPlaceMaterial";
+        public const string CookUndoMaterial = "CookUndoMaterial";
+        public const string CookClearMaterials = "CookClearMaterials";
+        public const string CookSkipTurn = "CookSkipTurn";
+        public const string CookSettleTurn = "CookSettleTurn";
 
         // 材料箱选择
         public const string OpenSelectBoxView = "OpenSelectBoxView";
