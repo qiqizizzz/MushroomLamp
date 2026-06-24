@@ -20,6 +20,8 @@ namespace Common.Defines
         public const string OpenCookView = "OpenCookView";
         public const string StartCookRun = "StartCookRun";
         public const string CookPlaceMaterial = "CookPlaceMaterial";
+        public const string CookMoveSlotMaterial = "CookMoveSlotMaterial";
+        public const string CookSubmitToPot = "CookSubmitToPot";
         public const string CookProcessMaterial = "CookProcessMaterial";
         public const string CookTouchMagicBox = "CookTouchMagicBox";
         public const string CookUndoMaterial = "CookUndoMaterial";

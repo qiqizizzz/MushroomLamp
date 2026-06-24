@@ -21,8 +21,11 @@ namespace Module.Cook
         public bool CanProcess { get; private set; }
         public bool IsProcessed { get; private set; }
         public Sprite Icon { get; private set; }
+        public float CookProgress { get; private set; }
+        public float RequiredCookValue { get; private set; }
 
         public string ValueText => IsProcessed ? $"{CurrentValue}*" : CurrentValue.ToString();
+        public string CookProgressText => $"{CookRoundResult.FormatScore(CookProgress)}/{CookRoundResult.FormatScore(RequiredCookValue)}";
 
         public CookMaterialData(
             int runtimeId,
@@ -30,6 +33,7 @@ namespace Module.Cook
             int baseValue,
             string tagText,
             bool canProcess,
+            float requiredCookValue,
             Sprite icon)
         {
             RuntimeId = runtimeId;
@@ -38,6 +42,7 @@ namespace Module.Cook
             CurrentValue = baseValue;
             TagText = tagText;
             CanProcess = canProcess;
+            RequiredCookValue = requiredCookValue;
             Icon = icon;
         }
 
@@ -50,6 +55,12 @@ namespace Module.Cook
             CurrentValue = Mathf.Max(0, CurrentValue + valueDelta);
             if (!string.IsNullOrWhiteSpace(extraTag))
                 TagText = $"{TagText}/{extraTag}";
+        }
+
+        // 增加材料在法阵中的烹饪熟度
+        public void AddCookProgress(float value)
+        {
+            CookProgress = Mathf.Max(0f, CookProgress + value);
         }
     }
 }

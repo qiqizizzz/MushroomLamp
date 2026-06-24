@@ -38,6 +38,8 @@ namespace Module.Cook
             RegisterFunc(EventDefines.OpenCookView, openCookView);
             RegisterFunc(EventDefines.StartCookRun, startCookRun);
             RegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
+            RegisterFunc(EventDefines.CookMoveSlotMaterial, moveSlotMaterial);
+            RegisterFunc(EventDefines.CookSubmitToPot, submitToPot);
             RegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
             RegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
             RegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
@@ -51,6 +53,8 @@ namespace Module.Cook
             UnRegisterFunc(EventDefines.OpenCookView, openCookView);
             UnRegisterFunc(EventDefines.StartCookRun, startCookRun);
             UnRegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
+            UnRegisterFunc(EventDefines.CookMoveSlotMaterial, moveSlotMaterial);
+            UnRegisterFunc(EventDefines.CookSubmitToPot, submitToPot);
             UnRegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
             UnRegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
             UnRegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
@@ -97,6 +101,28 @@ namespace Module.Cook
             if (args[0] is not int materialId || args[1] is not int slotIndex) return;
 
             cookModel.PlaceMaterial(materialId, slotIndex);
+            refreshCookView();
+        }
+
+        // 移动或交换法阵槽位材料
+        private void moveSlotMaterial(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            if (args == null || args.Length < 2) return;
+            if (args[0] is not int fromSlotIndex || args[1] is not int toSlotIndex) return;
+
+            cookModel.MoveSlotMaterial(fromSlotIndex, toSlotIndex);
+            refreshCookView();
+        }
+
+        // 将法阵材料提交入锅
+        private void submitToPot(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            if (args == null || args.Length < 1) return;
+            if (args[0] is not int slotIndex) return;
+
+            cookModel.SubmitSlotToPot(slotIndex);
             refreshCookView();
         }
 

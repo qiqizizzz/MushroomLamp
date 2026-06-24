@@ -12,15 +12,17 @@ namespace Module.Cook
     public class CookRoundResult
     {
         public int TurnIndex { get; private set; }
-        public int BaseScore { get; private set; }
-        public int ProcessBonus { get; private set; }
-        public int ComboBonus { get; private set; }
+        public float BaseScore { get; private set; }
+        public float ProcessBonus { get; private set; }
+        public float SlotBonus { get; private set; }
+        public float ComboBonus { get; private set; }
         public int ComboCount { get; private set; }
-        public int MagicBoxBonus { get; private set; }
-        public int DevilRisk { get; private set; }
-        public int PenaltyScore { get; private set; }
-        public int RoundScore { get; private set; }
-        public int FinalScore { get; private set; }
+        public int OrderComboCount { get; private set; }
+        public float MagicBoxBonus { get; private set; }
+        public float DevilRisk { get; private set; }
+        public float PenaltyScore { get; private set; }
+        public float RoundScore { get; private set; }
+        public float FinalScore { get; private set; }
         public int CoinReward { get; private set; }
         public bool IsAngelRescued { get; private set; }
         public bool IsTargetMatched { get; private set; }
@@ -29,13 +31,15 @@ namespace Module.Cook
 
         public CookRoundResult(
             int turnIndex,
-            int baseScore,
-            int processBonus,
-            int comboBonus,
+            float baseScore,
+            float processBonus,
+            float slotBonus,
+            float comboBonus,
             int comboCount,
-            int magicBoxBonus,
-            int devilRisk,
-            int penaltyScore,
+            int orderComboCount,
+            float magicBoxBonus,
+            float devilRisk,
+            float penaltyScore,
             int coinReward,
             bool isAngelRescued,
             bool isTargetMatched,
@@ -45,12 +49,14 @@ namespace Module.Cook
             TurnIndex = turnIndex;
             BaseScore = baseScore;
             ProcessBonus = processBonus;
+            SlotBonus = slotBonus;
             ComboBonus = comboBonus;
             ComboCount = comboCount;
+            OrderComboCount = orderComboCount;
             MagicBoxBonus = magicBoxBonus;
             DevilRisk = devilRisk;
             PenaltyScore = penaltyScore;
-            RoundScore = baseScore + processBonus + comboBonus + magicBoxBonus;
+            RoundScore = baseScore + processBonus + slotBonus + comboBonus + magicBoxBonus;
             FinalScore = UnityEngine.Mathf.Max(0, RoundScore - penaltyScore);
             CoinReward = coinReward;
             IsAngelRescued = isAngelRescued;
@@ -62,9 +68,15 @@ namespace Module.Cook
         // 获取简短得分拆分文本
         public string GetBreakdownText()
         {
-            string magicText = MagicBoxBonus > 0 ? $" + 魔盒{MagicBoxBonus}" : string.Empty;
-            string penaltyText = PenaltyScore > 0 ? $" - 惩罚{PenaltyScore}" : string.Empty;
-            return $"基础{BaseScore} + 加工{ProcessBonus} + 连携{ComboBonus}{magicText}{penaltyText} = {FinalScore}";
+            string magicText = MagicBoxBonus > 0 ? $" + 魔盒{FormatScore(MagicBoxBonus)}" : string.Empty;
+            string penaltyText = PenaltyScore > 0 ? $" - 惩罚{FormatScore(PenaltyScore)}" : string.Empty;
+            return $"基础{FormatScore(BaseScore)} + 加工{FormatScore(ProcessBonus)} + 熟度{FormatScore(SlotBonus)} + 连携{FormatScore(ComboBonus)}{magicText}{penaltyText} = {FormatScore(FinalScore)}";
+        }
+
+        // 格式化可能带半分的数值
+        public static string FormatScore(float value)
+        {
+            return value.ToString("0.#");
         }
     }
 }

@@ -31,8 +31,10 @@ namespace Module.View
         private Transform _handContent;
         private Transform _dragRoot;
         private Transform _processArea;
+        private Transform _potArea;
 
         private TextMeshProUGUI _txtMagicBox;
+        private Image _imgPotBody;
         private Button _btnUndo;
         private Button _btnClear;
         private Button _btnSkip;
@@ -57,6 +59,7 @@ namespace Module.View
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
             _dragRoot = Find<Transform>("DragRoot");
             _processArea = Find<Transform>("Right/Grinder");
+            _potArea = Find<Transform>("Left");
             _txtMagicBox = Find<TextMeshProUGUI>("Right/MagicBox/Txt_Info");
 
             _btnUndo = Find<Button>("Bottom/ActionBar/Btn_Undo");
@@ -66,8 +69,11 @@ namespace Module.View
             _btnMagicBox = Find<Button>("Right/MagicBox/Btn_Touch");
 
             bindButtons();
+            setupButtonText(_btnSettle, "结束本回合");
             initSlots();
             initProcessArea();
+            initPotArea();
+            initPotVisual();
         }
 
         // 获取拖拽层
@@ -105,6 +111,29 @@ namespace Module.View
             if (!canPlaceMaterial(materialItem.MaterialId, slotIndex)) return false;
 
             ApplyFunc(EventDefines.CookPlaceMaterial, materialItem.MaterialId, slotIndex);
+            return true;
+        }
+
+        // 尝试移动或交换法阵槽位材料
+        public bool TryMoveSlotMaterial(int fromSlotIndex, int toSlotIndex)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive) return false;
+            if (fromSlotIndex < 0 || fromSlotIndex >= _cookModel.Slots.Count) return false;
+            if (toSlotIndex < 0 || toSlotIndex >= _cookModel.Slots.Count) return false;
+            if (!_cookModel.Slots[fromSlotIndex].HasMaterial) return false;
+
+            ApplyFunc(EventDefines.CookMoveSlotMaterial, fromSlotIndex, toSlotIndex);
+            return true;
+        }
+
+        // 尝试将法阵槽位材料提交到锅中
+        public bool TrySubmitSlotToPot(int slotIndex)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive) return false;
+            if (slotIndex < 0 || slotIndex >= _cookModel.Slots.Count) return false;
+            if (!_cookModel.Slots[slotIndex].HasMaterial) return false;
+
+            ApplyFunc(EventDefines.CookSubmitToPot, slotIndex);
             return true;
         }
 
@@ -161,6 +190,49 @@ namespace Module.View
             processAreaItem.Init(this);
         }
 
+        // 初始化锅区域拖拽接收组件
+        private void initPotArea()
+        {
+            if (_potArea == null) return;
+
+            CookPotAreaItem potAreaItem = _potArea.GetComponent<CookPotAreaItem>();
+            if (potAreaItem == null)
+                potAreaItem = _potArea.gameObject.AddComponent<CookPotAreaItem>();
+
+            potAreaItem.Init(this);
+        }
+
+        // 初始化锅的临时视觉占位
+        private void initPotVisual()
+        {
+            if (_potArea == null) return;
+
+            Transform potBodyTf = _potArea.Find("Img_PotBody");
+            if (potBodyTf == null)
+            {
+                GameObject potBodyObj = new GameObject("Img_PotBody", typeof(RectTransform));
+                potBodyObj.transform.SetParent(_potArea, false);
+                potBodyTf = potBodyObj.transform;
+            }
+
+            _imgPotBody = potBodyTf.GetComponent<Image>();
+            if (_imgPotBody == null)
+                _imgPotBody = potBodyTf.gameObject.AddComponent<Image>();
+
+            _imgPotBody.color = new Color(0.95f, 0.5f, 0.16f, 0.9f);
+            _imgPotBody.raycastTarget = false;
+
+            if (potBodyTf is RectTransform rectTransform)
+            {
+                rectTransform.anchorMin = new Vector2(0.18f, 0.1f);
+                rectTransform.anchorMax = new Vector2(0.82f, 0.45f);
+                rectTransform.offsetMin = Vector2.zero;
+                rectTransform.offsetMax = Vector2.zero;
+            }
+
+            _imgPotBody.transform.SetAsFirstSibling();
+        }
+
         private void refreshTop(CookModel cookModel)
         {
             if (_txtTurn != null)
@@ -179,7 +251,7 @@ namespace Module.View
         private void refreshTarget(CookModel cookModel)
         {
             if (_txtOrder != null)
-                _txtOrder.text = $"{cookModel.BoxName}\n{cookModel.GetTargetText()}\n拖拽材料到法阵后投入锅中";
+                _txtOrder.text = cookModel.GetPotText();
 
             if (_txtPreview != null)
                 _txtPreview.text = cookModel.GetPreviewText();
@@ -235,7 +307,7 @@ namespace Module.View
                 _btnUndo.interactable = cookModel.HasPlacedMaterial;
 
             if (_btnClear != null)
-                _btnClear.interactable = cookModel.HasPlacedMaterial;
+                _btnClear.interactable = cookModel.HasCookingMaterial;
 
             if (_btnSkip != null)
                 _btnSkip.interactable = cookModel.IsRunActive;
@@ -270,6 +342,7 @@ namespace Module.View
         private bool canPlaceMaterial(int materialId, int slotIndex)
         {
             if (_cookModel == null || !_cookModel.IsRunActive) return false;
+            if (!_cookModel.CanPlaceHandThisTurn) return false;
             if (slotIndex < 0 || slotIndex >= _cookModel.Slots.Count) return false;
             if (_cookModel.Slots[slotIndex].HasMaterial) return false;
 
@@ -303,6 +376,16 @@ namespace Module.View
 
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(action);
+        }
+
+        // 设置按钮显示文本
+        private static void setupButtonText(Button button, string text)
+        {
+            if (button == null) return;
+
+            TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>();
+            if (label != null)
+                label.text = text;
         }
     }
 }

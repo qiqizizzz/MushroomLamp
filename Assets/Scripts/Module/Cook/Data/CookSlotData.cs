@@ -14,11 +14,16 @@ namespace Module.Cook
         public int SlotIndex { get; private set; }
         public CookMaterialData Material { get; private set; }
         public int Order { get; private set; }
+        public CookSlotType SlotType { get; private set; }
+        public float EnchantValue { get; private set; }
         public bool HasMaterial => Material != null;
+        public string EnchantText => EnchantValue.ToString("0.#");
 
         public CookSlotData(int slotIndex)
         {
             SlotIndex = slotIndex;
+            SlotType = resolveSlotType(slotIndex);
+            EnchantValue = resolveEnchantValue(SlotType);
         }
 
         // 放入材料并记录顺序
@@ -28,6 +33,31 @@ namespace Module.Cook
             Order = order;
         }
 
+        // 将另一个槽位的材料移动到当前槽位
+        public void MoveFrom(CookSlotData source)
+        {
+            if (source == null) return;
+
+            Material = source.Material;
+            Order = source.Order;
+            source.Material = null;
+            source.Order = 0;
+        }
+
+        // 与另一个槽位交换材料和放置顺序
+        public void SwapWith(CookSlotData other)
+        {
+            if (other == null) return;
+
+            CookMaterialData material = Material;
+            int order = Order;
+
+            Material = other.Material;
+            Order = other.Order;
+            other.Material = material;
+            other.Order = order;
+        }
+
         // 清空槽位
         public CookMaterialData Clear()
         {
@@ -35,6 +65,29 @@ namespace Module.Cook
             Material = null;
             Order = 0;
             return material;
+        }
+
+        // 根据九宫格索引解析槽位类型
+        private static CookSlotType resolveSlotType(int slotIndex)
+        {
+            if (slotIndex == 4)
+                return CookSlotType.Center;
+
+            if (slotIndex == 1 || slotIndex == 3 || slotIndex == 5 || slotIndex == 7)
+                return CookSlotType.Edge;
+
+            return CookSlotType.Corner;
+        }
+
+        // 根据槽位类型解析附魔加成值
+        private static float resolveEnchantValue(CookSlotType slotType)
+        {
+            return slotType switch
+            {
+                CookSlotType.Center => 2f,
+                CookSlotType.Edge => 1f,
+                _ => 0.5f
+            };
         }
     }
 }
