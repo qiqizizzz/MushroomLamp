@@ -1,4 +1,4 @@
-﻿/*
+/*
 * ┌──────────────────────────────────┐
 * │  描    述: 控制器类型
 * │  类    名: ControllerType.cs
@@ -13,6 +13,8 @@ namespace MVC
         GameUI = 0,
         Loading = 1,
         SelectBox = 2,
-        Cook = 3
+        Cook = 3,
+        Shop = 4,
+        Almanac = 5
     }
 }

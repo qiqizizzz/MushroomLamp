@@ -1,8 +1,10 @@
 {
-  "files.exclude": {
-    "**/*.meta": true
-  },
-  "search.exclude": {
-    "**/*.meta": true
-  }
+    "files.exclude": {
+        "**/Library": true,
+        "**/Temp": true,
+        "**/obj": true,
+        "**/Assets/StreamingAssets": true,
+        "**/*.meta": true
+    },
+    "dotnet.defaultSolution": "MushroomLamp.sln"
 }

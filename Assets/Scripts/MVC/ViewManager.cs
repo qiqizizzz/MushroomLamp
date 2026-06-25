@@ -36,6 +36,8 @@ namespace MVC
         private readonly Dictionary<int, ViewInfo> _viewInfos;
         private readonly Stack<int> _viewStack;
 
+        public IReadOnlyDictionary<int, ViewInfo> ViewInfos => _viewInfos;
+
         public ViewManager()
         {
             Transform rootTf = GameApp.RootTf;
@@ -108,6 +110,12 @@ namespace MVC
                 return cacheView;
 
             return null;
+        }
+
+        // 获取视图
+        public IBaseView GetView(ViewType type)
+        {
+            return GetView((int)type);
         }
 
         // 获取指定类型视图

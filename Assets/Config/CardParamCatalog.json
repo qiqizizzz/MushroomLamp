@@ -1,33 +1,27 @@
 {
   "defaultCardId": "herb_carrot",
   "cards": [
-    {
-      "id": "herb_carrot",
-      "name": "胡萝卜",
-      "iconPath": "Art/Card_img/carrot",
-      "description": "草本卡牌：胡萝卜",
-      "price": 1
-    },
-    {
-      "id": "herb_potato",
-      "name": "土豆",
-      "iconPath": "Art/Card_img/potato",
-      "description": "草本卡牌：土豆",
-      "price": 1
-    },
-    {
-      "id": "herb_mushroom",
-      "name": "蘑菇",
-      "iconPath": "Art/Card_img/mushroom",
-      "description": "草本卡牌：蘑菇",
-      "price": 2
-    },
-    {
-      "id": "herb_pumpkin",
-      "name": "南瓜",
-      "iconPath": "Art/Card_img/pumpkin",
-      "description": "草本卡牌：南瓜",
-      "price": 3
-    }
+    { "id": "herb_carrot",   "name": "胡萝卜",   "iconPath": "Art/Card_img/carrot",   "description": "草本卡牌：胡萝卜",   "price": 1 },
+    { "id": "herb_potato",   "name": "土豆",     "iconPath": "Art/Card_img/potato",   "description": "草本卡牌：土豆",     "price": 1 },
+    { "id": "herb_mushroom", "name": "蘑菇",     "iconPath": "Art/Card_img/mushroom", "description": "草本卡牌：蘑菇",     "price": 2 },
+    { "id": "herb_pumpkin",  "name": "南瓜",     "iconPath": "Art/Card_img/pumpkin",  "description": "草本卡牌：南瓜",     "price": 3 },
+    { "id": "card_05", "name": "红萝卜", "iconPath": "Art/Card_img/carrot",   "description": "草本卡牌：红萝卜", "price": 2 },
+    { "id": "card_06", "name": "紫薯",   "iconPath": "Art/Card_img/potato",   "description": "草本卡牌：紫薯",   "price": 2 },
+    { "id": "card_07", "name": "香菇",   "iconPath": "Art/Card_img/mushroom", "description": "草本卡牌：香菇",   "price": 3 },
+    { "id": "card_08", "name": "金瓜",   "iconPath": "Art/Card_img/pumpkin",  "description": "草本卡牌：金瓜",   "price": 4 },
+    { "id": "card_09", "name": "甜萝卜", "iconPath": "Art/Card_img/carrot",   "description": "草本卡牌：甜萝卜", "price": 2 },
+    { "id": "card_10", "name": "洋芋",   "iconPath": "Art/Card_img/potato",   "description": "草本卡牌：洋芋",   "price": 1 },
+    { "id": "card_11", "name": "草菇",   "iconPath": "Art/Card_img/mushroom", "description": "草本卡牌：草菇",   "price": 2 },
+    { "id": "card_12", "name": "贝贝瓜", "iconPath": "Art/Card_img/pumpkin",  "description": "草本卡牌：贝贝瓜", "price": 3 },
+    { "id": "card_13", "name": "白萝卜", "iconPath": "Art/Card_img/carrot",   "description": "草本卡牌：白萝卜", "price": 2 },
+    { "id": "card_14", "name": "薯仔",   "iconPath": "Art/Card_img/potato",   "description": "草本卡牌：薯仔",   "price": 1 },
+    { "id": "card_15", "name": "松茸",   "iconPath": "Art/Card_img/mushroom", "description": "草本卡牌：松茸",   "price": 5 },
+    { "id": "card_16", "name": "栗南瓜", "iconPath": "Art/Card_img/pumpkin",  "description": "草本卡牌：栗南瓜", "price": 4 },
+    { "id": "card_17", "name": "水萝卜", "iconPath": "Art/Card_img/carrot",   "description": "草本卡牌：水萝卜", "price": 2 },
+    { "id": "card_18", "name": "土豆王", "iconPath": "Art/Card_img/potato",   "description": "草本卡牌：土豆王", "price": 3 },
+    { "id": "card_19", "name": "灵芝",   "iconPath": "Art/Card_img/mushroom", "description": "草本卡牌：灵芝",   "price": 6 },
+    { "id": "card_20", "name": "巨南瓜", "iconPath": "Art/Card_img/pumpkin",  "description": "草本卡牌：巨南瓜", "price": 5 },
+    { "id": "card_21", "name": "胡萝卜苗", "iconPath": "Art/Card_img/carrot", "description": "草本卡牌：胡萝卜苗", "price": 1 },
+    { "id": "card_22", "name": "黄金薯", "iconPath": "Art/Card_img/potato",   "description": "草本卡牌：黄金薯", "price": 4 }
   ]
 }
