@@ -16,6 +16,7 @@ namespace MVC
         Cook = 3,
         Shop = 4,
         Almanac = 5,
-        Confirm = 6
+        Confirm = 6,
+        Summary = 7
     }
 }

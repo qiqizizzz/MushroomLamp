@@ -50,5 +50,8 @@ namespace Common.Defines
         public const string OpenConfirmView = "OpenConfirmView";
         public const string ConfirmViewConfirm = "ConfirmViewConfirm";
         public const string ConfirmViewCancel = "ConfirmViewCancel";
+
+        // 总结算
+        public const string OpenSummaryView = "OpenSummaryView";
     }
 }

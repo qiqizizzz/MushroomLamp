@@ -16,6 +16,7 @@ namespace MVC
         CookView = 3,
         ShopView = 4,
         AlmanacView = 5,
-        ConfirmView = 6
+        ConfirmView = 6,
+        SummaryView = 7
     }
 }
