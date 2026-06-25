@@ -49,6 +49,7 @@ namespace Module.Almanac
         private void onReturn(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.AlmanacView);
+            if (GameApp.ViewManager.IsOpen((int)ViewType.SummaryView)) return;
             ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView, args);
         }
 

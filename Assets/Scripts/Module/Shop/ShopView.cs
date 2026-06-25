@@ -92,8 +92,10 @@ namespace Module.Shop
 
                 var binder = obj.GetComponent<ShopSlotBinder>();
                 if (binder != null)
-                    binder.Bind(data[i]);
+                    binder.Bind(data[i], onBuySlot);
             }
         }
+
+        private void onBuySlot(ShopSlotData slotData) => ApplyFunc("Shop.BuyItem", slotData);
     }
 }

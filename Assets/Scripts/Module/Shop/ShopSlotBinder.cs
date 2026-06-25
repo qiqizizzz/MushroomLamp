@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,19 +12,46 @@ namespace Module.Shop
         [SerializeField] private TextMeshProUGUI txtPrice;
         [SerializeField] private TextMeshProUGUI txtDesc;
 
-        public void Bind(ShopSlotData data)
+        public void Bind(ShopSlotData data, Action<ShopSlotData> onBuy = null)
         {
             if (data == null) return;
 
-            if (txtName != null) txtName.text = data.name;
+            if (txtName  != null) txtName.text  = data.name;
             if (txtPrice != null) txtPrice.text = data.price.ToString();
-            if (txtDesc != null) txtDesc.text = data.description;
+            if (txtDesc  != null) txtDesc.text  = data.description;
 
             if (imgIcon != null)
             {
                 var sprite = LoadSprite(data.iconPath);
-                imgIcon.sprite = sprite;
+                imgIcon.sprite  = sprite;
                 imgIcon.enabled = sprite != null;
+            }
+
+            bindBuyButton(data, onBuy);
+        }
+
+        private void bindBuyButton(ShopSlotData data, Action<ShopSlotData> onBuy)
+        {
+            Transform buyTf = transform.Find("Btn_Buy");
+            if (buyTf == null) return;
+
+            Button btn = buyTf.GetComponent<Button>();
+            if (btn == null) return;
+
+            btn.onClick.RemoveAllListeners();
+
+            TextMeshProUGUI label = buyTf.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+
+            if (data.isPurchased)
+            {
+                btn.interactable = false;
+                if (label != null) label.text = "已购买";
+            }
+            else
+            {
+                btn.interactable = true;
+                if (label != null) label.text = "购买";
+                btn.onClick.AddListener(() => onBuy?.Invoke(data));
             }
         }
 
@@ -31,8 +59,6 @@ namespace Module.Shop
         {
             if (string.IsNullOrEmpty(iconPath)) return null;
 #if UNITY_EDITOR
-            // 仅编辑器：JSON 表里 iconPath 形如 "Art/Card_img/carrot"（共享给其他面板，不改）。
-            // 这里拼成完整 asset 路径加载，图片放在 Assets/Art 下、无需放进 Resources。
             string assetPath = $"Assets/{iconPath}.png";
             return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
 #else
@@ -41,3 +67,4 @@ namespace Module.Shop
         }
     }
 }
+

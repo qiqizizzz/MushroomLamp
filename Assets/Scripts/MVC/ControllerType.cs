@@ -15,6 +15,8 @@ namespace MVC
         SelectBox = 2,
         Cook = 3,
         Shop = 4,
-        Almanac = 5
+        Almanac = 5,
+        Confirm = 6,
+        Summary = 7
     }
 }
