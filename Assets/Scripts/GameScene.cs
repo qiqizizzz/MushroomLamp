@@ -9,7 +9,6 @@
 using System;
 using Common.Defines;
 using Module.Cook;
-using Module.Debug;
 using Module.GameUI;
 using Module.Loading;
 using Module.Select;
@@ -42,7 +41,6 @@ public class GameScene : MonoBehaviour
         GameApp.Instance.SetRoot(transform);
         GameApp.Instance.Init();
         registerModule();
-        gameObject.AddComponent<GMPanelDebugger>();
         GameApp.ControllerManager.InitAllModules();
     }
 
