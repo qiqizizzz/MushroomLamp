@@ -33,7 +33,14 @@ namespace Module.Summary
         {
             _model = new SummaryModel();
             _model.Randomize();
-            GameApp.ViewManager.Open(ViewType.SummaryView, _model);
+            GameApp.ViewManager.Open(ViewType.SummaryView);
+        }
+
+        public override void OpenView(IBaseView view)
+        {
+            if (view is not SummaryView summaryView) return;
+            if (_model == null) { _model = new SummaryModel(); _model.Randomize(); }
+            summaryView.Refresh(_model);
         }
 
         private void onViewAlmanac(object[] args)

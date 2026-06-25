@@ -1,4 +1,5 @@
 using System.Linq;
+using Common.Defines;
 using MVC;
 using UnityEngine;
 
@@ -42,6 +43,11 @@ namespace Module.Debug
                 {
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
                         GameApp.ControllerManager.ApplyFunc((int)ControllerType.Shop, "OpenShopView");
+                }
+                else if (viewType == ViewType.SummaryView)
+                {
+                    if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
+                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Summary, EventDefines.OpenSummaryView);
                 }
                 else if (GUILayout.Button(label, GUILayout.Height(28f)))
                 {
