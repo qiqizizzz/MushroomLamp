@@ -41,6 +41,10 @@
 # Cursor editor config and skills
 .cursor/
 
+# Claude Code config and MCP settings
+.claude/
+.mcp.json
+
 # Ultimate Editor Enhancer local scene backups
 SceneBackups/
 
