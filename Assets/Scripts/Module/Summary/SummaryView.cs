@@ -70,8 +70,6 @@ namespace Module.Summary
         public override void Open(params object[] args)
         {
             SetVisible(true);
-            if (args != null && args.Length > 0 && args[0] is SummaryModel model)
-                Refresh(model);
         }
 
         public void Refresh(SummaryModel model)
@@ -120,12 +118,13 @@ namespace Module.Summary
         private IEnumerator countUp(int target)
         {
             if (_txtScoreValue == null) yield break;
+            _txtScoreValue.text = "1";
             float duration = 2f, elapsed = 0f;
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-                _txtScoreValue.text = Mathf.RoundToInt(Mathf.Lerp(0, target, t)).ToString();
+                _txtScoreValue.text = Mathf.RoundToInt(Mathf.Lerp(1, target, t)).ToString();
                 yield return null;
             }
             _txtScoreValue.text = target.ToString();
