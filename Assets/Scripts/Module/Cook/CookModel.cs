@@ -182,6 +182,49 @@ namespace Module.Cook
             return true;
         }
 
+        // 判断法阵槽位材料是否可撤回
+        public bool CanReturnSlotMaterial(int slotIndex)
+        {
+            if (!IsRunActive) return false;
+            if (!isValidSlotIndex(slotIndex)) return false;
+            if (!_slots[slotIndex].HasMaterial) return false;
+
+            return _placeHistory.Contains(slotIndex);
+        }
+
+        // 将本回合放入法阵的材料撤回到可用区域
+        public bool ReturnSlotMaterial(int slotIndex)
+        {
+            if (!IsRunActive)
+            {
+                LastTip = "当前烹饪已结束";
+                return false;
+            }
+
+            if (!isValidSlotIndex(slotIndex))
+            {
+                LastTip = "法阵槽位不存在";
+                return false;
+            }
+
+            if (!CanReturnSlotMaterial(slotIndex))
+            {
+                LastTip = "该材料已经进入持续烹饪，不能直接撤回";
+                return false;
+            }
+
+            CookMaterialData material = _slots[slotIndex].Clear();
+            removePlaceHistory(slotIndex);
+            if (material != null)
+                returnMaterialToAvailableArea(material);
+
+            _hasPlacedHandThisTurn = false;
+            RoundState = CanSettle ? CookRoundStateType.ReadyToSettle : CookRoundStateType.Operating;
+            refreshPreviewValue();
+            LastTip = material == null ? "槽位已清空" : $"已撤回 {material.MaterialName}";
+            return true;
+        }
+
         // 将法阵中的材料提交到锅中
         public bool SubmitSlotToPot(int slotIndex)
         {

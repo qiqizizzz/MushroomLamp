@@ -21,6 +21,7 @@ namespace Common.Defines
         public const string StartCookRun = "StartCookRun";
         public const string CookPlaceMaterial = "CookPlaceMaterial";
         public const string CookMoveSlotMaterial = "CookMoveSlotMaterial";
+        public const string CookReturnSlotMaterial = "CookReturnSlotMaterial";
         public const string CookSubmitToPot = "CookSubmitToPot";
         public const string CookProcessMaterial = "CookProcessMaterial";
         public const string CookTouchMagicBox = "CookTouchMagicBox";
@@ -28,6 +29,7 @@ namespace Common.Defines
         public const string CookClearMaterials = "CookClearMaterials";
         public const string CookSkipTurn = "CookSkipTurn";
         public const string CookSettleTurn = "CookSettleTurn";
+        public const string CookReturnToSelect = "CookReturnToSelect";
 
         // 材料箱选择
         public const string OpenSelectBoxView = "OpenSelectBoxView";

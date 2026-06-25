@@ -39,6 +39,7 @@ namespace Module.Cook
             RegisterFunc(EventDefines.StartCookRun, startCookRun);
             RegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
             RegisterFunc(EventDefines.CookMoveSlotMaterial, moveSlotMaterial);
+            RegisterFunc(EventDefines.CookReturnSlotMaterial, returnSlotMaterial);
             RegisterFunc(EventDefines.CookSubmitToPot, submitToPot);
             RegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
             RegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
@@ -46,6 +47,7 @@ namespace Module.Cook
             RegisterFunc(EventDefines.CookClearMaterials, clearMaterials);
             RegisterFunc(EventDefines.CookSkipTurn, skipTurn);
             RegisterFunc(EventDefines.CookSettleTurn, settleTurn);
+            RegisterFunc(EventDefines.CookReturnToSelect, returnToSelect);
         }
 
         public override void RemoveModuleEvent()
@@ -54,6 +56,7 @@ namespace Module.Cook
             UnRegisterFunc(EventDefines.StartCookRun, startCookRun);
             UnRegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
             UnRegisterFunc(EventDefines.CookMoveSlotMaterial, moveSlotMaterial);
+            UnRegisterFunc(EventDefines.CookReturnSlotMaterial, returnSlotMaterial);
             UnRegisterFunc(EventDefines.CookSubmitToPot, submitToPot);
             UnRegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
             UnRegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
@@ -61,6 +64,7 @@ namespace Module.Cook
             UnRegisterFunc(EventDefines.CookClearMaterials, clearMaterials);
             UnRegisterFunc(EventDefines.CookSkipTurn, skipTurn);
             UnRegisterFunc(EventDefines.CookSettleTurn, settleTurn);
+            UnRegisterFunc(EventDefines.CookReturnToSelect, returnToSelect);
         }
 
         public override void OpenView(IBaseView view)
@@ -112,6 +116,17 @@ namespace Module.Cook
             if (args[0] is not int fromSlotIndex || args[1] is not int toSlotIndex) return;
 
             cookModel.MoveSlotMaterial(fromSlotIndex, toSlotIndex);
+            refreshCookView();
+        }
+
+        // 将本回合法阵材料撤回到可用区域
+        private void returnSlotMaterial(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            if (args == null || args.Length < 1) return;
+            if (args[0] is not int slotIndex) return;
+
+            cookModel.ReturnSlotMaterial(slotIndex);
             refreshCookView();
         }
 
@@ -174,6 +189,13 @@ namespace Module.Cook
 
             if (result != null && !cookModel.IsRunActive)
                 QLog.Info($"[{nameof(CookController)}] 烹饪结束，分数：{cookModel.GetScoreText()}");
+        }
+
+        // 返回材料选择界面
+        private void returnToSelect(object[] args)
+        {
+            GameApp.ViewManager.Close(ViewType.CookView);
+            ApplyControllerFunc(ControllerType.SelectBox, EventDefines.OpenSelectBoxView, args);
         }
 
         // 刷新烹饪玩法视图

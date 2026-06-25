@@ -28,6 +28,7 @@ namespace Module.View
 
         private Image _imgHeatFill;
         private Transform _slotRoot;
+        private Transform _handArea;
         private Transform _handContent;
         private Transform _dragRoot;
         private Transform _processArea;
@@ -36,11 +37,16 @@ namespace Module.View
 
         private TextMeshProUGUI _txtMagicBox;
         private Image _imgPotBody;
+        private Button _btnPause;
         private Button _btnUndo;
         private Button _btnClear;
         private Button _btnSkip;
         private Button _btnSettle;
         private Button _btnMagicBox;
+        private GameObject _pauseDialogRoot;
+        private Button _btnPauseConfirm;
+        private Button _btnPauseCancel;
+        private bool _isRiskSettleConfirmed;
 
         private CookModel _cookModel;
         private readonly CookSlotItem[] _slotItems = new CookSlotItem[9];
@@ -57,12 +63,14 @@ namespace Module.View
 
             _imgHeatFill = Find<Image>("Left/HeatBar/Img_Fill");
             _slotRoot = Find<Transform>("Center/Grid");
+            _handArea = Find<Transform>("Bottom/HandScroll");
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
             _dragRoot = Find<Transform>("DragRoot");
             _processArea = Find<Transform>("Right/Grinder");
             _potArea = Find<Transform>("Center/Pot");
             _txtMagicBox = Find<TextMeshProUGUI>("Right/MagicBox/Txt_Info");
 
+            _btnPause = Find<Button>("Top/Btn_Pause");
             _btnUndo = Find<Button>("Bottom/ActionBar/Btn_Undo");
             _btnClear = Find<Button>("Bottom/ActionBar/Btn_Clear");
             _btnSkip = Find<Button>("Bottom/ActionBar/Btn_Skip");
@@ -73,9 +81,17 @@ namespace Module.View
             setupButtonText(_btnSettle, "结束本回合");
             hidePreviewText();
             initSlots();
+            initHandArea();
             initProcessArea();
             initPotArea();
             initPotVisual();
+            initPauseDialog();
+        }
+
+        // 打开界面时关闭遗留弹窗
+        public override void Open(params object[] args)
+        {
+            hidePauseDialog();
         }
 
         // 获取拖拽层
@@ -98,6 +114,7 @@ namespace Module.View
         {
             if (cookModel == null) return;
 
+            _isRiskSettleConfirmed = false;
             _cookModel = cookModel;
             refreshTop(cookModel);
             refreshTarget(cookModel);
@@ -144,18 +161,48 @@ namespace Module.View
         public bool TryProcessMaterial(CookMaterialItem materialItem)
         {
             if (materialItem == null) return false;
-            if (!canProcessMaterial(materialItem.MaterialId)) return false;
+            if (!canProcessMaterial(materialItem.MaterialId))
+            {
+                showTip(getProcessFailTip(materialItem.MaterialId));
+                return false;
+            }
 
             ApplyFunc(EventDefines.CookProcessMaterial, materialItem.MaterialId);
             return true;
         }
 
+        // 尝试将本回合法阵材料撤回到可用区域
+        public bool TryReturnSlotMaterial(int slotIndex)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive)
+            {
+                showTip("当前不能撤回材料");
+                return false;
+            }
+
+            if (slotIndex < 0 || slotIndex >= _cookModel.Slots.Count)
+            {
+                showTip("法阵槽位不存在");
+                return false;
+            }
+
+            if (!_cookModel.CanReturnSlotMaterial(slotIndex))
+            {
+                showTip("该材料已经进入持续烹饪，不能直接撤回");
+                return false;
+            }
+
+            ApplyFunc(EventDefines.CookReturnSlotMaterial, slotIndex);
+            return true;
+        }
+
         private void bindButtons()
         {
+            bindButton(_btnPause, showPauseDialog);
             bindButton(_btnUndo, () => ApplyFunc(EventDefines.CookUndoMaterial));
             bindButton(_btnClear, () => ApplyFunc(EventDefines.CookClearMaterials));
             bindButton(_btnSkip, () => ApplyFunc(EventDefines.CookSkipTurn));
-            bindButton(_btnSettle, () => ApplyFunc(EventDefines.CookSettleTurn));
+            bindButton(_btnSettle, onSettleClick);
             bindButton(_btnMagicBox, () => ApplyFunc(EventDefines.CookTouchMagicBox));
         }
 
@@ -180,6 +227,18 @@ namespace Module.View
                 slotItem.Init(this, i);
                 _slotItems[i] = slotItem;
             }
+        }
+
+        // 初始化底部材料区拖拽接收组件
+        private void initHandArea()
+        {
+            if (_handArea == null) return;
+
+            CookHandAreaItem handAreaItem = _handArea.GetComponent<CookHandAreaItem>();
+            if (handAreaItem == null)
+                handAreaItem = _handArea.gameObject.AddComponent<CookHandAreaItem>();
+
+            handAreaItem.Init(this);
         }
 
         private void initProcessArea()
@@ -208,6 +267,7 @@ namespace Module.View
             }
 
             _processedContent = contentTf;
+            _processedContent.SetAsLastSibling();
             if (_processedContent is RectTransform rectTransform)
             {
                 rectTransform.anchorMin = new Vector2(0.08f, 0.04f);
@@ -269,6 +329,59 @@ namespace Module.View
             }
 
             _imgPotBody.transform.SetAsFirstSibling();
+        }
+
+        // 初始化暂停确认弹窗
+        private void initPauseDialog()
+        {
+            Transform dialogTf = transform.Find("PauseConfirmDialog");
+            if (dialogTf == null)
+            {
+                GameObject dialogObj = new GameObject("PauseConfirmDialog", typeof(RectTransform), typeof(Image));
+                dialogObj.transform.SetParent(transform, false);
+                dialogTf = dialogObj.transform;
+            }
+
+            _pauseDialogRoot = dialogTf.gameObject;
+            _pauseDialogRoot.transform.SetAsLastSibling();
+
+            Image maskImage = _pauseDialogRoot.GetComponent<Image>();
+            if (maskImage == null)
+                maskImage = _pauseDialogRoot.AddComponent<Image>();
+
+            maskImage.color = new Color(0f, 0f, 0f, 0.52f);
+            maskImage.raycastTarget = true;
+
+            if (dialogTf is RectTransform dialogRt)
+                setupChildRect(dialogRt, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            RectTransform panelRt = createRectChild("Panel", dialogTf);
+            setupChildRect(panelRt, new Vector2(0.36f, 0.34f), new Vector2(0.64f, 0.66f), Vector2.zero, Vector2.zero);
+
+            Image panelImage = panelRt.GetComponent<Image>();
+            if (panelImage == null)
+                panelImage = panelRt.gameObject.AddComponent<Image>();
+
+            panelImage.color = new Color(0.98f, 0.9f, 0.72f, 1f);
+            panelImage.raycastTarget = true;
+
+            TextMeshProUGUI titleText = createDialogText("Txt_Title", panelRt, 34, TextAlignmentOptions.Center);
+            titleText.text = "返回选择界面？";
+            setupChildRect(titleText.rectTransform, new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.92f), Vector2.zero, Vector2.zero);
+
+            TextMeshProUGUI messageText = createDialogText("Txt_Message", panelRt, 24, TextAlignmentOptions.Center);
+            messageText.text = "当前烹饪进度不会保留";
+            setupChildRect(messageText.rectTransform, new Vector2(0.08f, 0.46f), new Vector2(0.92f, 0.66f), Vector2.zero, Vector2.zero);
+
+            _btnPauseConfirm = createDialogButton("Btn_Confirm", panelRt, "是");
+            setupChildRect(_btnPauseConfirm.GetComponent<RectTransform>(), new Vector2(0.14f, 0.12f), new Vector2(0.44f, 0.34f), Vector2.zero, Vector2.zero);
+
+            _btnPauseCancel = createDialogButton("Btn_Cancel", panelRt, "否");
+            setupChildRect(_btnPauseCancel.GetComponent<RectTransform>(), new Vector2(0.56f, 0.12f), new Vector2(0.86f, 0.34f), Vector2.zero, Vector2.zero);
+
+            bindButton(_btnPauseConfirm, confirmReturnToSelect);
+            bindButton(_btnPauseCancel, hidePauseDialog);
+            hidePauseDialog();
         }
 
         // 隐藏中间锅区域原本的分数预览文字
@@ -360,6 +473,7 @@ namespace Module.View
 
                 CookMaterialItem item = itemObj.AddComponent<CookMaterialItem>();
                 item.Bind(materialData, this);
+                item.SetDisplaySize(104f, 124f);
             }
 
             if (_processedContent is RectTransform contentRt)
@@ -435,6 +549,53 @@ namespace Module.View
             return false;
         }
 
+        // 获取加工失败提示
+        private string getProcessFailTip(int materialId)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive)
+                return "当前不能研磨";
+
+            for (int i = 0; i < _cookModel.HandMaterials.Count; i++)
+            {
+                CookMaterialData materialData = _cookModel.HandMaterials[i];
+                if (materialData.RuntimeId != materialId) continue;
+
+                if (materialData.IsProcessed)
+                    return $"{materialData.MaterialName} 已研磨";
+
+                if (!materialData.CanProcess)
+                    return $"{materialData.MaterialName} 不可研磨";
+            }
+
+            for (int i = 0; i < _cookModel.ProcessedMaterials.Count; i++)
+            {
+                CookMaterialData materialData = _cookModel.ProcessedMaterials[i];
+                if (materialData.RuntimeId == materialId)
+                    return $"{materialData.MaterialName} 已在研磨器出口，请拖入法阵";
+            }
+
+            return "材料不在可研磨区域";
+        }
+
+        // 点击结算按钮
+        private void onSettleClick()
+        {
+            if (_cookModel == null || !_cookModel.CanSettle)
+            {
+                showTip("当前不能结算");
+                return;
+            }
+
+            if (_cookModel.IsOverHeatRisk && !_isRiskSettleConfirmed)
+            {
+                _isRiskSettleConfirmed = true;
+                showTip("当前火候可能爆锅，再点一次结束本回合");
+                return;
+            }
+
+            ApplyFunc(EventDefines.CookSettleTurn);
+        }
+
         private bool canProcessMaterial(int materialId)
         {
             if (_cookModel == null || !_cookModel.IsRunActive) return false;
@@ -448,6 +609,36 @@ namespace Module.View
             }
 
             return false;
+        }
+
+        // 显示暂停确认弹窗
+        private void showPauseDialog()
+        {
+            if (_pauseDialogRoot == null) return;
+
+            _pauseDialogRoot.transform.SetAsLastSibling();
+            _pauseDialogRoot.SetActive(true);
+        }
+
+        // 隐藏暂停确认弹窗
+        private void hidePauseDialog()
+        {
+            if (_pauseDialogRoot != null)
+                _pauseDialogRoot.SetActive(false);
+        }
+
+        // 确认返回选择界面
+        private void confirmReturnToSelect()
+        {
+            hidePauseDialog();
+            ApplyFunc(EventDefines.CookReturnToSelect);
+        }
+
+        // 显示底部操作提示
+        private void showTip(string tip)
+        {
+            if (_txtTip != null)
+                _txtTip.text = tip;
         }
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
@@ -466,6 +657,81 @@ namespace Module.View
             TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>();
             if (label != null)
                 label.text = text;
+        }
+
+        // 创建或获取 RectTransform 子节点
+        private static RectTransform createRectChild(string childName, Transform parent)
+        {
+            Transform child = parent.Find(childName);
+            if (child == null)
+            {
+                GameObject childObj = new GameObject(childName, typeof(RectTransform));
+                childObj.transform.SetParent(parent, false);
+                child = childObj.transform;
+            }
+
+            RectTransform rectTransform = child.GetComponent<RectTransform>();
+            if (rectTransform == null)
+                rectTransform = child.gameObject.AddComponent<RectTransform>();
+
+            return rectTransform;
+        }
+
+        // 创建弹窗文本
+        private TextMeshProUGUI createDialogText(
+            string childName,
+            Transform parent,
+            int fontSize,
+            TextAlignmentOptions alignment)
+        {
+            RectTransform rectTransform = createRectChild(childName, parent);
+            TextMeshProUGUI text = rectTransform.GetComponent<TextMeshProUGUI>();
+            if (text == null)
+                text = rectTransform.gameObject.AddComponent<TextMeshProUGUI>();
+
+            text.font = GetFontAsset();
+            text.fontSize = fontSize;
+            text.alignment = alignment;
+            text.color = new Color(0.18f, 0.11f, 0.07f, 1f);
+            text.enableWordWrapping = false;
+            return text;
+        }
+
+        // 创建弹窗按钮
+        private Button createDialogButton(string childName, Transform parent, string label)
+        {
+            RectTransform buttonRt = createRectChild(childName, parent);
+            Image buttonImage = buttonRt.GetComponent<Image>();
+            if (buttonImage == null)
+                buttonImage = buttonRt.gameObject.AddComponent<Image>();
+
+            buttonImage.color = new Color(0.92f, 0.5f, 0.18f, 1f);
+            buttonImage.raycastTarget = true;
+
+            Button button = buttonRt.GetComponent<Button>();
+            if (button == null)
+                button = buttonRt.gameObject.AddComponent<Button>();
+
+            TextMeshProUGUI text = createDialogText("Txt_Label", buttonRt, 26, TextAlignmentOptions.Center);
+            text.text = label;
+            setupChildRect(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            return button;
+        }
+
+        // 设置子节点 RectTransform 拉伸范围
+        private static void setupChildRect(
+            RectTransform rectTransform,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 offsetMin,
+            Vector2 offsetMax)
+        {
+            if (rectTransform == null) return;
+
+            rectTransform.anchorMin = anchorMin;
+            rectTransform.anchorMax = anchorMax;
+            rectTransform.offsetMin = offsetMin;
+            rectTransform.offsetMax = offsetMax;
         }
     }
 }

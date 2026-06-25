@@ -28,6 +28,8 @@ namespace Module.View
         private Vector2 _originalAnchoredPosition;
         private int _originalSiblingIndex;
         private bool _dropAccepted;
+        private float _displayWidth = CardWidth;
+        private float _displayHeight = CardHeight;
 
         private Image _imgBackground;
         private Image _imgIcon;
@@ -66,6 +68,14 @@ namespace Module.View
                 _imgIcon.sprite = materialData?.Icon;
                 _imgIcon.enabled = materialData?.Icon != null;
             }
+        }
+
+        // 设置材料卡在当前区域的显示尺寸
+        public void SetDisplaySize(float width, float height)
+        {
+            _displayWidth = Mathf.Max(1f, width);
+            _displayHeight = Mathf.Max(1f, height);
+            applyDisplaySize(_displayWidth, _displayHeight);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -127,14 +137,14 @@ namespace Module.View
             if (_rectTransform == null)
                 _rectTransform = gameObject.AddComponent<RectTransform>();
 
-            _rectTransform.sizeDelta = new Vector2(CardWidth, CardHeight);
+            applyDisplaySize(_displayWidth, _displayHeight);
 
             LayoutElement layoutElement = GetComponent<LayoutElement>();
             if (layoutElement == null)
                 layoutElement = gameObject.AddComponent<LayoutElement>();
 
-            layoutElement.preferredWidth = CardWidth;
-            layoutElement.preferredHeight = CardHeight;
+            layoutElement.preferredWidth = _displayWidth;
+            layoutElement.preferredHeight = _displayHeight;
 
             _canvasGroup = GetComponent<CanvasGroup>();
             if (_canvasGroup == null)
@@ -166,6 +176,22 @@ namespace Module.View
                 _canvasGroup.alpha = 1f;
                 _canvasGroup.blocksRaycasts = true;
             }
+
+            applyDisplaySize(_displayWidth, _displayHeight);
+        }
+
+        // 应用材料卡尺寸到 RectTransform 与布局组件
+        private void applyDisplaySize(float width, float height)
+        {
+            if (_rectTransform != null)
+                _rectTransform.sizeDelta = new Vector2(width, height);
+
+            LayoutElement layoutElement = GetComponent<LayoutElement>();
+            if (layoutElement == null)
+                layoutElement = gameObject.AddComponent<LayoutElement>();
+
+            layoutElement.preferredWidth = width;
+            layoutElement.preferredHeight = height;
         }
 
         private void moveToPointer(PointerEventData eventData)
