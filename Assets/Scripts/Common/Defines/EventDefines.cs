@@ -38,6 +38,11 @@ namespace Common.Defines
         // 下一模块就绪后使用
         public const string SelectBoxStartGame = "SelectBoxStartGame";
 
+        // 图鉴
+        public const string OpenAlmanacView = "OpenAlmanacView";
+        public const string AlmanacReturn = "AlmanacReturn";
+        public const string AlmanacSwitchTab = "AlmanacSwitchTab";
+
         // 场景事件
         public const string LoadingScene = "LoadingScene";
     }

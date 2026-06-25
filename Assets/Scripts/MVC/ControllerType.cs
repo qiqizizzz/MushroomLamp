@@ -1,4 +1,4 @@
-﻿/*
+/*
 * ┌──────────────────────────────────┐
 * │  描    述: 控制器类型
 * │  类    名: ControllerType.cs
@@ -14,6 +14,7 @@ namespace MVC
         Loading = 1,
         SelectBox = 2,
         Cook = 3,
-        Shop = 4
+        Shop = 4,
+        Almanac = 5
     }
 }
