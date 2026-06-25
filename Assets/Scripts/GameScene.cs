@@ -11,6 +11,7 @@ using Common.Defines;
 using Module.Cook;
 using Module.GameUI;
 using Module.Loading;
+using Module.Almanac;
 using Module.Select;
 using MVC;
 using UnityEngine;
@@ -72,5 +73,6 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.Loading, new LoadingController());
         GameApp.ControllerManager.Register(ControllerType.SelectBox, new SelectBoxController());
         GameApp.ControllerManager.Register(ControllerType.Cook, new CookController());
+        GameApp.ControllerManager.Register(ControllerType.Almanac, new AlmanacController());
     }
 }

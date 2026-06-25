@@ -1,4 +1,4 @@
-﻿/*
+/*
 * ┌──────────────────────────────────┐
 * │  描    述: 视图类型
 * │  类    名: ViewType.cs
@@ -13,6 +13,7 @@ namespace MVC
         LoadingView = 0,
         MainMenuView = 1,
         SelectBoxView = 2,
-        CookView = 3
+        CookView = 3,
+        AlmanacView = 4
     }
 }

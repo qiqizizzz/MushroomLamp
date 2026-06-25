@@ -1,26 +1,26 @@
 {
   "defaultItemId": "herb_tea",
   "items": [
-    {
-      "id": "herb_tea",
-      "name": "草本茶",
-      "iconPath": "Art/Card_img/mushroom",
-      "description": "恢复类道具：草本茶",
-      "price": 2
-    },
-    {
-      "id": "healing_powder",
-      "name": "止血粉",
-      "iconPath": "Art/Card_img/potato",
-      "description": "恢复类道具：止血粉",
-      "price": 3
-    },
-    {
-      "id": "stamina_dish",
-      "name": "补给餐",
-      "iconPath": "Art/Card_img/pumpkin",
-      "description": "恢复类道具：补给餐",
-      "price": 4
-    }
+    { "id": "herb_tea",       "name": "草本茶",   "iconPath": "Art/Card_img/mushroom", "description": "恢复类道具：草本茶",   "price": 2 },
+    { "id": "healing_powder", "name": "止血粉",   "iconPath": "Art/Card_img/potato",   "description": "恢复类道具：止血粉",   "price": 3 },
+    { "id": "stamina_dish",   "name": "补给餐",   "iconPath": "Art/Card_img/pumpkin",  "description": "恢复类道具：补给餐",   "price": 4 },
+    { "id": "item_04", "name": "野菜汤",   "iconPath": "Art/Card_img/carrot",   "description": "恢复类道具：野菜汤",   "price": 2 },
+    { "id": "item_05", "name": "薯泥",     "iconPath": "Art/Card_img/potato",   "description": "恢复类道具：薯泥",     "price": 2 },
+    { "id": "item_06", "name": "菌菇汤",   "iconPath": "Art/Card_img/mushroom", "description": "恢复类道具：菌菇汤",   "price": 3 },
+    { "id": "item_07", "name": "南瓜羹",   "iconPath": "Art/Card_img/pumpkin",  "description": "恢复类道具：南瓜羹",   "price": 3 },
+    { "id": "item_08", "name": "胡萝卜汁", "iconPath": "Art/Card_img/carrot",   "description": "恢复类道具：胡萝卜汁", "price": 2 },
+    { "id": "item_09", "name": "暖身茶",   "iconPath": "Art/Card_img/mushroom", "description": "恢复类道具：暖身茶",   "price": 3 },
+    { "id": "item_10", "name": "能量薯条", "iconPath": "Art/Card_img/potato",   "description": "恢复类道具：能量薯条", "price": 4 },
+    { "id": "item_11", "name": "蘑菇串",   "iconPath": "Art/Card_img/mushroom", "description": "恢复类道具：蘑菇串",   "price": 3 },
+    { "id": "item_12", "name": "南瓜饼",   "iconPath": "Art/Card_img/pumpkin",  "description": "恢复类道具：南瓜饼",   "price": 4 },
+    { "id": "item_13", "name": "护身符",   "iconPath": "Art/Card_img/carrot",   "description": "恢复类道具：护身符",   "price": 5 },
+    { "id": "item_14", "name": "解毒散",   "iconPath": "Art/Card_img/potato",   "description": "恢复类道具：解毒散",   "price": 5 },
+    { "id": "item_15", "name": "灵菇粉",   "iconPath": "Art/Card_img/mushroom", "description": "恢复类道具：灵菇粉",   "price": 6 },
+    { "id": "item_16", "name": "金瓜膏",   "iconPath": "Art/Card_img/pumpkin",  "description": "恢复类道具：金瓜膏",   "price": 6 },
+    { "id": "item_17", "name": "回春露",   "iconPath": "Art/Card_img/carrot",   "description": "恢复类道具：回春露",   "price": 7 },
+    { "id": "item_18", "name": "饱腹饭团", "iconPath": "Art/Card_img/potato",   "description": "恢复类道具：饱腹饭团", "price": 3 },
+    { "id": "item_19", "name": "山珍汤",   "iconPath": "Art/Card_img/mushroom", "description": "恢复类道具：山珍汤",   "price": 7 },
+    { "id": "item_20", "name": "丰收宴",   "iconPath": "Art/Card_img/pumpkin",  "description": "恢复类道具：丰收宴",   "price": 8 },
+    { "id": "item_21", "name": "清心茶",   "iconPath": "Art/Card_img/carrot",   "description": "恢复类道具：清心茶",   "price": 4 }
   ]
 }

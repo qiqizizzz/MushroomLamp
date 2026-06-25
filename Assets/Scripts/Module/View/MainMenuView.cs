@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ┌──────────────────────────────────┐
  * │  描    述: 主菜单（开始）界面
  * │  类    名: MainMenuView.cs
@@ -7,6 +7,7 @@
  */
 
 using Common.Defines;
+using MVC;
 using MVC.View;
 using UnityEngine.UI;
 
@@ -39,6 +40,9 @@ namespace Module.View
 
             if (_btnExit != null)
                 _btnExit.onClick.AddListener(onExitClick);
+
+            if (_btnGallery != null)
+                _btnGallery.onClick.AddListener(onGalleryClick);
         }
 
         protected override void OnDestroy()
@@ -51,6 +55,9 @@ namespace Module.View
 
             if (_btnExit != null)
                 _btnExit.onClick.RemoveListener(onExitClick);
+
+            if (_btnGallery != null)
+                _btnGallery.onClick.RemoveListener(onGalleryClick);
 
             base.OnDestroy();
         }
@@ -68,6 +75,12 @@ namespace Module.View
         private void onExitClick()
         {
             ApplyFunc(EventDefines.MainMenuExit);
+        }
+
+        private void onGalleryClick()
+        {
+            Common.QLog.Info("[DIAG-gallery] onGalleryClick fired");
+            ApplyControllerFunc(ControllerType.Almanac, EventDefines.OpenAlmanacView);
         }
     }
 }
