@@ -71,7 +71,7 @@ namespace Module.Shop
             {
                 foreach (Transform slot in group)
                 {
-                    if (group.name.Contains("Top")) _cardSlots.Add(slot);
+                    if (group.name.Contains("Card")) _cardSlots.Add(slot);
                     else _itemSlots.Add(slot);
                 }
             }
@@ -86,7 +86,7 @@ namespace Module.Shop
                 for (int c = slot.childCount - 1; c >= 0; c--) Destroy(slot.GetChild(c).gameObject);
                 if (i >= showCount) continue;
 
-                string prefabPath = isCard ? "UI/Shop/ShopCardSlot" : "UI/Shop/ShopItemSlot";
+                string prefabPath = isCard ? "UI/Shop/ShopCardSlot" : "UI/Shop/ShopPropSlot";
                 GameObject obj = ResManager.Instantiate(prefabPath, slot);
                 if (obj == null) continue;
 

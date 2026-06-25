@@ -33,11 +33,17 @@ namespace Module.Debug
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
             foreach (var viewInfo in GameApp.ViewManager.ViewInfos.OrderBy(item => item.Key))
             {
-                var viewTypeName = ((ViewType)viewInfo.Key).ToString();
+                var viewType = (ViewType)viewInfo.Key;
+                var viewTypeName = viewType.ToString();
                 bool isOpen = GameApp.ViewManager.IsOpen(viewInfo.Key);
                 string label = $"{viewTypeName} [{(isOpen ? "Open" : "Close")}]";
 
-                if (GUILayout.Button(label, GUILayout.Height(28f)))
+                if (viewType == ViewType.ShopView)
+                {
+                    if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
+                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Shop, "OpenShopView");
+                }
+                else if (GUILayout.Button(label, GUILayout.Height(28f)))
                 {
                     if (isOpen)
                         GameApp.ViewManager.Close(viewInfo.Key);

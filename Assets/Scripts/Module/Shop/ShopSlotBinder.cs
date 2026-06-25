@@ -21,10 +21,23 @@ namespace Module.Shop
 
             if (imgIcon != null)
             {
-                var sprite = Resources.Load<Sprite>(data.iconPath);
+                var sprite = LoadSprite(data.iconPath);
                 imgIcon.sprite = sprite;
                 imgIcon.enabled = sprite != null;
             }
+        }
+
+        private static Sprite LoadSprite(string iconPath)
+        {
+            if (string.IsNullOrEmpty(iconPath)) return null;
+#if UNITY_EDITOR
+            // 仅编辑器：JSON 表里 iconPath 形如 "Art/Card_img/carrot"（共享给其他面板，不改）。
+            // 这里拼成完整 asset 路径加载，图片放在 Assets/Art 下、无需放进 Resources。
+            string assetPath = $"Assets/{iconPath}.png";
+            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+#else
+            return null;
+#endif
         }
     }
 }

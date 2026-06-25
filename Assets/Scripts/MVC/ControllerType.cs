@@ -13,6 +13,7 @@ namespace MVC
         GameUI = 0,
         Loading = 1,
         SelectBox = 2,
-        Cook = 3
+        Cook = 3,
+        Shop = 4
     }
 }

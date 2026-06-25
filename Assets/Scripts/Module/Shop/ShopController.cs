@@ -1,6 +1,7 @@
 using Common.Defines;
 using MVC;
 using MVC.Controller;
+using MVC.View;
 
 namespace Module.Shop
 {
@@ -34,7 +35,11 @@ namespace Module.Shop
 
         private void OnOpenShopView(object[] args)
         {
-            _shopModel.Refresh();
+            int? gold = null;
+            if (args != null && args.Length > 0 && args[0] is int value)
+                gold = value;
+
+            _shopModel.Refresh(gold);
             GameApp.ViewManager.Open((int)ViewType.ShopView, args);
             RefreshView();
         }
@@ -50,7 +55,7 @@ namespace Module.Shop
 
         private void RefreshView()
         {
-            var view = GameApp.ViewManager.GetView(ViewType.ShopView);
+            var view = GameApp.ViewManager.GetView((int)ViewType.ShopView);
             if (view is ShopView shopView)
                 shopView.Refresh(_shopModel);
         }
