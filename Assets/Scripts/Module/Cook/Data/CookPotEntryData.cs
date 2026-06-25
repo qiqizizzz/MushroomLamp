@@ -26,7 +26,7 @@ namespace Module.Cook
         public float FinalValue { get; private set; }
         public string CookStateText { get; private set; }
         public float CookScoreDelta => FinalValue - CurrentValue;
-        public string DisplayText => $"{SubmitOrder}. {MaterialName} {CookStateText} {CookRoundResult.FormatScore(FinalValue)}";
+        public string DisplayText => $"{SubmitOrder}. {MaterialName} {CookStateText} {CookRoundResultData.FormatScore(FinalValue)}";
 
         public CookPotEntryData(int submitOrder, int sourceSlotIndex, CookMaterialData material)
         {

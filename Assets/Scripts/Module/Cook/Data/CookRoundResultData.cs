@@ -1,7 +1,7 @@
 /*
 * ┌──────────────────────────────────┐
 * │  描    述: 烹饪回合结算结果，保存本回合得分与目标命中状态
-* │  类    名: CookRoundResult.cs
+* │  类    名: CookRoundResultData.cs
 * │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
@@ -9,7 +9,7 @@
 namespace Module.Cook
 {
     // 烹饪回合结算结果，保存本回合得分拆分与目标命中状态
-    public class CookRoundResult
+    public class CookRoundResultData
     {
         public int TurnIndex { get; private set; }
         public float BaseScore { get; private set; }
@@ -29,7 +29,7 @@ namespace Module.Cook
         public bool IsOverHeat { get; private set; }
         public string ComboText { get; private set; }
 
-        public CookRoundResult(
+        public CookRoundResultData(
             int turnIndex,
             float baseScore,
             float processBonus,

@@ -22,6 +22,7 @@ namespace Module.Cook
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
         private readonly List<CookMaterialData> _handMaterials = new();
+        private readonly List<CookMaterialData> _processedMaterials = new();
         private readonly List<CookPotEntryData> _potEntries = new();
         private readonly CookSlotData[] _slots = new CookSlotData[GRID_SIZE];
         private readonly List<int> _placeHistory = new();
@@ -45,23 +46,24 @@ namespace Module.Cook
         public int Coin { get; private set; }
         public float PreviewValue { get; private set; }
         public bool IsRunActive { get; private set; }
-        public CookRoundState RoundState { get; private set; }
+        public CookRoundStateType RoundState { get; private set; }
         public string LastTip { get; private set; }
         public string PreviewBreakdownText { get; private set; }
-        public CookRoundResult LastRoundResult { get; private set; }
+        public CookRoundResultData LastRoundResult { get; private set; }
         public bool IsMagicBoxUsed { get; private set; }
-        public CookMagicBoxEffect LastMagicBoxEffect { get; private set; }
+        public CookMagicBoxEffectType LastMagicBoxEffect { get; private set; }
         public int AngelRescueCount { get; private set; }
         public float DevilRisk => _devilRisk;
         public string MagicBoxStatusText { get; private set; }
         public IReadOnlyList<CookMaterialData> HandMaterials => _handMaterials;
+        public IReadOnlyList<CookMaterialData> ProcessedMaterials => _processedMaterials;
         public IReadOnlyList<CookPotEntryData> PotEntries => _potEntries;
         public IReadOnlyList<CookSlotData> Slots => _slots;
         public bool HasPlacedMaterial => _placeHistory.Count > 0;
         public bool HasCookingMaterial => hasAnySlotMaterial();
         public bool HasPotMaterial => _potEntries.Count > 0;
         public bool CanPlaceHandThisTurn => IsRunActive && !_hasPlacedHandThisTurn;
-        public bool CanSettle => IsRunActive && (HasCookingMaterial || HasPotMaterial) && RoundState != CookRoundState.Finished;
+        public bool CanSettle => IsRunActive && (HasCookingMaterial || HasPotMaterial) && RoundState != CookRoundStateType.Finished;
         public bool IsOverHeatRisk => PreviewValue > TargetMax;
 
         public CookModel()
@@ -83,7 +85,7 @@ namespace Module.Cook
             TargetMax = TargetMin + (Difficulty == SelectDifficulty.Hard ? 3 : 4);
             AngelRescueCount = getStartAngelRescueCount(Difficulty);
             IsRunActive = true;
-            RoundState = CookRoundState.RoundStart;
+            RoundState = CookRoundStateType.RoundStart;
             LastTip = "每回合选择一个材料放入法阵，熟后拖入锅中";
             LastRoundResult = null;
             clearRunBoard();
@@ -119,19 +121,19 @@ namespace Module.Cook
                 return false;
             }
 
-            CookMaterialData material = findHandMaterial(materialId);
+            CookMaterialData material = findAvailableMaterial(materialId);
             if (material == null)
             {
-                LastTip = "材料已不在传送带中";
+                LastTip = "材料已不在可用区域中";
                 return false;
             }
 
-            _handMaterials.Remove(material);
+            removeAvailableMaterial(material);
             slot.Place(material, _nextPlaceOrder++);
             _placeHistory.Add(slotIndex);
             _hasPlacedHandThisTurn = true;
 
-            RoundState = CookRoundState.ReadyToSettle;
+            RoundState = CookRoundStateType.ReadyToSettle;
             refreshPreviewValue();
             LastTip = $"已放入 {material.MaterialName}，结束回合后获得熟度 +{slot.EnchantText}";
             return true;
@@ -166,11 +168,13 @@ namespace Module.Cook
             if (toSlot.HasMaterial)
             {
                 fromSlot.SwapWith(toSlot);
+                updatePlaceHistorySlot(fromSlotIndex, toSlotIndex);
                 LastTip = "已交换法阵材料位置";
             }
             else
             {
                 toSlot.MoveFrom(fromSlot);
+                updatePlaceHistorySlot(fromSlotIndex, toSlotIndex);
                 LastTip = "已移动法阵材料位置";
             }
 
@@ -239,7 +243,9 @@ namespace Module.Cook
             }
 
             material.MarkProcessed(2, "研磨");
-            LastTip = $"已研磨 {material.MaterialName}，火候变为 {material.CurrentValue}";
+            _handMaterials.Remove(material);
+            _processedMaterials.Add(material);
+            LastTip = $"已研磨 {material.MaterialName}，请从研磨器出口拖入法阵";
             return true;
         }
 
@@ -259,21 +265,21 @@ namespace Module.Cook
             }
 
             IsMagicBoxUsed = true;
-            LastMagicBoxEffect = (CookMagicBoxEffect)_random.Next(1, 4);
+            LastMagicBoxEffect = (CookMagicBoxEffectType)_random.Next(1, 4);
 
             switch (LastMagicBoxEffect)
             {
-                case CookMagicBoxEffect.AddScore:
+                case CookMagicBoxEffectType.AddScore:
                     _magicBoxBonus += 4f;
                     _devilRisk += 2f;
                     LastTip = "魔盒赐予火候 +4，但恶魔风险 +2";
                     break;
-                case CookMagicBoxEffect.ExpandTarget:
+                case CookMagicBoxEffectType.ExpandTarget:
                     TargetMax += 3;
                     _devilRisk += 1f;
                     LastTip = "魔盒扩大安全上限 +3，但恶魔风险 +1";
                     break;
-                case CookMagicBoxEffect.CopyMaterial:
+                case CookMagicBoxEffectType.CopyMaterial:
                     copyFirstHandMaterial();
                     _devilRisk += 2f;
                     LastTip = "魔盒复制了一份手牌材料，但恶魔风险 +2";
@@ -299,31 +305,33 @@ namespace Module.Cook
 
             CookMaterialData material = _slots[slotIndex].Clear();
             if (material != null)
-                _handMaterials.Add(material);
+                returnMaterialToAvailableArea(material);
 
             _hasPlacedHandThisTurn = false;
             refreshPreviewValue();
-            RoundState = CanSettle ? CookRoundState.ReadyToSettle : CookRoundState.Operating;
+            RoundState = CanSettle ? CookRoundStateType.ReadyToSettle : CookRoundStateType.Operating;
             LastTip = material == null ? "槽位已清空" : $"已撤回 {material.MaterialName}";
             return true;
         }
 
-        // 清空当前法阵内的所有材料
+        // 清空本回合放入法阵内的材料
         public void ClearPlacedMaterials()
         {
-            for (int i = 0; i < _slots.Length; i++)
+            for (int i = _placeHistory.Count - 1; i >= 0; i--)
             {
-                CookMaterialData material = _slots[i].Clear();
+                int slotIndex = _placeHistory[i];
+                if (!isValidSlotIndex(slotIndex)) continue;
+
+                CookMaterialData material = _slots[slotIndex].Clear();
                 if (material != null)
-                    _handMaterials.Add(material);
+                    returnMaterialToAvailableArea(material);
             }
 
             _placeHistory.Clear();
-            _nextPlaceOrder = 1;
             _hasPlacedHandThisTurn = false;
             refreshPreviewValue();
-            RoundState = CookRoundState.Operating;
-            LastTip = "已清空法阵";
+            RoundState = CookRoundStateType.Operating;
+            LastTip = "已清空本回合放入的材料";
         }
 
         // 跳过当前回合
@@ -336,7 +344,7 @@ namespace Module.Cook
         }
 
         // 结算当前回合
-        public CookRoundResult SettleTurn()
+        public CookRoundResultData SettleTurn()
         {
             if (!CanSettle)
             {
@@ -345,11 +353,11 @@ namespace Module.Cook
             }
 
             applyCookingProgress();
-            CookRoundResult result = calculateRoundResult(true);
+            CookRoundResultData result = calculateRoundResult(true);
 
             CurrentScore = result.FinalScore;
             Coin = result.CoinReward;
-            RoundState = CookRoundState.Settled;
+            RoundState = CookRoundStateType.Settled;
             LastRoundResult = result;
 
             LastTip = getSettleTip(result);
@@ -366,7 +374,7 @@ namespace Module.Cook
         // 获取当前总分文本
         public string GetScoreText()
         {
-            return $"得分 {CookRoundResult.FormatScore(CurrentScore)}";
+            return $"得分 {CookRoundResultData.FormatScore(CurrentScore)}";
         }
 
         // 获取目标区间文本
@@ -384,7 +392,7 @@ namespace Module.Cook
         // 获取锅区预估拆分文本
         public string GetPreviewText()
         {
-            return $"锅内火候\n{CookRoundResult.FormatScore(PreviewValue)}\n{PreviewBreakdownText}";
+            return $"锅内火候\n{CookRoundResultData.FormatScore(PreviewValue)}\n{PreviewBreakdownText}";
         }
 
         // 获取锅内材料顺序文本
@@ -431,20 +439,22 @@ namespace Module.Cook
         {
             _handMaterials.Clear();
             _placeHistory.Clear();
+            _processedMaterials.Clear();
             _hasPlacedHandThisTurn = false;
             _magicBoxBonus = 0;
             _devilRisk = 0;
             IsMagicBoxUsed = false;
-            LastMagicBoxEffect = CookMagicBoxEffect.None;
+            LastMagicBoxEffect = CookMagicBoxEffectType.None;
             refreshMagicBoxStatusText();
             dealHandMaterials();
             refreshPreviewValue();
-            RoundState = CookRoundState.Operating;
+            RoundState = CookRoundStateType.Operating;
         }
 
         private void clearRunBoard()
         {
             _potEntries.Clear();
+            _processedMaterials.Clear();
             _placeHistory.Clear();
             _nextPlaceOrder = 1;
             _nextSubmitOrder = 1;
@@ -502,14 +512,63 @@ namespace Module.Cook
             return null;
         }
 
+        // 查找研磨器出口中的材料
+        private CookMaterialData findProcessedMaterial(int materialId)
+        {
+            for (int i = 0; i < _processedMaterials.Count; i++)
+            {
+                if (_processedMaterials[i].RuntimeId == materialId)
+                    return _processedMaterials[i];
+            }
+
+            return null;
+        }
+
+        // 查找当前可拖拽使用的材料
+        private CookMaterialData findAvailableMaterial(int materialId)
+        {
+            return findHandMaterial(materialId) ?? findProcessedMaterial(materialId);
+        }
+
+        // 从可用材料区域移除指定材料
+        private void removeAvailableMaterial(CookMaterialData material)
+        {
+            if (material == null) return;
+
+            if (_handMaterials.Remove(material)) return;
+
+            _processedMaterials.Remove(material);
+        }
+
+        // 将撤回材料返回对应可用区域
+        private void returnMaterialToAvailableArea(CookMaterialData material)
+        {
+            if (material == null) return;
+
+            if (material.IsProcessed)
+                _processedMaterials.Add(material);
+            else
+                _handMaterials.Add(material);
+        }
+
+        // 同步本回合放置记录中的槽位位置
+        private void updatePlaceHistorySlot(int fromSlotIndex, int toSlotIndex)
+        {
+            for (int i = 0; i < _placeHistory.Count; i++)
+            {
+                if (_placeHistory[i] == fromSlotIndex)
+                    _placeHistory[i] = toSlotIndex;
+            }
+        }
+
         private void refreshPreviewValue()
         {
-            CookRoundResult result = calculateRoundResult(false);
+            CookRoundResultData result = calculateRoundResult(false);
             PreviewValue = result.RoundScore;
             PreviewBreakdownText = result.GetBreakdownText();
         }
 
-        private CookRoundResult calculateRoundResult(bool includePenalty)
+        private CookRoundResultData calculateRoundResult(bool includePenalty)
         {
             float baseScore = 0f;
             float processBonus = 0f;
@@ -541,7 +600,7 @@ namespace Module.Cook
             int coinReward = isTargetMatched ? 3 : 1;
             string comboText = buildComboText(adjacentComboCount, orderComboCount);
 
-            return new CookRoundResult(
+            return new CookRoundResultData(
                 TurnIndex,
                 baseScore,
                 processBonus,
@@ -643,7 +702,7 @@ namespace Module.Cook
             if (TurnIndex >= MaxTurn)
             {
                 IsRunActive = false;
-                RoundState = CookRoundState.Finished;
+                RoundState = CookRoundStateType.Finished;
                 LastTip = $"{LastTip}，整局结束";
                 return false;
             }
@@ -754,17 +813,17 @@ namespace Module.Cook
             return "素材";
         }
 
-        private static string getSettleTip(CookRoundResult result)
+        private static string getSettleTip(CookRoundResultData result)
         {
             string angelText = result.IsAngelRescued ? "，天使救援已减半惩罚" : string.Empty;
 
             if (result.IsOverHeat)
-                return $"火候 {CookRoundResult.FormatScore(result.RoundScore)} 超出目标{angelText}，{result.GetBreakdownText()}，获得金币 {result.CoinReward}";
+                return $"火候 {CookRoundResultData.FormatScore(result.RoundScore)} 超出目标{angelText}，{result.GetBreakdownText()}，获得金币 {result.CoinReward}";
 
             if (result.IsTargetMatched)
-                return $"命中目标火候 {CookRoundResult.FormatScore(result.RoundScore)}，{result.GetBreakdownText()}，获得金币 {result.CoinReward}";
+                return $"命中目标火候 {CookRoundResultData.FormatScore(result.RoundScore)}，{result.GetBreakdownText()}，获得金币 {result.CoinReward}";
 
-            return $"火候 {CookRoundResult.FormatScore(result.RoundScore)} 未命中目标，{result.GetBreakdownText()}，获得金币 {result.CoinReward}";
+            return $"火候 {CookRoundResultData.FormatScore(result.RoundScore)} 未命中目标，{result.GetBreakdownText()}，获得金币 {result.CoinReward}";
         }
 
         private void addFallbackSeeds()
@@ -798,7 +857,7 @@ namespace Module.Cook
         {
             string boxState = IsMagicBoxUsed ? "魔盒已触碰" : "魔盒未触碰";
             string angelState = AngelRescueCount > 0 ? $"天使救援 {AngelRescueCount}" : "天使救援 0";
-            string devilState = _devilRisk > 0 ? $"恶魔风险 +{CookRoundResult.FormatScore(_devilRisk)}" : "恶魔风险 0";
+            string devilState = _devilRisk > 0 ? $"恶魔风险 +{CookRoundResultData.FormatScore(_devilRisk)}" : "恶魔风险 0";
             MagicBoxStatusText = $"{boxState}\n{angelState}\n{devilState}";
         }
     }

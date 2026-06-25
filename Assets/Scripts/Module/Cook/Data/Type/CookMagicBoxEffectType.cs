@@ -1,14 +1,14 @@
 /*
 * ┌──────────────────────────────────┐
 * │  描    述: 烹饪魔盒效果枚举，定义局内风险收益类型
-* │  类    名: CookMagicBoxEffect.cs
+* │  类    名: CookMagicBoxEffectType.cs
 * │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
 namespace Module.Cook
 {
-    public enum CookMagicBoxEffect
+    public enum CookMagicBoxEffectType
     {
         None = 0,
         AddScore = 1,

@@ -169,7 +169,7 @@ namespace Module.Cook
         private void settleTurn(object[] args)
         {
             CookModel cookModel = GetCookModel();
-            CookRoundResult result = cookModel.SettleTurn();
+            CookRoundResultData result = cookModel.SettleTurn();
             refreshCookView();
 
             if (result != null && !cookModel.IsRunActive)

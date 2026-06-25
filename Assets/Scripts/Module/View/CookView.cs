@@ -31,6 +31,7 @@ namespace Module.View
         private Transform _handContent;
         private Transform _dragRoot;
         private Transform _processArea;
+        private Transform _processedContent;
         private Transform _potArea;
 
         private TextMeshProUGUI _txtMagicBox;
@@ -59,7 +60,7 @@ namespace Module.View
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
             _dragRoot = Find<Transform>("DragRoot");
             _processArea = Find<Transform>("Right/Grinder");
-            _potArea = Find<Transform>("Left");
+            _potArea = Find<Transform>("Center/Pot");
             _txtMagicBox = Find<TextMeshProUGUI>("Right/MagicBox/Txt_Info");
 
             _btnUndo = Find<Button>("Bottom/ActionBar/Btn_Undo");
@@ -70,6 +71,7 @@ namespace Module.View
 
             bindButtons();
             setupButtonText(_btnSettle, "结束本回合");
+            hidePreviewText();
             initSlots();
             initProcessArea();
             initPotArea();
@@ -101,6 +103,7 @@ namespace Module.View
             refreshTarget(cookModel);
             refreshSlots(cookModel);
             refreshHand(cookModel);
+            refreshProcessedMaterials(cookModel);
             refreshActions(cookModel);
         }
 
@@ -188,6 +191,41 @@ namespace Module.View
                 processAreaItem = _processArea.gameObject.AddComponent<CookProcessAreaItem>();
 
             processAreaItem.Init(this);
+            initProcessedContent();
+        }
+
+        // 初始化研磨器出口材料容器
+        private void initProcessedContent()
+        {
+            if (_processArea == null) return;
+
+            Transform contentTf = _processArea.Find("ProcessedContent");
+            if (contentTf == null)
+            {
+                GameObject contentObj = new GameObject("ProcessedContent", typeof(RectTransform));
+                contentObj.transform.SetParent(_processArea, false);
+                contentTf = contentObj.transform;
+            }
+
+            _processedContent = contentTf;
+            if (_processedContent is RectTransform rectTransform)
+            {
+                rectTransform.anchorMin = new Vector2(0.08f, 0.04f);
+                rectTransform.anchorMax = new Vector2(0.92f, 0.38f);
+                rectTransform.offsetMin = Vector2.zero;
+                rectTransform.offsetMax = Vector2.zero;
+            }
+
+            HorizontalLayoutGroup layoutGroup = _processedContent.GetComponent<HorizontalLayoutGroup>();
+            if (layoutGroup == null)
+                layoutGroup = _processedContent.gameObject.AddComponent<HorizontalLayoutGroup>();
+
+            layoutGroup.childAlignment = TextAnchor.MiddleCenter;
+            layoutGroup.childControlWidth = false;
+            layoutGroup.childControlHeight = false;
+            layoutGroup.childForceExpandWidth = false;
+            layoutGroup.childForceExpandHeight = false;
+            layoutGroup.spacing = 8f;
         }
 
         // 初始化锅区域拖拽接收组件
@@ -224,13 +262,20 @@ namespace Module.View
 
             if (potBodyTf is RectTransform rectTransform)
             {
-                rectTransform.anchorMin = new Vector2(0.18f, 0.1f);
-                rectTransform.anchorMax = new Vector2(0.82f, 0.45f);
+                rectTransform.anchorMin = new Vector2(0.16f, 0.18f);
+                rectTransform.anchorMax = new Vector2(0.84f, 0.78f);
                 rectTransform.offsetMin = Vector2.zero;
                 rectTransform.offsetMax = Vector2.zero;
             }
 
             _imgPotBody.transform.SetAsFirstSibling();
+        }
+
+        // 隐藏中间锅区域原本的分数预览文字
+        private void hidePreviewText()
+        {
+            if (_txtPreview != null)
+                _txtPreview.gameObject.SetActive(false);
         }
 
         private void refreshTop(CookModel cookModel)
@@ -253,7 +298,7 @@ namespace Module.View
             if (_txtOrder != null)
                 _txtOrder.text = cookModel.GetPotText();
 
-            if (_txtPreview != null)
+            if (_txtPreview != null && _txtPreview.gameObject.activeSelf)
                 _txtPreview.text = cookModel.GetPreviewText();
 
             if (_txtTip != null)
@@ -301,13 +346,33 @@ namespace Module.View
                 LayoutRebuilder.ForceRebuildLayoutImmediate(contentRt);
         }
 
+        // 刷新研磨器出口等待取走的材料
+        private void refreshProcessedMaterials(CookModel cookModel)
+        {
+            clearProcessedMaterials();
+            if (_processedContent == null) return;
+
+            for (int i = 0; i < cookModel.ProcessedMaterials.Count; i++)
+            {
+                CookMaterialData materialData = cookModel.ProcessedMaterials[i];
+                GameObject itemObj = new GameObject($"ProcessedMaterial_{materialData.RuntimeId}", typeof(RectTransform));
+                itemObj.transform.SetParent(_processedContent, false);
+
+                CookMaterialItem item = itemObj.AddComponent<CookMaterialItem>();
+                item.Bind(materialData, this);
+            }
+
+            if (_processedContent is RectTransform contentRt)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(contentRt);
+        }
+
         private void refreshActions(CookModel cookModel)
         {
             if (_btnUndo != null)
                 _btnUndo.interactable = cookModel.HasPlacedMaterial;
 
             if (_btnClear != null)
-                _btnClear.interactable = cookModel.HasCookingMaterial;
+                _btnClear.interactable = cookModel.HasPlacedMaterial;
 
             if (_btnSkip != null)
                 _btnSkip.interactable = cookModel.IsRunActive;
@@ -325,6 +390,15 @@ namespace Module.View
 
             for (int i = _handContent.childCount - 1; i >= 0; i--)
                 Destroy(_handContent.GetChild(i).gameObject);
+        }
+
+        // 清空研磨器出口材料 UI
+        private void clearProcessedMaterials()
+        {
+            if (_processedContent == null) return;
+
+            for (int i = _processedContent.childCount - 1; i >= 0; i--)
+                Destroy(_processedContent.GetChild(i).gameObject);
         }
 
         private void clearDragItems()
@@ -349,6 +423,12 @@ namespace Module.View
             for (int i = 0; i < _cookModel.HandMaterials.Count; i++)
             {
                 if (_cookModel.HandMaterials[i].RuntimeId == materialId)
+                    return true;
+            }
+
+            for (int i = 0; i < _cookModel.ProcessedMaterials.Count; i++)
+            {
+                if (_cookModel.ProcessedMaterials[i].RuntimeId == materialId)
                     return true;
             }
 

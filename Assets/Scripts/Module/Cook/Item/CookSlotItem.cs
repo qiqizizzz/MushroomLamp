@@ -28,15 +28,13 @@ namespace Module.View
         private int _slotIndex;
         private bool _hasMaterial;
         private Color _currentEmptyColor;
-        private Transform _originalParent;
-        private Vector2 _originalAnchoredPosition;
-        private int _originalSiblingIndex;
         private bool _dropAccepted;
 
         private Image _imgBackground;
         private Image _imgIcon;
         private RectTransform _rectTransform;
-        private CanvasGroup _canvasGroup;
+        private GameObject _dragIconObject;
+        private RectTransform _dragIconRect;
         private TextMeshProUGUI _txtOrder;
         private TextMeshProUGUI _txtEnchant;
         private TextMeshProUGUI _txtName;
@@ -77,16 +75,25 @@ namespace Module.View
             }
 
             if (_txtOrder != null)
+            {
+                _txtOrder.enabled = true;
                 _txtOrder.text = _hasMaterial ? slotData.Order.ToString() : string.Empty;
+            }
 
             if (_txtEnchant != null)
                 _txtEnchant.text = slotData == null ? string.Empty : $"+{slotData.EnchantText}";
 
             if (_txtName != null)
+            {
+                _txtName.enabled = true;
                 _txtName.text = material?.MaterialName ?? "空槽";
+            }
 
             if (_txtValue != null)
+            {
+                _txtValue.enabled = true;
                 _txtValue.text = material == null ? string.Empty : $"{material.ValueText}\n{material.CookProgressText}";
+            }
         }
 
         public void OnDrop(PointerEventData eventData)
@@ -122,39 +129,29 @@ namespace Module.View
         public void OnBeginDrag(PointerEventData eventData)
         {
             if (!_hasMaterial || _view == null) return;
+            if (_imgIcon == null || _imgIcon.sprite == null) return;
 
-            _originalParent = transform.parent;
-            _originalSiblingIndex = transform.GetSiblingIndex();
-            _originalAnchoredPosition = _rectTransform.anchoredPosition;
             _dropAccepted = false;
-
-            Transform dragRoot = _view.GetDragRoot();
-            if (dragRoot != null)
-                transform.SetParent(dragRoot, false);
-
-            transform.SetAsLastSibling();
-            moveToPointer(eventData);
-
-            if (_canvasGroup != null)
-            {
-                _canvasGroup.alpha = 0.82f;
-                _canvasGroup.blocksRaycasts = false;
-            }
+            createDragIcon(_imgIcon.sprite);
+            setMaterialVisualVisible(false);
+            moveDragIconToPointer(eventData);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
             if (!_hasMaterial) return;
 
-            moveToPointer(eventData);
+            moveDragIconToPointer(eventData);
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (_dropAccepted)
-                _dropAccepted = false;
+            destroyDragIcon();
 
-            restoreToOriginalParent();
+            if (!_dropAccepted)
+                setMaterialVisualVisible(true);
+
+            _dropAccepted = false;
         }
 
         // 标记槽位拖拽已被目标接收
@@ -168,10 +165,6 @@ namespace Module.View
             _rectTransform = GetComponent<RectTransform>();
             if (_rectTransform == null)
                 _rectTransform = gameObject.AddComponent<RectTransform>();
-
-            _canvasGroup = GetComponent<CanvasGroup>();
-            if (_canvasGroup == null)
-                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
             _imgBackground = getOrCreateImage("Img_Background", transform, _emptyColor);
             _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white);
@@ -188,26 +181,66 @@ namespace Module.View
             setupChildRect(_txtValue.rectTransform, new Vector2(0.72f, 0.72f), new Vector2(0.98f, 0.98f));
         }
 
-        private void restoreToOriginalParent()
+        // 创建仅包含食物图片的拖拽图标
+        private void createDragIcon(Sprite sprite)
         {
-            if (_originalParent != null)
-            {
-                transform.SetParent(_originalParent, false);
-                transform.SetSiblingIndex(_originalSiblingIndex);
-                _rectTransform.anchoredPosition = _originalAnchoredPosition;
-            }
+            destroyDragIcon();
 
-            if (_canvasGroup != null)
+            Transform dragRoot = _view.GetDragRoot();
+            if (dragRoot == null) return;
+
+            _dragIconObject = new GameObject("Dragging_SlotFoodIcon", typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
+            _dragIconObject.transform.SetParent(dragRoot, false);
+            _dragIconObject.transform.SetAsLastSibling();
+
+            _dragIconRect = _dragIconObject.GetComponent<RectTransform>();
+            _dragIconRect.sizeDelta = _imgIcon.rectTransform.rect.size;
+            if (_dragIconRect.sizeDelta.sqrMagnitude <= 0f)
+                _dragIconRect.sizeDelta = new Vector2(80f, 80f);
+
+            _dragIconRect.localScale = Vector3.one;
+
+            Image dragImage = _dragIconObject.GetComponent<Image>();
+            dragImage.sprite = sprite;
+            dragImage.preserveAspect = true;
+            dragImage.raycastTarget = false;
+
+            CanvasGroup canvasGroup = _dragIconObject.GetComponent<CanvasGroup>();
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.alpha = 0.9f;
+        }
+
+        // 销毁拖拽中的临时食物图标
+        private void destroyDragIcon()
+        {
+            if (_dragIconObject != null)
             {
-                _canvasGroup.alpha = 1f;
-                _canvasGroup.blocksRaycasts = true;
+                Destroy(_dragIconObject);
+                _dragIconObject = null;
+                _dragIconRect = null;
             }
         }
 
-        private void moveToPointer(PointerEventData eventData)
+        // 设置槽位内食物相关显示是否可见
+        private void setMaterialVisualVisible(bool isVisible)
+        {
+            if (_imgIcon != null)
+                _imgIcon.enabled = isVisible && _imgIcon.sprite != null;
+
+            if (_txtOrder != null)
+                _txtOrder.enabled = isVisible;
+
+            if (_txtName != null)
+                _txtName.enabled = isVisible;
+
+            if (_txtValue != null)
+                _txtValue.enabled = isVisible;
+        }
+
+        private void moveDragIconToPointer(PointerEventData eventData)
         {
             RectTransform dragRoot = _view == null ? null : _view.GetDragRoot() as RectTransform;
-            if (dragRoot == null || _rectTransform == null || eventData == null) return;
+            if (dragRoot == null || _dragIconRect == null || eventData == null) return;
 
             Camera eventCamera = resolveEventCamera(eventData);
             if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
@@ -216,7 +249,7 @@ namespace Module.View
                     eventCamera,
                     out Vector3 worldPoint))
             {
-                _rectTransform.position = worldPoint;
+                _dragIconRect.position = worldPoint;
             }
         }
 

@@ -25,7 +25,7 @@ namespace Module.Cook
         public float RequiredCookValue { get; private set; }
 
         public string ValueText => IsProcessed ? $"{CurrentValue}*" : CurrentValue.ToString();
-        public string CookProgressText => $"{CookRoundResult.FormatScore(CookProgress)}/{CookRoundResult.FormatScore(RequiredCookValue)}";
+        public string CookProgressText => $"{CookRoundResultData.FormatScore(CookProgress)}/{CookRoundResultData.FormatScore(RequiredCookValue)}";
 
         public CookMaterialData(
             int runtimeId,
