@@ -13,6 +13,7 @@ namespace MVC
         LoadingView = 0,
         MainMenuView = 1,
         SelectBoxView = 2,
-        CookView = 3
+        CookView = 3,
+        ShopView = 4
     }
 }

@@ -23,5 +23,6 @@ namespace Common.Defines
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";
         public const string Config_CardParamCatalog = "CardParamCatalog";
         public const string Config_ItemParamCatalog = "ItemParamCatalog";
+        public const string Config_ShopCatalog = "ShopCatalog";
     }
 }
