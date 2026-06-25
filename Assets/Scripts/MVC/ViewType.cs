@@ -15,6 +15,7 @@ namespace MVC
         SelectBoxView = 2,
         CookView = 3,
         ShopView = 4,
-        AlmanacView = 5
+        AlmanacView = 5,
+        ConfirmView = 6
     }
 }

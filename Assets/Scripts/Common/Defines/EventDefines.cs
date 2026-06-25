@@ -45,5 +45,10 @@ namespace Common.Defines
 
         // 场景事件
         public const string LoadingScene = "LoadingScene";
+
+        // 二次确认弹窗
+        public const string OpenConfirmView = "OpenConfirmView";
+        public const string ConfirmViewConfirm = "ConfirmViewConfirm";
+        public const string ConfirmViewCancel = "ConfirmViewCancel";
     }
 }

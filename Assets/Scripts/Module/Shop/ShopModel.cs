@@ -14,6 +14,7 @@ namespace Module.Shop
         public string description;
         public int price;
         public bool isCard;
+        public bool isPurchased;
     }
 
     public class ShopModel : BaseModel
