@@ -6,6 +6,7 @@
 * └──────────────────────────────────┘
 */
 
+using Module.Card;
 using MVC.Model;
 using Module.Select;
 using System;
@@ -132,6 +133,7 @@ namespace Module.Cook
             slot.Place(material, _nextPlaceOrder++);
             _placeHistory.Add(slotIndex);
             _hasPlacedHandThisTurn = true;
+            material.Ability.OnPlaced(this, slotIndex);
 
             RoundState = CookRoundStateType.ReadyToSettle;
             refreshPreviewValue();
@@ -251,6 +253,7 @@ namespace Module.Cook
             CookPotEntryData potEntry = new CookPotEntryData(_nextSubmitOrder++, slotIndex, material);
             _potEntries.Add(potEntry);
             removePlaceHistory(slotIndex);
+            material.Ability.OnSubmitToPot(this);
 
             refreshPreviewValue();
             LastTip = $"已将 {potEntry.MaterialName} 放入锅中，状态：{potEntry.CookStateText}";
@@ -285,9 +288,11 @@ namespace Module.Cook
                 return false;
             }
 
-            material.MarkProcessed(2, "研磨");
+            int processBonus = material.Ability.GetProcessBonus();
+            material.MarkProcessed(processBonus, "研磨");
             _handMaterials.Remove(material);
             _processedMaterials.Add(material);
+            material.Ability.OnProcessed(this);
             LastTip = $"已研磨 {material.MaterialName}，请从研磨器出口拖入法阵";
             return true;
         }
@@ -537,11 +542,14 @@ namespace Module.Cook
         private CookMaterialData createMaterial(CookMaterialSeedData seed)
         {
             string materialName = seed.MaterialName;
-            int value = getBaseValue(materialName);
-            string tag = getDefaultTag(materialName);
+            CardAbility ability = CardAbilityRegistry.Get(materialName);
+            int value = ability.GetBaseValue(materialName);
+            string tag = ability.GetTag(materialName);
             bool canProcess = value >= 5;
-            float requiredCookValue = getRequiredCookValue(materialName);
-            return new CookMaterialData(_nextMaterialId++, materialName, value, tag, canProcess, requiredCookValue, seed.Icon);
+            float requiredCookValue = ability.GetRequiredCookValue(materialName);
+            CookMaterialData mat = new CookMaterialData(_nextMaterialId++, materialName, value, tag, canProcess, requiredCookValue, seed.Icon, ability);
+            ability.OnDrawn(this);
+            return mat;
         }
 
         private CookMaterialData findHandMaterial(int materialId)
@@ -816,45 +824,11 @@ namespace Module.Cook
             return difficulty == SelectDifficulty.Hard ? 1 : 2;
         }
 
-        private static int getBaseValue(string materialName)
-        {
-            if (materialName.Contains("胡萝卜")) return 4;
-            if (materialName.Contains("土豆")) return 5;
-            if (materialName.Contains("蘑菇")) return 6;
-            if (materialName.Contains("南瓜")) return 8;
-            if (materialName.Contains("矿")) return 7;
-            if (materialName.Contains("香")) return 3;
-            return 5;
-        }
+        // ── 供 CardAbility / ItemEffect 调用的状态修改接口 ──
 
-        // 根据材料名称获取需要的熟度
-        private static float getRequiredCookValue(string materialName)
-        {
-            if (materialName.Contains("胡萝卜")) return 3f;
-            if (materialName.Contains("土豆")) return 4f;
-            if (materialName.Contains("蘑菇")) return 3f;
-            if (materialName.Contains("南瓜")) return 5f;
-            if (materialName.Contains("矿")) return 5f;
-            if (materialName.Contains("香")) return 2f;
-            return 3f;
-        }
-
-        private static string getDefaultTag(string materialName)
-        {
-            if (materialName.Contains("胡萝卜") || materialName.Contains("土豆") || materialName.Contains("南瓜"))
-                return "根茎";
-
-            if (materialName.Contains("蘑菇"))
-                return "菌菇";
-
-            if (materialName.Contains("矿"))
-                return "矿物";
-
-            if (materialName.Contains("香"))
-                return "香料";
-
-            return "素材";
-        }
+        public void AddBonus(float value) { _magicBoxBonus += value; }
+        public void AddDevil(float value) { _devilRisk = Mathf.Max(0f, _devilRisk + value); }
+        public void ExpandTarget(int value) { TargetMax += value; }
 
         private static string getSettleTip(CookRoundResultData result)
         {
@@ -893,7 +867,8 @@ namespace Module.Cook
                 source.TagText,
                 source.CanProcess,
                 source.RequiredCookValue,
-                source.Icon));
+                source.Icon,
+                source.Ability));
         }
 
         private void refreshMagicBoxStatusText()

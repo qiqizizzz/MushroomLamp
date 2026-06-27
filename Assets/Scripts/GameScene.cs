@@ -8,9 +8,11 @@
 
 using System;
 using Common.Defines;
+using Module.Card;
 using Module.Cook;
 using Module.Debug;
 using Module.GameUI;
+using Module.Item;
 using Module.Loading;
 using Module.Almanac;
 using Module.Confirm;
@@ -74,6 +76,9 @@ public class GameScene : MonoBehaviour
     // 注册框架自带控制器
     private void registerModule()
     {
+        CardAbilityRegistry.RegisterAll();
+        ItemEffectRegistry.RegisterAll();
+
         GameApp.ControllerManager.Register(ControllerType.GameUI, new GameUIController());
         GameApp.ControllerManager.Register(ControllerType.Loading, new LoadingController());
         GameApp.ControllerManager.Register(ControllerType.SelectBox, new SelectBoxController());

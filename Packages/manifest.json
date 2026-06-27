@@ -1,8 +1,9 @@
 {
   "dependencies": {
     "com.boxqkrtm.ide.cursor": "https://github.com/boxqkrtm/com.unity.ide.cursor.git",
-    "com.ivanmurzak.unity.mcp": "0.82.1",
+    "com.ivanmurzak.unity.mcp": "0.82.2",
     "com.ivanmurzak.unity.mcp.animation": "1.2.21",
+    "com.unity.addressables": "1.22.3",
     "com.unity.collab-proxy": "2.12.4",
     "com.unity.feature.2d": "2.0.1",
     "com.unity.ide.rider": "3.0.36",

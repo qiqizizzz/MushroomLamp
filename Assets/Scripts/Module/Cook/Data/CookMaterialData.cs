@@ -6,6 +6,7 @@
 * └──────────────────────────────────┘
 */
 
+using Module.Card;
 using UnityEngine;
 
 namespace Module.Cook
@@ -23,6 +24,7 @@ namespace Module.Cook
         public Sprite Icon { get; private set; }
         public float CookProgress { get; private set; }
         public float RequiredCookValue { get; private set; }
+        public CardAbility Ability { get; private set; }
 
         public string ValueText => IsProcessed ? $"{CurrentValue}*" : CurrentValue.ToString();
         public string CookProgressText => $"{CookRoundResultData.FormatScore(CookProgress)}/{CookRoundResultData.FormatScore(RequiredCookValue)}";
@@ -34,7 +36,8 @@ namespace Module.Cook
             string tagText,
             bool canProcess,
             float requiredCookValue,
-            Sprite icon)
+            Sprite icon,
+            CardAbility ability = null)
         {
             RuntimeId = runtimeId;
             MaterialName = materialName;
@@ -44,6 +47,7 @@ namespace Module.Cook
             CanProcess = canProcess;
             RequiredCookValue = requiredCookValue;
             Icon = icon;
+            Ability = ability ?? CardAbility.Default;
         }
 
         // 标记材料进入加工状态

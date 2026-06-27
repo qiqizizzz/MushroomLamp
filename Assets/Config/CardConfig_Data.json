@@ -1,0 +1,305 @@
+{
+  "cards": [
+    {
+      "id": "herb_carrot",
+      "name": "胡萝卜",
+      "abilityType": "carrot",
+      "baseValue": 4,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "bonusPerRootInPot": 1
+    },
+    {
+      "id": "herb_potato",
+      "name": "土豆",
+      "abilityType": "potato",
+      "baseValue": 5,
+      "requiredCookValue": 4.0,
+      "tag": "根茎",
+      "processBonus": 3
+    },
+    {
+      "id": "herb_mushroom",
+      "name": "蘑菇",
+      "abilityType": "mushroom",
+      "baseValue": 6,
+      "requiredCookValue": 3.0,
+      "tag": "菌菇",
+      "processBonus": 2,
+      "centerSlotIndex": 4,
+      "centerSlotBonus": 3
+    },
+    {
+      "id": "herb_pumpkin",
+      "name": "南瓜",
+      "abilityType": "pumpkin",
+      "baseValue": 8,
+      "requiredCookValue": 5.0,
+      "tag": "根茎",
+      "processBonus": 2,
+      "submitBonus": 2
+    },
+
+    {
+      "id": "min_quartz",
+      "name": "石英",
+      "abilityType": "mineral",
+      "baseValue": 5,
+      "requiredCookValue": 4.0,
+      "tag": "矿物",
+      "processBonus": 2,
+      "targetExpand": 2
+    },
+    {
+      "id": "min_sulfur",
+      "name": "硫磺",
+      "abilityType": "mineral",
+      "baseValue": 6,
+      "requiredCookValue": 5.0,
+      "tag": "矿物",
+      "processBonus": 2,
+      "targetExpand": 1
+    },
+    {
+      "id": "min_saltpeter",
+      "name": "硝石",
+      "abilityType": "mineral",
+      "baseValue": 8,
+      "requiredCookValue": 6.0,
+      "tag": "矿物",
+      "processBonus": 2,
+      "targetExpand": 3
+    },
+    {
+      "id": "min_saltcrys",
+      "name": "盐晶",
+      "abilityType": "mineral",
+      "baseValue": 4,
+      "requiredCookValue": 3.0,
+      "tag": "矿物",
+      "targetExpand": 1
+    },
+
+    {
+      "id": "spice_clove",
+      "name": "丁香",
+      "abilityType": "spice",
+      "baseValue": 3,
+      "requiredCookValue": 2.0,
+      "tag": "香料",
+      "crossTagBonus": 1
+    },
+    {
+      "id": "spice_cinnamon",
+      "name": "肉桂",
+      "abilityType": "spice",
+      "baseValue": 3,
+      "requiredCookValue": 2.0,
+      "tag": "香料",
+      "crossTagBonus": 1
+    },
+    {
+      "id": "spice_turmeric",
+      "name": "姜黄",
+      "abilityType": "spice",
+      "baseValue": 4,
+      "requiredCookValue": 2.5,
+      "tag": "香料",
+      "crossTagBonus": 2
+    },
+    {
+      "id": "spice_pepper",
+      "name": "胡椒",
+      "abilityType": "spice",
+      "baseValue": 3,
+      "requiredCookValue": 2.0,
+      "tag": "香料",
+      "crossTagBonus": 1
+    },
+    {
+      "id": "spice_staranise",
+      "name": "八角",
+      "abilityType": "spice",
+      "baseValue": 5,
+      "requiredCookValue": 3.0,
+      "tag": "香料",
+      "processBonus": 2,
+      "crossTagBonus": 2
+    },
+
+    {
+      "id": "card_05",
+      "name": "红萝卜",
+      "abilityType": "carrot",
+      "baseValue": 5,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "bonusPerRootInPot": 1
+    },
+    {
+      "id": "card_06",
+      "name": "紫薯",
+      "abilityType": "potato",
+      "baseValue": 6,
+      "requiredCookValue": 4.0,
+      "tag": "根茎",
+      "processBonus": 3
+    },
+    {
+      "id": "card_07",
+      "name": "香菇",
+      "abilityType": "mushroom",
+      "baseValue": 7,
+      "requiredCookValue": 3.0,
+      "tag": "菌菇",
+      "processBonus": 2,
+      "centerSlotIndex": 4,
+      "centerSlotBonus": 3
+    },
+    {
+      "id": "card_08",
+      "name": "金瓜",
+      "abilityType": "pumpkin",
+      "baseValue": 9,
+      "requiredCookValue": 5.0,
+      "tag": "根茎",
+      "processBonus": 2,
+      "submitBonus": 3
+    },
+    {
+      "id": "card_09",
+      "name": "甜萝卜",
+      "abilityType": "carrot",
+      "baseValue": 5,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "bonusPerRootInPot": 2
+    },
+    {
+      "id": "card_10",
+      "name": "洋芋",
+      "abilityType": "potato",
+      "baseValue": 4,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "processBonus": 2
+    },
+    {
+      "id": "card_11",
+      "name": "草菇",
+      "abilityType": "mushroom",
+      "baseValue": 6,
+      "requiredCookValue": 3.0,
+      "tag": "菌菇",
+      "processBonus": 2,
+      "centerSlotIndex": 4,
+      "centerSlotBonus": 2
+    },
+    {
+      "id": "card_12",
+      "name": "贝贝瓜",
+      "abilityType": "pumpkin",
+      "baseValue": 8,
+      "requiredCookValue": 5.0,
+      "tag": "根茎",
+      "processBonus": 2,
+      "submitBonus": 2
+    },
+    {
+      "id": "card_13",
+      "name": "白萝卜",
+      "abilityType": "carrot",
+      "baseValue": 4,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "bonusPerRootInPot": 1
+    },
+    {
+      "id": "card_14",
+      "name": "薯仔",
+      "abilityType": "potato",
+      "baseValue": 4,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "processBonus": 2
+    },
+    {
+      "id": "card_15",
+      "name": "松茸",
+      "abilityType": "mushroom",
+      "baseValue": 9,
+      "requiredCookValue": 4.0,
+      "tag": "菌菇",
+      "processBonus": 3,
+      "centerSlotIndex": 4,
+      "centerSlotBonus": 4
+    },
+    {
+      "id": "card_16",
+      "name": "栗南瓜",
+      "abilityType": "pumpkin",
+      "baseValue": 9,
+      "requiredCookValue": 5.0,
+      "tag": "根茎",
+      "processBonus": 2,
+      "submitBonus": 3
+    },
+    {
+      "id": "card_17",
+      "name": "水萝卜",
+      "abilityType": "carrot",
+      "baseValue": 5,
+      "requiredCookValue": 3.0,
+      "tag": "根茎",
+      "bonusPerRootInPot": 1
+    },
+    {
+      "id": "card_18",
+      "name": "土豆王",
+      "abilityType": "potato",
+      "baseValue": 7,
+      "requiredCookValue": 4.0,
+      "tag": "根茎",
+      "processBonus": 4
+    },
+    {
+      "id": "card_19",
+      "name": "灵芝",
+      "abilityType": "mushroom",
+      "baseValue": 10,
+      "requiredCookValue": 4.0,
+      "tag": "菌菇",
+      "processBonus": 3,
+      "centerSlotIndex": 4,
+      "centerSlotBonus": 5
+    },
+    {
+      "id": "card_20",
+      "name": "巨南瓜",
+      "abilityType": "pumpkin",
+      "baseValue": 10,
+      "requiredCookValue": 6.0,
+      "tag": "根茎",
+      "processBonus": 2,
+      "submitBonus": 4
+    },
+    {
+      "id": "card_21",
+      "name": "胡萝卜苗",
+      "abilityType": "carrot",
+      "baseValue": 3,
+      "requiredCookValue": 2.0,
+      "tag": "根茎",
+      "bonusPerRootInPot": 1
+    },
+    {
+      "id": "card_22",
+      "name": "黄金薯",
+      "abilityType": "potato",
+      "baseValue": 8,
+      "requiredCookValue": 5.0,
+      "tag": "根茎",
+      "processBonus": 4
+    }
+  ]
+}

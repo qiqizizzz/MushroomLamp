@@ -1,0 +1,160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 5adb6627149c7334b94573b6f1cbd12e
+  m_SerializeEntries:
+  - m_GUID: 05a61ce12e911e241b822ae00265067f
+    m_Address: "Art/SelectBoxView/\u53F3\u6ED1\u52A8"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 138820ec0949b43448312a5660813cf2
+    m_Address: Art/BG_img/bg_magic_kitchen
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 13ae92f6bfb3cf64badc224259e1aa83
+    m_Address: Boxes/SelectBox_spice
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14fa79fb5c13b154eb3726dcf88ec3c9
+    m_Address: "Art/SelectBoxView/\u53F3\u96BE\u5EA6\u9009\u62E9"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16660605f03d03e4c97b71bc716eb2e6
+    m_Address: "Art/SelectBoxView/\u5DE6\u6750\u6599\u8BF4\u660E"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21b9f57677478a84ca73df06766c0bf4
+    m_Address: Boxes/SelectBox_mineral
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2360515d5a5a85842b7dd0d0c3c79e4d
+    m_Address: ItemParamCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2692d2ac8943de247b0517b22952ce22
+    m_Address: Art/BG_img/bg_SelectView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 375a9cbd45c639649b104f2131e1cd2f
+    m_Address: "Art/SelectBoxView/\u80CC\u666F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4798d3183e0a9c24f832a336cae3e29a
+    m_Address: "Art/SelectBoxView/\u5C0F\u6076\u9B54"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55e09249dffac59449026e67d50993ec
+    m_Address: "Art/SelectBoxView/\u5C0F\u5929\u4F7F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5bfc99dd302073049915d36d2ff1ac04
+    m_Address: Art/Card_img/potato
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7469a3c29ac52094494bd85de105a00d
+    m_Address: Boxes/SelectBox_herb
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8db7fa5cd5ae01247a3abe0c94e630e3
+    m_Address: SelectBoxCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9cb58e36c89895144ac82e9c747a9bfe
+    m_Address: CardConfig_Data
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a1b2c3d4e5f6789012345678abcdef01
+    m_Address: Art/Other/placeholder
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a7d94b11f3b692144a08960e6d59e4ea
+    m_Address: "Art/SelectBoxView/\u5DE6\u6ED1\u52A8"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8897fc2e1572a5408802743b119e67a
+    m_Address: Art/Card_img/pumpkin
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a9dd63ab13a9ef041a59bfa0f3b2804a
+    m_Address: CardParamCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d24d8fd2167cb4244bd81fb1074c29b8
+    m_Address: "Art/SelectBoxView/\u8FD4\u56DE"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: daaef85d0ff19aa499d621de4c26e6ae
+    m_Address: "Art/SelectBoxView/\u5F00\u59CBui"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3f03f37bd6b7b64c900aabc06437a18
+    m_Address: "Art/SelectBoxView/\u9884\u89C8"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e4a346a59365930429d805a697a01188
+    m_Address: Art/Card_img/carrot
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e9115e062a56e9a4a8d241ef6fd0362c
+    m_Address: "Art/SelectBoxView/\u690D\u7269\u6750\u6599\u7BB1"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ede89e5c428248d4ea6abedb863c9498
+    m_Address: Art/Card_img/mushroom
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f0c9a5a259866944a845e6ed3cdfcf9e
+    m_Address: CardConfig_Visual
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f6c47ce7ecd7dd642a7e1abfce3f7cb9
+    m_Address: "Art/SelectBoxView/\u6750\u6599\u7BB1\u56FE\u6807"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 3486431c0b0f71549adccf8a6955c090, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 4cefb0747701bd847885b75252625309, type: 2}
+    - {fileID: 11400000, guid: c67b7d2801dff6b49a0cbcf18cbab052, type: 2}

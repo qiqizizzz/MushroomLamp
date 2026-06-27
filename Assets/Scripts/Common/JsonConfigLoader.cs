@@ -6,16 +6,15 @@
 * └──────────────────────────────────┘
 */
 
-using System.IO;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Common
 {
     public static class JsonConfigLoader
     {
-        private const string CONFIG_FOLDER_NAME = "Config";
-
-        // 从 Assets/Config/ 读取 JSON
+        // 从 Addressables 读取 JSON 配置（address 即文件名，如 "CardConfig_Data"、"Boxes/SelectBox_herb"）
         public static T LoadFromConfig<T>(string fileName) where T : class
         {
             string json = readConfigJsonText(fileName);
@@ -87,30 +86,37 @@ namespace Common
             return result != null;
         }
 
-        // 读取配置 JSON 文本
+        // 通过 Addressables 读取配置 JSON 文本（同步等待，配置文件很小，开销可忽略）
         private static string readConfigJsonText(string fileName)
         {
-            string jsonFileName = normalizeJsonFileName(fileName);
+            string address = normalizeAddress(fileName);
+            if (string.IsNullOrEmpty(address))
+                return null;
 
-            string projectPath = Path.Combine(Application.dataPath, CONFIG_FOLDER_NAME, jsonFileName);
-            if (File.Exists(projectPath))
-                return File.ReadAllText(projectPath);
+            AsyncOperationHandle<TextAsset> handle = Addressables.LoadAssetAsync<TextAsset>(address);
+            handle.WaitForCompletion();
 
-            string streamingPath = Path.Combine(Application.streamingAssetsPath, CONFIG_FOLDER_NAME, jsonFileName);
-            if (File.Exists(streamingPath))
-                return File.ReadAllText(streamingPath);
+            if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
+            {
+                QLog.Error($"[{nameof(JsonConfigLoader)}] Addressable 配置加载失败：{address}");
+                if (handle.IsValid())
+                    Addressables.Release(handle);
+                return null;
+            }
 
-            QLog.Error($"[{nameof(JsonConfigLoader)}] 未找到配置文件：Assets/{CONFIG_FOLDER_NAME}/{jsonFileName}");
-            return null;
+            string text = handle.Result.text;
+            // TextAsset 内容已拷贝为 string，句柄可立即释放
+            Addressables.Release(handle);
+            return text;
         }
 
-        // 规范化 JSON 文件名
-        private static string normalizeJsonFileName(string fileName)
+        // 规范化为 address：去掉可能的 .json 后缀
+        private static string normalizeAddress(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
                 return string.Empty;
 
-            return fileName.EndsWith(".json") ? fileName : $"{fileName}.json";
+            return fileName.EndsWith(".json") ? fileName.Substring(0, fileName.Length - ".json".Length) : fileName;
         }
     }
 }
