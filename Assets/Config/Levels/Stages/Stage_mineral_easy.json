@@ -1,0 +1,24 @@
+{
+  "stages": [
+    {
+      "stageId": "mineral_easy_1",
+      "displayName": "矿坑首战",
+      "turnCount": 6,
+      "potTrayCapacity": 3,
+      "targetMin": 16,
+      "targetMax": 20,
+      "handCount": 6,
+      "angelRescueCount": 3
+    },
+    {
+      "stageId": "mineral_easy_2",
+      "displayName": "矿脉深处",
+      "turnCount": 6,
+      "potTrayCapacity": 3,
+      "targetMin": 20,
+      "targetMax": 26,
+      "handCount": 6,
+      "angelRescueCount": 2
+    }
+  ]
+}

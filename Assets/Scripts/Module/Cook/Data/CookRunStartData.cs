@@ -18,5 +18,15 @@ namespace Module.Cook
         public string BoxId;
         public string BoxName;
         public List<CookMaterialSeedData> Materials = new();
+
+        // 小局配置参数（来自关卡配置表，HasStageConfig=false 时 CookModel 走旧难度硬编码兜底）
+        public bool HasStageConfig;
+        public string StageId;
+        public int TurnCount;
+        public int PotTrayCapacity;
+        public int TargetMin;
+        public int TargetMax;
+        public int HandCount;
+        public int AngelRescueCount;
     }
 }

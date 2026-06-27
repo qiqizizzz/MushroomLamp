@@ -27,6 +27,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b17189176ac28d46bd20d6f8e8d10c2
+    m_Address: Levels/LevelCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 21b9f57677478a84ca73df06766c0bf4
     m_Address: Boxes/SelectBox_mineral
     m_ReadOnly: 0
@@ -37,8 +42,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2bba94d04925f3e4db1bacf28e610beb
+    m_Address: Levels/Stages/Stage_mineral_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46b1fada95257c9459b5c35df9f1440f
+    m_Address: Levels/Stages/Stage_herb_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5bfc99dd302073049915d36d2ff1ac04
     m_Address: Art/Card_img/potato
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 658c529fb98d0494e892f6f416969bd8
+    m_Address: Levels/Stages/Stage_spice_normal
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -52,8 +72,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 926b15edc4c05aa4aa4b2e24426e0588
+    m_Address: Levels/Stages/Stage_spice_hard
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9cb58e36c89895144ac82e9c747a9bfe
     m_Address: CardConfig_Data
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9fa1367fa70f16046aa4f74cd1211c44
+    m_Address: Levels/Stages/Stage_spice_easy
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -69,6 +99,26 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a9dd63ab13a9ef041a59bfa0f3b2804a
     m_Address: CardParamCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ae418352e96c56041a735676e2e25f05
+    m_Address: Levels/Stages/Stage_mineral_easy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c67a6e8a87ab33b47b637fa7752138d2
+    m_Address: Levels/Stages/Stage_herb_easy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c6ccdbbd23564b44292e141dcb6b4d26
+    m_Address: Levels/Stages/Stage_mineral_hard
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db62ccc3d4f32da43bb07aed1327f368
+    m_Address: Levels/Stages/Stage_herb_hard
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -1,0 +1,24 @@
+{
+  "stages": [
+    {
+      "stageId": "mineral_hard_1",
+      "displayName": "矿坑首战",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 26,
+      "targetMax": 30,
+      "handCount": 5,
+      "angelRescueCount": 1
+    },
+    {
+      "stageId": "mineral_hard_2",
+      "displayName": "矿脉深处",
+      "turnCount": 7,
+      "potTrayCapacity": 5,
+      "targetMin": 34,
+      "targetMax": 40,
+      "handCount": 5,
+      "angelRescueCount": 0
+    }
+  ]
+}

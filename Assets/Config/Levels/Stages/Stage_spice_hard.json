@@ -1,0 +1,24 @@
+{
+  "stages": [
+    {
+      "stageId": "spice_hard_1",
+      "displayName": "香气初探",
+      "turnCount": 5,
+      "potTrayCapacity": 4,
+      "targetMin": 20,
+      "targetMax": 24,
+      "handCount": 5,
+      "angelRescueCount": 1
+    },
+    {
+      "stageId": "spice_hard_2",
+      "displayName": "百味交响",
+      "turnCount": 6,
+      "potTrayCapacity": 5,
+      "targetMin": 28,
+      "targetMax": 34,
+      "handCount": 5,
+      "angelRescueCount": 0
+    }
+  ]
+}

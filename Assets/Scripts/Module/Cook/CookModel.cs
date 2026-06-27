@@ -33,6 +33,7 @@ namespace Module.Cook
         // Pot 暂存槽：法阵材料先拖到这里集齐，再一并投入锅参与计分
         private int _potTrayCapacity = POT_TRAY_CAPACITY;
         private CookMaterialData[] _potTraySlots = new CookMaterialData[POT_TRAY_CAPACITY];
+        private int _handCount = HAND_COUNT;   // 每回合手牌数（可由小局配置覆盖）
 
         private int _nextMaterialId;
         private int _nextPlaceOrder;
@@ -93,12 +94,33 @@ namespace Module.Cook
             setupStartData(startData);
 
             TurnIndex = 1;
-            MaxTurn = getMaxTurn(Difficulty);
             CurrentScore = 0;
             Coin = 0;
-            TargetMin = getBaseTarget(Difficulty);
-            TargetMax = TargetMin + (Difficulty == SelectDifficulty.Hard ? 3 : 4);
-            AngelRescueCount = getStartAngelRescueCount(Difficulty);
+
+            if (startData != null && startData.HasStageConfig)
+            {
+                // 来自关卡配置表的小局参数
+                MaxTurn = Mathf.Max(1, startData.TurnCount);
+                TargetMin = startData.TargetMin;
+                TargetMax = startData.TargetMax;
+                AngelRescueCount = Mathf.Max(0, startData.AngelRescueCount);
+                _potTrayCapacity = Mathf.Max(1, startData.PotTrayCapacity);
+                _handCount = startData.HandCount > 0 ? startData.HandCount : HAND_COUNT;
+            }
+            else
+            {
+                // 兜底：旧难度硬编码
+                MaxTurn = getMaxTurn(Difficulty);
+                TargetMin = getBaseTarget(Difficulty);
+                TargetMax = TargetMin + (Difficulty == SelectDifficulty.Hard ? 3 : 4);
+                AngelRescueCount = getStartAngelRescueCount(Difficulty);
+                _potTrayCapacity = POT_TRAY_CAPACITY;
+                _handCount = HAND_COUNT;
+            }
+
+            // 暂存槽容量可能变化，重建数组
+            _potTraySlots = new CookMaterialData[_potTrayCapacity];
+
             IsRunActive = true;
             RoundState = CookRoundStateType.RoundStart;
             LastTip = "每回合选择一个材料放入法阵，熟后拖入锅中";
@@ -650,7 +672,7 @@ namespace Module.Cook
             List<CookMaterialSeedData> pool = buildSeedPool();
             if (pool.Count == 0) return;
 
-            int count = Mathf.Min(HAND_COUNT, Mathf.Max(pool.Count, HAND_COUNT));
+            int count = Mathf.Min(_handCount, Mathf.Max(pool.Count, _handCount));
             for (int i = 0; i < count; i++)
             {
                 CookMaterialSeedData seed = pool[_random.Next(pool.Count)];

@@ -1,0 +1,54 @@
+{
+  "defaultLevelId": "level_herb",
+  "levels": [
+    {
+      "id": "level_herb",
+      "displayName": "草本之旅",
+      "boxId": "herb",
+      "initialHandCards": [
+        { "cardId": "herb_carrot",   "count": 2 },
+        { "cardId": "herb_potato",   "count": 2 },
+        { "cardId": "herb_mushroom", "count": 1 },
+        { "cardId": "herb_pumpkin",  "count": 1 }
+      ],
+      "stageFilesByDifficulty": {
+        "easy":   "Levels/Stages/Stage_herb_easy",
+        "normal": "Levels/Stages/Stage_herb_normal",
+        "hard":   "Levels/Stages/Stage_herb_hard"
+      }
+    },
+    {
+      "id": "level_mineral",
+      "displayName": "矿物征途",
+      "boxId": "mineral",
+      "initialHandCards": [
+        { "cardId": "min_quartz",    "count": 2 },
+        { "cardId": "min_sulfur",    "count": 1 },
+        { "cardId": "min_saltpeter", "count": 1 },
+        { "cardId": "min_saltcrys",  "count": 2 }
+      ],
+      "stageFilesByDifficulty": {
+        "easy":   "Levels/Stages/Stage_mineral_easy",
+        "normal": "Levels/Stages/Stage_mineral_normal",
+        "hard":   "Levels/Stages/Stage_mineral_hard"
+      }
+    },
+    {
+      "id": "level_spice",
+      "displayName": "香料秘境",
+      "boxId": "spice",
+      "initialHandCards": [
+        { "cardId": "spice_clove",     "count": 1 },
+        { "cardId": "spice_cinnamon",  "count": 1 },
+        { "cardId": "spice_turmeric",  "count": 2 },
+        { "cardId": "spice_pepper",    "count": 1 },
+        { "cardId": "spice_staranise", "count": 1 }
+      ],
+      "stageFilesByDifficulty": {
+        "easy":   "Levels/Stages/Stage_spice_easy",
+        "normal": "Levels/Stages/Stage_spice_normal",
+        "hard":   "Levels/Stages/Stage_spice_hard"
+      }
+    }
+  ]
+}

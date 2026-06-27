@@ -8,6 +8,7 @@
 using Common;
 using Common.Defines;
 using Module.Cook;
+using Module.Level;
 using Module.View;
 using MVC;
 using MVC.Controller;
@@ -121,6 +122,9 @@ namespace Module.Select
                 BoxName = entry?.displayName
             };
 
+            // 从关卡配置表读取本小局参数（阶段A：先取第一小局；小局推进留待阶段B）
+            applyStageConfig(startData, entry?.id, model.Difficulty, 0);
+
             SelectMaterialLineData[] lines = detail?.ToRuntimeLines();
             if (lines == null) return startData;
 
@@ -138,6 +142,38 @@ namespace Module.Select
             }
 
             return startData;
+        }
+
+        // 按 boxId（=大局）+ 难度 + 小局序号，从配置表填充启动参数
+        private static void applyStageConfig(
+            CookRunStartData startData, string boxId, SelectDifficulty difficulty, int stageIndex)
+        {
+            LevelCatalogJsonConfig catalog = LevelConfigLoader.LoadCatalog();
+            if (catalog?.levels == null) return;
+
+            // 用 boxId 匹配大局
+            LevelEntryJsonData level = null;
+            foreach (LevelEntryJsonData lv in catalog.levels)
+            {
+                if (lv != null && lv.boxId == boxId) { level = lv; break; }
+            }
+            if (level == null) return;
+
+            StageJsonConfig stage = LevelConfigLoader.GetStage(level, difficulty, stageIndex);
+            if (stage == null)
+            {
+                QLog.Error($"[{nameof(SelectBoxController)}] 小局配置缺失：boxId={boxId} 难度={difficulty} index={stageIndex}");
+                return;
+            }
+
+            startData.HasStageConfig = true;
+            startData.StageId = stage.stageId;
+            startData.TurnCount = stage.turnCount;
+            startData.PotTrayCapacity = stage.potTrayCapacity;
+            startData.TargetMin = stage.targetMin;
+            startData.TargetMax = stage.targetMax;
+            startData.HandCount = stage.handCount;
+            startData.AngelRescueCount = stage.angelRescueCount;
         }
 
         private SelectBoxModel ensureModel()
