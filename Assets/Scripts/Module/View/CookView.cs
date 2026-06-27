@@ -91,7 +91,15 @@ namespace Module.View
         // 打开界面时关闭遗留弹窗
         public override void Open(params object[] args)
         {
+            GameApp.SoundManager?.PlayInGameBGM();
             hidePauseDialog();
+        }
+
+        // 关闭界面时恢复普通背景音乐轮播
+        public override void Close(params object[] args)
+        {
+            GameApp.SoundManager?.PlayRandomBGM();
+            base.Close(args);
         }
 
         // 获取拖拽层

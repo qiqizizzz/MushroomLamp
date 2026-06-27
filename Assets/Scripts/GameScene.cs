@@ -54,6 +54,8 @@ public class GameScene : MonoBehaviour
 
     private void Start()
     {
+        GameApp.SoundManager.PlayRandomBGM();
+        
         GameApp.ControllerManager.ApplyFunc(
             (int)ControllerType.GameUI,
             EventDefines.OpenMainMenuView
@@ -71,6 +73,16 @@ public class GameScene : MonoBehaviour
 
         GameApp.Instance.Destroy();
         _isLoaded = false;
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        GameApp.SoundManager?.SetApplicationPaused(!hasFocus);
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        GameApp.SoundManager?.SetApplicationPaused(pauseStatus);
     }
 
     // 注册框架自带控制器
