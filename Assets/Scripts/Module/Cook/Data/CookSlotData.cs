@@ -67,19 +67,19 @@ namespace Module.Cook
             return material;
         }
 
-        // 根据九宫格索引解析槽位类型
+        // 根据槽位索引解析类型：0=最大格，1~4=中格，5~8=小格
         private static CookSlotType resolveSlotType(int slotIndex)
         {
-            if (slotIndex == 4)
+            if (slotIndex == 0)
                 return CookSlotType.Center;
 
-            if (slotIndex == 1 || slotIndex == 3 || slotIndex == 5 || slotIndex == 7)
+            if (slotIndex >= 1 && slotIndex <= 4)
                 return CookSlotType.Edge;
 
             return CookSlotType.Corner;
         }
 
-        // 根据槽位类型解析附魔加成值
+        // 根据槽位类型解析附魔加成值：最大格 +2，中格 +1，小格 +0.5
         private static float resolveEnchantValue(CookSlotType slotType)
         {
             return slotType switch

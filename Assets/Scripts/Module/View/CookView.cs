@@ -212,7 +212,8 @@ namespace Module.View
 
             for (int i = 0; i < _slotItems.Length; i++)
             {
-                Transform slotTf = _slotRoot.Find($"Slot_{i}");
+                // 槽位可能被分组到 Big/Middle/Small 等子节点下，递归查找
+                Transform slotTf = findDeep(_slotRoot, $"Slot_{i}");
                 if (slotTf == null)
                 {
                     GameObject slotObj = new GameObject($"Slot_{i}", typeof(RectTransform));
@@ -227,6 +228,23 @@ namespace Module.View
                 slotItem.Init(this, i);
                 _slotItems[i] = slotItem;
             }
+        }
+
+        // 在 root 的所有后代中按名查找（Transform.Find 只查直接子级，无法跨分组层）
+        private static Transform findDeep(Transform root, string name)
+        {
+            if (root == null) return null;
+
+            Transform direct = root.Find(name);
+            if (direct != null) return direct;
+
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = findDeep(root.GetChild(i), name);
+                if (found != null) return found;
+            }
+
+            return null;
         }
 
         // 初始化底部材料区拖拽接收组件
