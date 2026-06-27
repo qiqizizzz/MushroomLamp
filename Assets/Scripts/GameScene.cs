@@ -54,6 +54,8 @@ public class GameScene : MonoBehaviour
 
     private void Start()
     {
+        GameApp.SoundManager.PlayRandomBGM();
+        
         GameApp.ControllerManager.ApplyFunc(
             (int)ControllerType.GameUI,
             EventDefines.OpenMainMenuView

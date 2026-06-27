@@ -44,6 +44,7 @@ public class GameApp : Singleton<GameApp>
     public override void Update(float dt)
     {
         TimerManager?.OnUpdate(dt);
+        SoundManager?.OnUpdate(dt);
     }
 
     public override void Destroy()
