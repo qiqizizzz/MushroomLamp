@@ -17,11 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 5adb6627149c7334b94573b6f1cbd12e
   m_SerializeEntries:
-  - m_GUID: 05a61ce12e911e241b822ae00265067f
-    m_Address: "Art/SelectBoxView/\u53F3\u6ED1\u52A8"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 138820ec0949b43448312a5660813cf2
     m_Address: Art/BG_img/bg_magic_kitchen
     m_ReadOnly: 0
@@ -29,16 +24,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 13ae92f6bfb3cf64badc224259e1aa83
     m_Address: Boxes/SelectBox_spice
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 14fa79fb5c13b154eb3726dcf88ec3c9
-    m_Address: "Art/SelectBoxView/\u53F3\u96BE\u5EA6\u9009\u62E9"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 16660605f03d03e4c97b71bc716eb2e6
-    m_Address: "Art/SelectBoxView/\u5DE6\u6750\u6599\u8BF4\u660E"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -54,21 +39,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2692d2ac8943de247b0517b22952ce22
     m_Address: Art/BG_img/bg_SelectView
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 375a9cbd45c639649b104f2131e1cd2f
-    m_Address: "Art/SelectBoxView/\u80CC\u666F"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4798d3183e0a9c24f832a336cae3e29a
-    m_Address: "Art/SelectBoxView/\u5C0F\u6076\u9B54"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 55e09249dffac59449026e67d50993ec
-    m_Address: "Art/SelectBoxView/\u5C0F\u5929\u4F7F"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -97,11 +67,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a7d94b11f3b692144a08960e6d59e4ea
-    m_Address: "Art/SelectBoxView/\u5DE6\u6ED1\u52A8"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a8897fc2e1572a5408802743b119e67a
     m_Address: Art/Card_img/pumpkin
     m_ReadOnly: 0
@@ -112,28 +77,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d24d8fd2167cb4244bd81fb1074c29b8
-    m_Address: "Art/SelectBoxView/\u8FD4\u56DE"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: daaef85d0ff19aa499d621de4c26e6ae
-    m_Address: "Art/SelectBoxView/\u5F00\u59CBui"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e3f03f37bd6b7b64c900aabc06437a18
-    m_Address: "Art/SelectBoxView/\u9884\u89C8"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e4a346a59365930429d805a697a01188
     m_Address: Art/Card_img/carrot
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e9115e062a56e9a4a8d241ef6fd0362c
-    m_Address: "Art/SelectBoxView/\u690D\u7269\u6750\u6599\u7BB1"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -144,11 +89,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0c9a5a259866944a845e6ed3cdfcf9e
     m_Address: CardConfig_Visual
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f6c47ce7ecd7dd642a7e1abfce3f7cb9
-    m_Address: "Art/SelectBoxView/\u6750\u6599\u7BB1\u56FE\u6807"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
