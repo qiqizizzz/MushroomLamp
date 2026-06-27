@@ -17,6 +17,7 @@ namespace MVC
         ShopView = 4,
         AlmanacView = 5,
         ConfirmView = 6,
-        SummaryView = 7
+        SummaryView = 7,
+        SettingsView = 8
     }
 }

@@ -55,5 +55,13 @@ namespace Common.Defines
 
         // 总结算
         public const string OpenSummaryView = "OpenSummaryView";
+
+        // 设置
+        public const string OpenSettingsView = "OpenSettingsView";
+        public const string SettingsClose = "SettingsClose";
+        public const string SettingsSetSfxOn = "SettingsSetSfxOn";
+        public const string SettingsSetSfxVolume = "SettingsSetSfxVolume";
+        public const string SettingsSetBgmOn = "SettingsSetBgmOn";
+        public const string SettingsSetBgmVolume = "SettingsSetBgmVolume";
     }
 }

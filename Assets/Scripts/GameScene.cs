@@ -17,6 +17,7 @@ using Module.Loading;
 using Module.Almanac;
 using Module.Confirm;
 using Module.Select;
+using Module.Settings;
 using Module.Shop;
 using Module.Summary;
 using MVC;
@@ -99,5 +100,6 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.Almanac, new AlmanacController());
         GameApp.ControllerManager.Register(ControllerType.Confirm, new ConfirmController());
         GameApp.ControllerManager.Register(ControllerType.Summary, new SummaryController());
+        GameApp.ControllerManager.Register(ControllerType.Settings, new SettingsController());
     }
 }

@@ -68,15 +68,28 @@ namespace Sound
             set => _effectVolume = Mathf.Clamp01(value);
         }
 
+        // 音效总开关，关闭后 PlayEffect 不发声
+        public bool EffectEnabled { get; set; }
+
+        // 背景音乐总开关（语义化封装 IsStop：开=不停，关=停）
+        public bool BgmEnabled
+        {
+            get => !IsStop;
+            set => IsStop = !value;
+        }
+
         public SoundManager()
         {
             _clips = new Dictionary<string, AudioClip>();
             _bgmPlaylist = S_DefaultBgmPlaylist;
             _audioRootTf = getOrCreateAudioRoot();
             _bgmSource = getOrCreateBgmSource();
-            IsStop = false;
-            BgmVolume = 1f;
-            EffectVolume = 1f;
+
+            // 从存档读取设置初值（默认开、音量 1）
+            EffectEnabled = SettingsKeys.GetBool(SettingsKeys.SfxOn, true);
+            EffectVolume = SettingsKeys.GetFloat(SettingsKeys.SfxVolume, 1f);
+            BgmVolume = SettingsKeys.GetFloat(SettingsKeys.BgmVolume, 1f);
+            IsStop = !SettingsKeys.GetBool(SettingsKeys.BgmOn, true);
         }
 
         // 每帧检测轮播音乐是否需要切到下一首
@@ -154,7 +167,7 @@ namespace Sound
         // 播放音效，资源路径对应 Resources/Sounds
         public void PlayEffect(string name, Vector3 pos)
         {
-            if (IsStop) return;
+            if (!EffectEnabled) return;
 
             AudioClip clip = loadClip(name);
             if (clip == null) return;
