@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: CookView
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 0
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 0
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 041955b8ed99e3e4ea215b6621aff6a2, type: 3}
+    - {fileID: 2800000, guid: cd802ae8e3046824a8c3a45ba8655608, type: 3}
+    - {fileID: 2800000, guid: 4ed8e68cdf851ff4aaf1e4c3fa215551, type: 3}
+    - {fileID: 2800000, guid: 26e68737be0e5fe4fb6865eb9741a168, type: 3}
+    - {fileID: 2800000, guid: 08da418fcf1d4ff4c812794c12e19ef6, type: 3}
+    - {fileID: 2800000, guid: ff1545c01310c7642b5649ceddda4c9e, type: 3}
+    - {fileID: 2800000, guid: 9f95436171a8b014a958981fd65eb251, type: 3}
+    - {fileID: 2800000, guid: 59d5b15ad81b44749a45742c0d2340a9, type: 3}
+    - {fileID: 2800000, guid: 890d89df3dfa1484c96f16ce38674b23, type: 3}
+    - {fileID: 2800000, guid: 8c7ffc9ee61ece94daf9f1c243f3b008, type: 3}
+    - {fileID: 2800000, guid: 7af057d348aa4374fa079e01cc46fd40, type: 3}
+    - {fileID: 2800000, guid: 7af057d348aa4374fa079e01cc46fd40, type: 3}
+    - {fileID: 2800000, guid: 6c660f8702ec5b341869d6db66fae60e, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - ff1545c01310c7642b5649ceddda4c9e: 21300000
+    - 9f95436171a8b014a958981fd65eb251: 21300000
+    - 7af057d348aa4374fa079e01cc46fd40: 21300000
+    - 26e68737be0e5fe4fb6865eb9741a168: 21300000
+    - 6c660f8702ec5b341869d6db66fae60e: 21300000
+    - 041955b8ed99e3e4ea215b6621aff6a2: 21300000
+    - cd802ae8e3046824a8c3a45ba8655608: 21300000
+    - 59d5b15ad81b44749a45742c0d2340a9: 21300000
+    - 4ed8e68cdf851ff4aaf1e4c3fa215551: 21300000
+    - 8c7ffc9ee61ece94daf9f1c243f3b008: 21300000
+    - 08da418fcf1d4ff4c812794c12e19ef6: 21300000
+    - 890d89df3dfa1484c96f16ce38674b23: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: ff1545c01310c7642b5649ceddda4c9e, type: 3}
+  - {fileID: 21300000, guid: 9f95436171a8b014a958981fd65eb251, type: 3}
+  - {fileID: 21300000, guid: 7af057d348aa4374fa079e01cc46fd40, type: 3}
+  - {fileID: 21300000, guid: 26e68737be0e5fe4fb6865eb9741a168, type: 3}
+  - {fileID: 21300000, guid: 6c660f8702ec5b341869d6db66fae60e, type: 3}
+  - {fileID: 21300000, guid: 041955b8ed99e3e4ea215b6621aff6a2, type: 3}
+  - {fileID: 21300000, guid: cd802ae8e3046824a8c3a45ba8655608, type: 3}
+  - {fileID: 21300000, guid: 59d5b15ad81b44749a45742c0d2340a9, type: 3}
+  - {fileID: 21300000, guid: 4ed8e68cdf851ff4aaf1e4c3fa215551, type: 3}
+  - {fileID: 21300000, guid: 8c7ffc9ee61ece94daf9f1c243f3b008, type: 3}
+  - {fileID: 21300000, guid: 08da418fcf1d4ff4c812794c12e19ef6, type: 3}
+  - {fileID: 21300000, guid: 890d89df3dfa1484c96f16ce38674b23, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - "\u7814\u78E8\u7897"
+  - "\u8BA1\u5206\u5668"
+  - "\u9505\u70DF\u96FE"
+  - "\u653E\u7F6E"
+  - "\u9B54\u6CD5\u9635\uFF08\u7A7A\u767D\uFF09"
+  - "\u5C0F\u5929\u4F7F"
+  - "\u5C0F\u6076\u9B54"
+  - "\u9053\u5177\u6837\u672C"
+  - "\u6258\u76D8"
+  - "\u9505\u67B6\u5B50"
+  - "\u7814\u78E8\u68D2"
+  - "\u9505"
+  m_RenderDataMap: {}
+  m_Tag: CookView
+  m_IsVariant: 0
