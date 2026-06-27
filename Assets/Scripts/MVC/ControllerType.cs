@@ -17,6 +17,7 @@ namespace MVC
         Shop = 4,
         Almanac = 5,
         Confirm = 6,
-        Summary = 7
+        Summary = 7,
+        Settings = 8
     }
 }

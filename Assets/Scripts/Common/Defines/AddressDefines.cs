@@ -23,6 +23,7 @@ namespace Common.Defines
         public const string UI_ShopPropSlot = "UI/Shop/ShopPropSlot";
         public const string UI_ConfirmView = "UI/View/ConfirmView";
         public const string UI_SummaryView = "UI/View/SummaryView";
+        public const string UI_SettingsView = "UI/View/SettingsView";
 
         // JSON 配置，对应 Assets/Config/（不含扩展名）
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";

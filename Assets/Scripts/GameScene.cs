@@ -17,6 +17,7 @@ using Module.Loading;
 using Module.Almanac;
 using Module.Confirm;
 using Module.Select;
+using Module.Settings;
 using Module.Shop;
 using Module.Summary;
 using MVC;
@@ -54,6 +55,8 @@ public class GameScene : MonoBehaviour
 
     private void Start()
     {
+        GameApp.SoundManager.PlayRandomBGM();
+        
         GameApp.ControllerManager.ApplyFunc(
             (int)ControllerType.GameUI,
             EventDefines.OpenMainMenuView
@@ -73,6 +76,16 @@ public class GameScene : MonoBehaviour
         _isLoaded = false;
     }
 
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        GameApp.SoundManager?.SetApplicationPaused(!hasFocus);
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        GameApp.SoundManager?.SetApplicationPaused(pauseStatus);
+    }
+
     // 注册框架自带控制器
     private void registerModule()
     {
@@ -87,5 +100,6 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.Almanac, new AlmanacController());
         GameApp.ControllerManager.Register(ControllerType.Confirm, new ConfirmController());
         GameApp.ControllerManager.Register(ControllerType.Summary, new SummaryController());
+        GameApp.ControllerManager.Register(ControllerType.Settings, new SettingsController());
     }
 }

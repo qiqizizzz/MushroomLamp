@@ -6,7 +6,6 @@
 * └──────────────────────────────────┘
 */
 
-using Common;
 using Common.Defines;
 using MVC;
 using MVC.Controller;
@@ -60,7 +59,7 @@ namespace Module.GameUI
 
         private void onMainMenuOpenSettings(object[] args)
         {
-            QLog.Info($"[{nameof(GameUIController)}] 设置（占位）");
+            ApplyControllerFunc(ControllerType.Settings, EventDefines.OpenSettingsView);
         }
 
         private void onMainMenuExit(object[] args)
