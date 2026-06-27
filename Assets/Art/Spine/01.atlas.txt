@@ -1,0 +1,125 @@
+
+01.png
+size: 867,1038
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: true
+  xy: 520, 290
+  size: 176, 213
+  orig: 178, 216
+  offset: 1, 1
+  index: -1
+bozi
+  rotate: false
+  xy: 829, 1007
+  size: 34, 29
+  orig: 37, 31
+  offset: 2, 1
+  index: -1
+hudiejie-h
+  rotate: true
+  xy: 775, 73
+  size: 72, 67
+  orig: 74, 69
+  offset: 1, 1
+  index: -1
+hudiejie-q
+  rotate: false
+  xy: 775, 19
+  size: 75, 52
+  orig: 77, 54
+  offset: 1, 1
+  index: -1
+lian
+  rotate: false
+  xy: 735, 348
+  size: 130, 118
+  orig: 132, 120
+  offset: 1, 1
+  index: -1
+mao-daizi
+  rotate: true
+  xy: 2, 5
+  size: 289, 504
+  orig: 292, 507
+  offset: 1, 1
+  index: -1
+mao-h
+  rotate: true
+  xy: 603, 4
+  size: 129, 170
+  orig: 131, 172
+  offset: 1, 1
+  index: -1
+mao-q
+  rotate: false
+  xy: 520, 468
+  size: 240, 160
+  orig: 242, 162
+  offset: 1, 1
+  index: -1
+pijian
+  rotate: false
+  xy: 740, 147
+  size: 93, 46
+  orig: 95, 49
+  offset: 1, 2
+  index: -1
+saoba
+  rotate: false
+  xy: 520, 630
+  size: 307, 406
+  orig: 309, 408
+  offset: 1, 1
+  index: -1
+shou-l
+  rotate: false
+  xy: 762, 496
+  size: 99, 132
+  orig: 102, 134
+  offset: 2, 1
+  index: -1
+shou-r
+  rotate: false
+  xy: 508, 2
+  size: 93, 131
+  orig: 96, 133
+  offset: 2, 1
+  index: -1
+toufa-h
+  rotate: false
+  xy: 740, 195
+  size: 78, 100
+  orig: 80, 102
+  offset: 1, 1
+  index: -1
+toufa-q
+  rotate: false
+  xy: 508, 135
+  size: 181, 153
+  orig: 183, 155
+  offset: 1, 1
+  index: -1
+tui-l
+  rotate: true
+  xy: 735, 297
+  size: 49, 122
+  orig: 51, 124
+  offset: 1, 1
+  index: -1
+tui-r
+  rotate: false
+  xy: 691, 178
+  size: 47, 110
+  orig: 49, 112
+  offset: 1, 1
+  index: -1
+图层 1
+  rotate: false
+  xy: 2, 296
+  size: 516, 740
+  orig: 518, 742
+  offset: 1, 1
+  index: -1
