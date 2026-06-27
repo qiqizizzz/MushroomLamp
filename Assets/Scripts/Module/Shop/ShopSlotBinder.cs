@@ -1,4 +1,5 @@
 using System;
+using Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,13 +23,15 @@ namespace Module.Shop
 
             if (imgIcon != null)
             {
-                var sprite = LoadSprite(data.iconPath);
+                var sprite = ArtAssetLoader.LoadSprite(data.iconPath);
                 imgIcon.sprite  = sprite;
                 imgIcon.enabled = sprite != null;
             }
 
             bindBuyButton(data, onBuy);
         }
+
+        // 旧的私有 LoadSprite 已废弃（真机分支直接返回 null 导致图丢失），统一改走 ArtAssetLoader
 
         private void bindBuyButton(ShopSlotData data, Action<ShopSlotData> onBuy)
         {
@@ -53,17 +56,6 @@ namespace Module.Shop
                 if (label != null) label.text = "购买";
                 btn.onClick.AddListener(() => onBuy?.Invoke(data));
             }
-        }
-
-        private static Sprite LoadSprite(string iconPath)
-        {
-            if (string.IsNullOrEmpty(iconPath)) return null;
-#if UNITY_EDITOR
-            string assetPath = $"Assets/{iconPath}.png";
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-#else
-            return null;
-#endif
         }
     }
 }

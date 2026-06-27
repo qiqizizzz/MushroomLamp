@@ -1,109 +1,113 @@
 /*
  * ┌──────────────────────────────────┐
- * │  描    述: Art 目录资源加载（非 Resources）
+ * │  描    述: Art 目录资源加载（基于 Addressables）
  * │  类    名: ArtAssetLoader.cs
  * └──────────────────────────────────┘
  */
 
-using System.IO;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Common
 {
     public static class ArtAssetLoader
     {
+        // 已加载句柄缓存，按 address 复用，避免重复加载与句柄泄漏
+        private static readonly Dictionary<string, AsyncOperationHandle<Sprite>> _handles = new();
+
         // 路径相对 Assets 根目录，如 Art/Card_img/carrot（不含扩展名）
+        // 该路径即为资源的 Addressable address
         public static Sprite LoadSprite(string assetsRelativePath)
         {
-            if (string.IsNullOrWhiteSpace(assetsRelativePath))
+            string address = normalizeAddress(assetsRelativePath);
+            if (string.IsNullOrEmpty(address))
                 return null;
 
-#if UNITY_EDITOR
-            return loadFromAssetDatabase(assetsRelativePath);
-#else
-            return loadFromStreamingAssets(assetsRelativePath);
-#endif
-        }
+            if (_handles.TryGetValue(address, out AsyncOperationHandle<Sprite> cached))
+                return cached.IsValid() ? cached.Result : null;
 
-#if UNITY_EDITOR
-        private static Sprite loadFromAssetDatabase(string assetsRelativePath)
-        {
-            string basePath = assetsRelativePath.StartsWith("Assets/")
-                ? assetsRelativePath
-                : $"Assets/{assetsRelativePath}";
+            AsyncOperationHandle<Sprite> handle = Addressables.LoadAssetAsync<Sprite>(address);
+            handle.WaitForCompletion();
 
-            foreach (string assetPath in enumerateCandidateAssetPaths(basePath))
+            if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
             {
-                Sprite sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-                if (sprite != null)
-                    return sprite;
-
-                Texture2D texture = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-                if (texture != null)
-                {
-                    return Sprite.Create(
-                        texture,
-                        new Rect(0f, 0f, texture.width, texture.height),
-                        new Vector2(0.5f, 0.5f),
-                        100f
-                    );
-                }
+                QLog.Error($"[{nameof(ArtAssetLoader)}] Addressable 加载失败：{address}");
+                if (handle.IsValid())
+                    Addressables.Release(handle);
+                return null;
             }
 
-            QLog.Error($"[{nameof(ArtAssetLoader)}] 未找到 Art 资源：{basePath}");
-            return null;
+            _handles[address] = handle;
+            return handle.Result;
         }
 
-        private static string[] enumerateCandidateAssetPaths(string basePath)
+        // 异步加载（推荐：不阻塞主线程）
+        public static void LoadSpriteAsync(string assetsRelativePath, Action<Sprite> onCompleted)
         {
-            if (hasImageExtension(basePath))
-                return new[] { basePath };
-
-            return new[]
+            string address = normalizeAddress(assetsRelativePath);
+            if (string.IsNullOrEmpty(address))
             {
-                $"{basePath}.png",
-                $"{basePath}.jpg",
-                $"{basePath}.jpeg"
+                onCompleted?.Invoke(null);
+                return;
+            }
+
+            if (_handles.TryGetValue(address, out AsyncOperationHandle<Sprite> cached))
+            {
+                onCompleted?.Invoke(cached.IsValid() ? cached.Result : null);
+                return;
+            }
+
+            AsyncOperationHandle<Sprite> handle = Addressables.LoadAssetAsync<Sprite>(address);
+            handle.Completed += op =>
+            {
+                if (op.Status != AsyncOperationStatus.Succeeded || op.Result == null)
+                {
+                    QLog.Error($"[{nameof(ArtAssetLoader)}] Addressable 异步加载失败：{address}");
+                    if (op.IsValid())
+                        Addressables.Release(op);
+                    onCompleted?.Invoke(null);
+                    return;
+                }
+
+                _handles[address] = op;
+                onCompleted?.Invoke(op.Result);
             };
         }
-#endif
 
-        private static Sprite loadFromStreamingAssets(string assetsRelativePath)
+        // 释放所有缓存的资源句柄
+        public static void ReleaseAll()
         {
-            string relativePath = assetsRelativePath.StartsWith("Assets/")
+            foreach (var kv in _handles)
+            {
+                if (kv.Value.IsValid())
+                    Addressables.Release(kv.Value);
+            }
+
+            _handles.Clear();
+        }
+
+        // 规范化为 address：去掉前缀 Assets/ 与图片扩展名
+        private static string normalizeAddress(string assetsRelativePath)
+        {
+            if (string.IsNullOrWhiteSpace(assetsRelativePath))
+                return string.Empty;
+
+            string path = assetsRelativePath.StartsWith("Assets/")
                 ? assetsRelativePath.Substring("Assets/".Length)
                 : assetsRelativePath;
 
-            string filePath = Path.Combine(Application.streamingAssetsPath, relativePath);
-            if (!hasImageExtension(filePath))
-                filePath += ".png";
-
-            if (!File.Exists(filePath))
+            string ext = System.IO.Path.GetExtension(path);
+            if (!string.IsNullOrEmpty(ext))
             {
-                QLog.Error($"[{nameof(ArtAssetLoader)}] 打包后请将 Art 同步到 StreamingAssets：{filePath}");
-                return null;
+                string lower = ext.ToLowerInvariant();
+                if (lower == ".png" || lower == ".jpg" || lower == ".jpeg")
+                    path = path.Substring(0, path.Length - ext.Length);
             }
 
-            byte[] bytes = File.ReadAllBytes(filePath);
-            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            if (!texture.LoadImage(bytes))
-            {
-                QLog.Error($"[{nameof(ArtAssetLoader)}] 图片解码失败：{filePath}");
-                return null;
-            }
-
-            return Sprite.Create(
-                texture,
-                new Rect(0f, 0f, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f),
-                100f
-            );
-        }
-
-        private static bool hasImageExtension(string path)
-        {
-            string ext = Path.GetExtension(path);
-            return ext == ".png" || ext == ".jpg" || ext == ".jpeg";
+            return path;
         }
     }
 }
