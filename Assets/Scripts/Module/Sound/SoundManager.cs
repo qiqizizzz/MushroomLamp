@@ -30,6 +30,8 @@ namespace Sound
         private readonly string[] _bgmPlaylist;
         private bool _isStop;
         private bool _isPlaylistMode;
+        private bool _isApplicationPaused;
+        private bool _wasBgmPlayingBeforePause;
         private float _bgmVolume;
         private float _effectVolume;
         private int _lastPlaylistIndex = -1;
@@ -80,10 +82,30 @@ namespace Sound
         // 每帧检测轮播音乐是否需要切到下一首
         public void OnUpdate(float dt)
         {
-            if (IsStop || !_isPlaylistMode || _bgmSource == null) return;
+            if (IsStop || _isApplicationPaused || !_isPlaylistMode || _bgmSource == null) return;
             if (_bgmSource.isPlaying) return;
 
             playNextPlaylistBgm();
+        }
+
+        // 设置应用暂停状态，避免最小化时误判 BGM 播放结束
+        public void SetApplicationPaused(bool isPaused)
+        {
+            if (_isApplicationPaused == isPaused) return;
+
+            _isApplicationPaused = isPaused;
+            if (_bgmSource == null) return;
+
+            if (_isApplicationPaused)
+            {
+                _wasBgmPlayingBeforePause = _bgmSource.isPlaying;
+                if (_wasBgmPlayingBeforePause)
+                    _bgmSource.Pause();
+            }
+            else if (_wasBgmPlayingBeforePause && !IsStop && _bgmSource.clip != null)
+            {
+                _bgmSource.Play();
+            }
         }
 
         // 播放背景音乐，资源路径对应 Resources/Sounds

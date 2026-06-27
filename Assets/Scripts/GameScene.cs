@@ -75,6 +75,16 @@ public class GameScene : MonoBehaviour
         _isLoaded = false;
     }
 
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        GameApp.SoundManager?.SetApplicationPaused(!hasFocus);
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        GameApp.SoundManager?.SetApplicationPaused(pauseStatus);
+    }
+
     // 注册框架自带控制器
     private void registerModule()
     {
