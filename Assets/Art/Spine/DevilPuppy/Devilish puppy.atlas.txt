@@ -1,0 +1,76 @@
+
+Devilish puppy.png
+size: 1152,461
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Left wing
+  rotate: false
+  xy: 518, 164
+  size: 242, 295
+  orig: 242, 298
+  offset: 0, 0
+  index: -1
+Right wing
+  rotate: false
+  xy: 762, 167
+  size: 240, 292
+  orig: 240, 292
+  offset: 0, 0
+  index: -1
+behind-right foot
+  rotate: true
+  xy: 646, 26
+  size: 136, 118
+  orig: 139, 121
+  offset: 1, 2
+  index: -1
+body
+  rotate: false
+  xy: 2, 5
+  size: 514, 454
+  orig: 514, 457
+  offset: 0, 2
+  index: -1
+colse
+  rotate: true
+  xy: 1090, 230
+  size: 229, 58
+  orig: 231, 60
+  offset: 1, 1
+  index: -1
+left foot
+  rotate: false
+  xy: 954, 39
+  size: 99, 126
+  orig: 102, 129
+  offset: 2, 2
+  index: -1
+mouth
+  rotate: true
+  xy: 1055, 31
+  size: 189, 95
+  orig: 193, 96
+  offset: 0, 1
+  index: -1
+open
+  rotate: true
+  xy: 1004, 222
+  size: 237, 84
+  orig: 240, 88
+  offset: 2, 2
+  index: -1
+right foot
+  rotate: false
+  xy: 518, 19
+  size: 126, 143
+  orig: 130, 146
+  offset: 2, 2
+  index: -1
+tali
+  rotate: true
+  xy: 766, 2
+  size: 163, 186
+  orig: 163, 189
+  offset: 0, 0
+  index: -1
