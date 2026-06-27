@@ -48,6 +48,10 @@ namespace Module.View
         private Button _btnPauseCancel;
         private bool _isRiskSettleConfirmed;
 
+        private Transform _potTrayRoot;
+        private Button _btnSubmitTray;
+        private CookPotTrayItem[] _potTrayItems;
+
         private CookModel _cookModel;
         private readonly CookSlotItem[] _slotItems = new CookSlotItem[9];
 
@@ -68,6 +72,8 @@ namespace Module.View
             _dragRoot = Find<Transform>("DragRoot");
             _processArea = Find<Transform>("Right/Grinder");
             _potArea = Find<Transform>("Center/Pot");
+            _potTrayRoot = Find<Transform>("Center/Pot/TrayRoot");
+            _btnSubmitTray = Find<Button>("Center/Pot/Btn_SubmitTray");
             _txtMagicBox = Find<TextMeshProUGUI>("Right/MagicBox/Txt_Info");
 
             _btnPause = Find<Button>("Top/Btn_Pause");
@@ -127,9 +133,28 @@ namespace Module.View
             refreshTop(cookModel);
             refreshTarget(cookModel);
             refreshSlots(cookModel);
+            refreshPotTray(cookModel);
             refreshHand(cookModel);
             refreshProcessedMaterials(cookModel);
             refreshActions(cookModel);
+        }
+
+        // 刷新 Pot 暂存槽与投入按钮显隐
+        private void refreshPotTray(CookModel cookModel)
+        {
+            if (_potTrayItems != null)
+            {
+                var traySlots = cookModel.PotTraySlots;
+                for (int i = 0; i < _potTrayItems.Length; i++)
+                {
+                    if (_potTrayItems[i] == null) continue;
+                    CookMaterialData mat = (traySlots != null && i < traySlots.Count) ? traySlots[i] : null;
+                    _potTrayItems[i].Bind(mat);
+                }
+            }
+
+            if (_btnSubmitTray != null)
+                _btnSubmitTray.gameObject.SetActive(cookModel.IsPotTrayFull);
         }
 
         // 尝试将材料放入法阵槽位
@@ -154,14 +179,40 @@ namespace Module.View
             return true;
         }
 
-        // 尝试将法阵槽位材料提交到锅中
-        public bool TrySubmitSlotToPot(int slotIndex)
+        // 尝试将法阵槽位材料移到 Pot 暂存槽
+        public bool TryMoveSlotToPotTray(int slotIndex, int trayIndex)
         {
             if (_cookModel == null || !_cookModel.IsRunActive) return false;
             if (slotIndex < 0 || slotIndex >= _cookModel.Slots.Count) return false;
-            if (!_cookModel.Slots[slotIndex].HasMaterial) return false;
 
-            ApplyFunc(EventDefines.CookSubmitToPot, slotIndex);
+            CookSlotData slot = _cookModel.Slots[slotIndex];
+            if (!slot.HasMaterial) return false;
+            if (trayIndex < 0 || trayIndex >= _cookModel.PotTrayCapacity) return false;
+
+            // 必须煮过一轮才能入锅
+            if (slot.Material.CookProgress <= 0f)
+            {
+                showTip("该材料还没煮过，先结束回合让它煮一轮");
+                return false;
+            }
+
+            ApplyFunc(EventDefines.CookMoveToPotTray, slotIndex, trayIndex);
+            return true;
+        }
+
+        // 尝试交换两个暂存槽
+        public bool TrySwapPotTray(int fromTrayIndex, int toTrayIndex)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive) return false;
+            ApplyFunc(EventDefines.CookSwapPotTray, fromTrayIndex, toTrayIndex);
+            return true;
+        }
+
+        // 尝试从暂存槽撤回到法阵
+        public bool TryReturnPotTray(int trayIndex)
+        {
+            if (_cookModel == null || !_cookModel.IsRunActive) return false;
+            ApplyFunc(EventDefines.CookReturnPotTray, trayIndex);
             return true;
         }
 
@@ -314,16 +365,43 @@ namespace Module.View
             layoutGroup.spacing = 8f;
         }
 
-        // 初始化锅区域拖拽接收组件
+        // 初始化 Pot 暂存槽与投入按钮
         private void initPotArea()
         {
-            if (_potArea == null) return;
+            int capacity = _cookModel?.PotTrayCapacity ?? 3;
+            initPotTray(capacity);
 
-            CookPotAreaItem potAreaItem = _potArea.GetComponent<CookPotAreaItem>();
-            if (potAreaItem == null)
-                potAreaItem = _potArea.gameObject.AddComponent<CookPotAreaItem>();
+            if (_btnSubmitTray != null)
+            {
+                _btnSubmitTray.onClick.RemoveAllListeners();
+                _btnSubmitTray.onClick.AddListener(() => ApplyFunc(EventDefines.CookSubmitPotTray));
+                _btnSubmitTray.gameObject.SetActive(false);
+            }
+        }
 
-            potAreaItem.Init(this);
+        // 在 TrayRoot 下创建 N 个暂存槽
+        private void initPotTray(int capacity)
+        {
+            if (_potTrayRoot == null) return;
+
+            _potTrayItems = new CookPotTrayItem[capacity];
+            for (int i = 0; i < capacity; i++)
+            {
+                Transform trayTf = _potTrayRoot.Find($"Tray_{i}");
+                if (trayTf == null)
+                {
+                    GameObject trayObj = new GameObject($"Tray_{i}", typeof(RectTransform));
+                    trayObj.transform.SetParent(_potTrayRoot, false);
+                    trayTf = trayObj.transform;
+                }
+
+                CookPotTrayItem trayItem = trayTf.GetComponent<CookPotTrayItem>();
+                if (trayItem == null)
+                    trayItem = trayTf.gameObject.AddComponent<CookPotTrayItem>();
+
+                trayItem.Init(this, i);
+                _potTrayItems[i] = trayItem;
+            }
         }
 
         // 初始化锅的临时视觉占位

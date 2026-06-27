@@ -40,7 +40,10 @@ namespace Module.Cook
             RegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
             RegisterFunc(EventDefines.CookMoveSlotMaterial, moveSlotMaterial);
             RegisterFunc(EventDefines.CookReturnSlotMaterial, returnSlotMaterial);
-            RegisterFunc(EventDefines.CookSubmitToPot, submitToPot);
+            RegisterFunc(EventDefines.CookMoveToPotTray, moveToPotTray);
+            RegisterFunc(EventDefines.CookSwapPotTray, swapPotTray);
+            RegisterFunc(EventDefines.CookReturnPotTray, returnPotTray);
+            RegisterFunc(EventDefines.CookSubmitPotTray, submitPotTray);
             RegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
             RegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
             RegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
@@ -57,7 +60,10 @@ namespace Module.Cook
             UnRegisterFunc(EventDefines.CookPlaceMaterial, placeMaterial);
             UnRegisterFunc(EventDefines.CookMoveSlotMaterial, moveSlotMaterial);
             UnRegisterFunc(EventDefines.CookReturnSlotMaterial, returnSlotMaterial);
-            UnRegisterFunc(EventDefines.CookSubmitToPot, submitToPot);
+            UnRegisterFunc(EventDefines.CookMoveToPotTray, moveToPotTray);
+            UnRegisterFunc(EventDefines.CookSwapPotTray, swapPotTray);
+            UnRegisterFunc(EventDefines.CookReturnPotTray, returnPotTray);
+            UnRegisterFunc(EventDefines.CookSubmitPotTray, submitPotTray);
             UnRegisterFunc(EventDefines.CookProcessMaterial, processMaterial);
             UnRegisterFunc(EventDefines.CookTouchMagicBox, touchMagicBox);
             UnRegisterFunc(EventDefines.CookUndoMaterial, undoMaterial);
@@ -130,14 +136,43 @@ namespace Module.Cook
             refreshCookView();
         }
 
-        // 将法阵材料提交入锅
-        private void submitToPot(object[] args)
+        // 将法阵材料移到 Pot 暂存槽
+        private void moveToPotTray(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            if (args == null || args.Length < 2) return;
+            if (args[0] is not int slotIndex || args[1] is not int trayIndex) return;
+
+            cookModel.MoveSlotToPotTray(slotIndex, trayIndex);
+            refreshCookView();
+        }
+
+        // 交换暂存槽顺序
+        private void swapPotTray(object[] args)
+        {
+            CookModel cookModel = GetCookModel();
+            if (args == null || args.Length < 2) return;
+            if (args[0] is not int fromTrayIndex || args[1] is not int toTrayIndex) return;
+
+            cookModel.SwapPotTray(fromTrayIndex, toTrayIndex);
+            refreshCookView();
+        }
+
+        // 从暂存槽撤回到法阵
+        private void returnPotTray(object[] args)
         {
             CookModel cookModel = GetCookModel();
             if (args == null || args.Length < 1) return;
-            if (args[0] is not int slotIndex) return;
+            if (args[0] is not int trayIndex) return;
 
-            cookModel.SubmitSlotToPot(slotIndex);
+            cookModel.ReturnPotTraySlot(trayIndex);
+            refreshCookView();
+        }
+
+        // 集满后投入锅中
+        private void submitPotTray(object[] args)
+        {
+            GetCookModel().SubmitPotTray();
             refreshCookView();
         }
 
@@ -180,14 +215,14 @@ namespace Module.Cook
             refreshCookView();
         }
 
-        // 结算当前回合
+        // 结束当前回合（煮熟法阵材料 + 推进回合，不计分）
         private void settleTurn(object[] args)
         {
             CookModel cookModel = GetCookModel();
-            CookRoundResultData result = cookModel.SettleTurn();
+            cookModel.SettleTurn();
             refreshCookView();
 
-            if (result != null && !cookModel.IsRunActive)
+            if (!cookModel.IsRunActive)
                 QLog.Info($"[{nameof(CookController)}] 烹饪结束，分数：{cookModel.GetScoreText()}");
         }
 

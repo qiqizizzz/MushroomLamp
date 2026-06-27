@@ -20,6 +20,7 @@ namespace Module.Cook
     {
         private const int GRID_SIZE = 9;
         private const int HAND_COUNT = 6;
+        private const int POT_TRAY_CAPACITY = 3;   // Pot 暂存槽数量（后续由关卡配置覆盖）
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
         private readonly List<CookMaterialData> _handMaterials = new();
@@ -28,6 +29,10 @@ namespace Module.Cook
         private readonly CookSlotData[] _slots = new CookSlotData[GRID_SIZE];
         private readonly List<int> _placeHistory = new();
         private readonly System.Random _random = new System.Random();
+
+        // Pot 暂存槽：法阵材料先拖到这里集齐，再一并投入锅参与计分
+        private int _potTrayCapacity = POT_TRAY_CAPACITY;
+        private CookMaterialData[] _potTraySlots = new CookMaterialData[POT_TRAY_CAPACITY];
 
         private int _nextMaterialId;
         private int _nextPlaceOrder;
@@ -60,11 +65,20 @@ namespace Module.Cook
         public IReadOnlyList<CookMaterialData> ProcessedMaterials => _processedMaterials;
         public IReadOnlyList<CookPotEntryData> PotEntries => _potEntries;
         public IReadOnlyList<CookSlotData> Slots => _slots;
+
+        // Pot 暂存槽
+        public int PotTrayCapacity => _potTrayCapacity;
+        public IReadOnlyList<CookMaterialData> PotTraySlots => _potTraySlots;
+        public int PotTrayFilledCount => countPotTrayFilled();
+        public bool IsPotTrayFull => PotTrayFilledCount >= _potTrayCapacity;
+        public bool HasPotTrayMaterial => PotTrayFilledCount > 0;
+
         public bool HasPlacedMaterial => _placeHistory.Count > 0;
         public bool HasCookingMaterial => hasAnySlotMaterial();
         public bool HasPotMaterial => _potEntries.Count > 0;
         public bool CanPlaceHandThisTurn => IsRunActive && !_hasPlacedHandThisTurn;
-        public bool CanSettle => IsRunActive && (HasCookingMaterial || HasPotMaterial) && RoundState != CookRoundStateType.Finished;
+        // 结束回合（煮熟法阵材料）：只要法阵有材料即可
+        public bool CanSettle => IsRunActive && HasCookingMaterial && RoundState != CookRoundStateType.Finished;
         public bool IsOverHeatRisk => PreviewValue > TargetMax;
 
         public CookModel()
@@ -227,8 +241,8 @@ namespace Module.Cook
             return true;
         }
 
-        // 将法阵中的材料提交到锅中
-        public bool SubmitSlotToPot(int slotIndex)
+        // 将法阵中的材料移到 Pot 暂存槽（不立即计分，集满后再投入）
+        public bool MoveSlotToPotTray(int slotIndex, int trayIndex)
         {
             if (!IsRunActive)
             {
@@ -242,6 +256,18 @@ namespace Module.Cook
                 return false;
             }
 
+            if (!isValidTrayIndex(trayIndex))
+            {
+                LastTip = "暂存槽不存在";
+                return false;
+            }
+
+            if (_potTraySlots[trayIndex] != null)
+            {
+                LastTip = "该暂存槽已占用";
+                return false;
+            }
+
             CookSlotData slot = _slots[slotIndex];
             if (!slot.HasMaterial)
             {
@@ -249,14 +275,96 @@ namespace Module.Cook
                 return false;
             }
 
+            // 必须至少煮过一轮（熟度 > 0）才能放入暂存槽
+            if (slot.Material.CookProgress <= 0f)
+            {
+                LastTip = "该材料还没煮过，先结束回合让它煮一轮";
+                return false;
+            }
+
             CookMaterialData material = slot.Clear();
-            CookPotEntryData potEntry = new CookPotEntryData(_nextSubmitOrder++, slotIndex, material);
-            _potEntries.Add(potEntry);
+            _potTraySlots[trayIndex] = material;
             removePlaceHistory(slotIndex);
             material.Ability.OnSubmitToPot(this);
 
             refreshPreviewValue();
-            LastTip = $"已将 {potEntry.MaterialName} 放入锅中，状态：{potEntry.CookStateText}";
+            LastTip = IsPotTrayFull
+                ? $"暂存槽已集满 {_potTrayCapacity} 个，可投入锅中"
+                : $"已放入暂存槽 {material.MaterialName}（{PotTrayFilledCount}/{_potTrayCapacity}）";
+            return true;
+        }
+
+        // 交换两个暂存槽中的材料（含空槽移动）
+        public bool SwapPotTray(int fromTrayIndex, int toTrayIndex)
+        {
+            if (!IsRunActive) return false;
+            if (!isValidTrayIndex(fromTrayIndex) || !isValidTrayIndex(toTrayIndex)) return false;
+            if (fromTrayIndex == toTrayIndex) return false;
+
+            (_potTraySlots[fromTrayIndex], _potTraySlots[toTrayIndex]) =
+                (_potTraySlots[toTrayIndex], _potTraySlots[fromTrayIndex]);
+
+            LastTip = "已调整暂存槽顺序";
+            return true;
+        }
+
+        // 将暂存槽材料撤回法阵空槽（找第一个空法阵槽）
+        public bool ReturnPotTraySlot(int trayIndex)
+        {
+            if (!IsRunActive) return false;
+            if (!isValidTrayIndex(trayIndex)) return false;
+
+            CookMaterialData material = _potTraySlots[trayIndex];
+            if (material == null) return false;
+
+            int emptySlot = findFirstEmptySlot();
+            if (emptySlot < 0)
+            {
+                LastTip = "法阵没有空位，无法撤回";
+                return false;
+            }
+
+            _potTraySlots[trayIndex] = null;
+            _slots[emptySlot].Place(material, _nextPlaceOrder++);
+            refreshPreviewValue();
+            LastTip = $"已撤回 {material.MaterialName} 到法阵";
+            return true;
+        }
+
+        // 集满后将暂存槽的材料一并投入锅，参与计分，并清空暂存槽
+        public bool SubmitPotTray()
+        {
+            if (!IsRunActive)
+            {
+                LastTip = "当前烹饪已结束";
+                return false;
+            }
+
+            if (!IsPotTrayFull)
+            {
+                LastTip = $"暂存槽未集满（{PotTrayFilledCount}/{_potTrayCapacity}）";
+                return false;
+            }
+
+            for (int i = 0; i < _potTraySlots.Length; i++)
+            {
+                CookMaterialData material = _potTraySlots[i];
+                if (material == null) continue;
+
+                CookPotEntryData potEntry = new CookPotEntryData(_nextSubmitOrder++, i, material);
+                _potEntries.Add(potEntry);
+                _potTraySlots[i] = null;
+            }
+
+            // 投入即计分：基于本批 _potEntries 计分并累加到总分，然后清空准备下一批
+            CookRoundResultData result = calculateRoundResult(true);
+            CurrentScore += result.RoundScore - result.PenaltyScore;
+            Coin += result.CoinReward;
+            LastRoundResult = result;
+            _potEntries.Clear();
+
+            refreshPreviewValue();
+            LastTip = getSettleTip(result);
             return true;
         }
 
@@ -391,26 +499,21 @@ namespace Module.Cook
             return advanceTurn();
         }
 
-        // 结算当前回合
+        // 结束当前回合：只给法阵材料累积熟度并推进回合，不计分、不动 Pot
+        // 计分完全由 SubmitPotTray（集满3个投入）触发
         public CookRoundResultData SettleTurn()
         {
-            if (!CanSettle)
+            if (!IsRunActive)
             {
-                LastTip = "法阵中没有有效材料，无法结算";
+                LastTip = "当前烹饪已结束";
                 return null;
             }
 
             applyCookingProgress();
-            CookRoundResultData result = calculateRoundResult(true);
-
-            CurrentScore = result.FinalScore;
-            Coin = result.CoinReward;
             RoundState = CookRoundStateType.Settled;
-            LastRoundResult = result;
-
-            LastTip = getSettleTip(result);
+            LastTip = "本回合结束，法阵材料熟度 +1 轮";
             advanceTurn();
-            return result;
+            return null;
         }
 
         // 获取当前回合进度文本
@@ -488,6 +591,7 @@ namespace Module.Cook
             _handMaterials.Clear();
             _placeHistory.Clear();
             _processedMaterials.Clear();
+            // 注意：暂存槽（PotTray）跨回合保留，只在投入时清空
             _hasPlacedHandThisTurn = false;
             _magicBoxBonus = 0;
             _devilRisk = 0;
@@ -504,12 +608,41 @@ namespace Module.Cook
             _potEntries.Clear();
             _processedMaterials.Clear();
             _placeHistory.Clear();
+            clearPotTray();
             _nextPlaceOrder = 1;
             _nextSubmitOrder = 1;
             _hasPlacedHandThisTurn = false;
 
             for (int i = 0; i < _slots.Length; i++)
                 _slots[i].Clear();
+        }
+
+        // ── Pot 暂存槽辅助 ──
+
+        private void clearPotTray()
+        {
+            for (int i = 0; i < _potTraySlots.Length; i++)
+                _potTraySlots[i] = null;
+        }
+
+        private int countPotTrayFilled()
+        {
+            int count = 0;
+            for (int i = 0; i < _potTraySlots.Length; i++)
+                if (_potTraySlots[i] != null) count++;
+            return count;
+        }
+
+        private bool isValidTrayIndex(int trayIndex)
+        {
+            return trayIndex >= 0 && trayIndex < _potTraySlots.Length;
+        }
+
+        private int findFirstEmptySlot()
+        {
+            for (int i = 0; i < _slots.Length; i++)
+                if (!_slots[i].HasMaterial) return i;
+            return -1;
         }
 
         private void dealHandMaterials()

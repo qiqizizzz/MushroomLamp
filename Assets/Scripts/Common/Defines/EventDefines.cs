@@ -22,7 +22,10 @@ namespace Common.Defines
         public const string CookPlaceMaterial = "CookPlaceMaterial";
         public const string CookMoveSlotMaterial = "CookMoveSlotMaterial";
         public const string CookReturnSlotMaterial = "CookReturnSlotMaterial";
-        public const string CookSubmitToPot = "CookSubmitToPot";
+        public const string CookMoveToPotTray = "CookMoveToPotTray";
+        public const string CookSwapPotTray = "CookSwapPotTray";
+        public const string CookReturnPotTray = "CookReturnPotTray";
+        public const string CookSubmitPotTray = "CookSubmitPotTray";
         public const string CookProcessMaterial = "CookProcessMaterial";
         public const string CookTouchMagicBox = "CookTouchMagicBox";
         public const string CookUndoMaterial = "CookUndoMaterial";
