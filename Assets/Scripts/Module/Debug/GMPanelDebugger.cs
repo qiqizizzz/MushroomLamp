@@ -49,6 +49,11 @@ namespace Module.Debug
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
                         GameApp.ControllerManager.ApplyFunc((int)ControllerType.Summary, EventDefines.OpenSummaryView);
                 }
+                else if (viewType == ViewType.StageSettleView)
+                {
+                    if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
+                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.StageSettle, EventDefines.OpenStageSettleView);
+                }
                 else if (GUILayout.Button(label, GUILayout.Height(28f)))
                 {
                     if (isOpen)

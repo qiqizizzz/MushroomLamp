@@ -18,6 +18,7 @@ namespace MVC
         AlmanacView = 5,
         ConfirmView = 6,
         SummaryView = 7,
-        SettingsView = 8
+        SettingsView = 8,
+        StageSettleView = 9
     }
 }

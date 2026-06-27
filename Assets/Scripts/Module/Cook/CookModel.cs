@@ -74,6 +74,19 @@ namespace Module.Cook
         public bool IsPotTrayFull => PotTrayFilledCount >= _potTrayCapacity;
         public bool HasPotTrayMaterial => PotTrayFilledCount > 0;
 
+        // 小局死局：回合已耗尽 + Pot 暂存槽没集满 + 把法阵里煮过的也算上仍凑不满一组
+        // 即玩家再也无法集齐一组投入计分，应弹出小局结算
+        public bool IsStageDeadEnd
+        {
+            get
+            {
+                if (IsRunActive) return false;           // 回合还没耗尽
+                if (IsPotTrayFull) return false;          // 还能投入
+                int cookedInGrid = countCookedSlotMaterials();
+                return PotTrayFilledCount + cookedInGrid < _potTrayCapacity;
+            }
+        }
+
         public bool HasPlacedMaterial => _placeHistory.Count > 0;
         public bool HasCookingMaterial => hasAnySlotMaterial();
         public bool HasPotMaterial => _potEntries.Count > 0;
@@ -652,6 +665,18 @@ namespace Module.Cook
             int count = 0;
             for (int i = 0; i < _potTraySlots.Length; i++)
                 if (_potTraySlots[i] != null) count++;
+            return count;
+        }
+
+        // 法阵里已煮过（CookProgress>0，可入暂存槽）的材料数量
+        private int countCookedSlotMaterials()
+        {
+            int count = 0;
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                if (_slots[i].HasMaterial && _slots[i].Material.CookProgress > 0f)
+                    count++;
+            }
             return count;
         }
 

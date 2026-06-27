@@ -59,6 +59,10 @@ namespace Common.Defines
         // 总结算
         public const string OpenSummaryView = "OpenSummaryView";
 
+        // 小局结算
+        public const string OpenStageSettleView = "OpenStageSettleView";
+        public const string StageSettleToShop = "StageSettleToShop";
+
         // 设置
         public const string OpenSettingsView = "OpenSettingsView";
         public const string SettingsClose = "SettingsClose";

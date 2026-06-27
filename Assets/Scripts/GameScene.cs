@@ -19,6 +19,7 @@ using Module.Confirm;
 using Module.Select;
 using Module.Settings;
 using Module.Shop;
+using Module.StageSettle;
 using Module.Summary;
 using MVC;
 using UnityEngine;
@@ -101,5 +102,6 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.Confirm, new ConfirmController());
         GameApp.ControllerManager.Register(ControllerType.Summary, new SummaryController());
         GameApp.ControllerManager.Register(ControllerType.Settings, new SettingsController());
+        GameApp.ControllerManager.Register(ControllerType.StageSettle, new StageSettleController());
     }
 }

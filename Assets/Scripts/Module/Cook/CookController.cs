@@ -222,8 +222,12 @@ namespace Module.Cook
             cookModel.SettleTurn();
             refreshCookView();
 
-            if (!cookModel.IsRunActive)
-                QLog.Info($"[{nameof(CookController)}] 烹饪结束，分数：{cookModel.GetScoreText()}");
+            // 死局判定：回合耗尽且再也凑不满一组 → 自动弹小局结算
+            if (cookModel.IsStageDeadEnd)
+            {
+                QLog.Info($"[{nameof(CookController)}] 小局结束（死局），分数：{cookModel.GetScoreText()}");
+                ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView);
+            }
         }
 
         // 返回材料选择界面
