@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using Common;
 using Common.Defines;
+using DG.Tweening;
 using Module.Select;
 using MVC.View;
 using TMPro;
@@ -21,6 +22,7 @@ namespace Module.View
     {
         private const float LineHeight = 72f;
         private const float SelectedDifficultyScale = 1.08f;
+        private const float BOX_SWITCH_DURATION = 1.5f;
 
         private Transform _lineContent;
         private TextMeshProUGUI _txtTitle;
@@ -35,9 +37,32 @@ namespace Module.View
         private Button _btnRight;
 
         private Button _btnReturn;
+        private Sequence _boxSwitchSequence;
+        private int _lastBoxIndex = -1;
+        private bool _isBoxIconReady;
+
+        private BoxIconSlot _leftBoxSlot;
+        private BoxIconSlot _centerBoxSlot;
+        private BoxIconSlot _rightBoxSlot;
+        private BoxIconView _leftBoxIcon;
+        private BoxIconView _centerBoxIcon;
+        private BoxIconView _rightBoxIcon;
 
         private readonly List<Transform> _emptySlots = new();
         private readonly List<TextLineItem> _lineItems = new();
+
+        private struct BoxIconSlot
+        {
+            public Vector2 Position;
+            public Vector2 Size;
+            public float Alpha;
+        }
+
+        private struct BoxIconView
+        {
+            public RectTransform Rect;
+            public Image Image;
+        }
 
         public override void InitUI()
         {
@@ -57,6 +82,7 @@ namespace Module.View
             
             bindButtons();
             collectEmptySlots();
+            initBoxIcons();
         }
 
         public override void Open(params object[] args)
@@ -67,6 +93,7 @@ namespace Module.View
 
         public override void Close(params object[] args)
         {
+            killBoxSwitchTween();
             clearLines();
             base.Close(args);
         }
@@ -88,6 +115,7 @@ namespace Module.View
             refreshHeader(entry, detail);
             refreshLines(detail.ToRuntimeLines());
             refreshDifficultyButtons(model.Difficulty);
+            refreshBoxIcons(model);
         }
 
         private void bindButtons()
@@ -138,12 +166,47 @@ namespace Module.View
             setDifficultySelected(_btnHard, difficulty == SelectDifficulty.Hard);
         }
 
+        // 根据选中的药箱索引播放底部药箱切换动画
+        private void refreshBoxIcons(SelectBoxModel model)
+        {
+            if (model == null || !_isBoxIconReady) return;
+
+            int boxIndex = model.SelectedBoxIndex;
+            if (_lastBoxIndex < 0)
+            {
+                _lastBoxIndex = boxIndex;
+                applyBoxIconSlot(_leftBoxIcon, _leftBoxSlot);
+                applyBoxIconSlot(_centerBoxIcon, _centerBoxSlot);
+                applyBoxIconSlot(_rightBoxIcon, _rightBoxSlot);
+                return;
+            }
+
+            if (_lastBoxIndex == boxIndex) return;
+
+            int direction = getBoxSwitchDirection(_lastBoxIndex, boxIndex, model.BoxCount);
+            _lastBoxIndex = boxIndex;
+            if (direction > 0)
+                playBoxSwitchToRight();
+            else if (direction < 0)
+                playBoxSwitchToLeft();
+        }
+
         private static void setDifficultySelected(Button button, bool selected)
         {
             if (button == null) return;
             button.transform.localScale = selected
                 ? Vector3.one * SelectedDifficultyScale
                 : Vector3.one;
+        }
+
+        // 判断本次药箱切换方向，1 表示向右切，-1 表示向左切
+        private static int getBoxSwitchDirection(int oldIndex, int newIndex, int boxCount)
+        {
+            if (boxCount <= 1) return 0;
+
+            int forward = (newIndex - oldIndex + boxCount) % boxCount;
+            int backward = (oldIndex - newIndex + boxCount) % boxCount;
+            return forward <= backward ? 1 : -1;
         }
 
         private void collectEmptySlots()
@@ -161,6 +224,26 @@ namespace Module.View
             _emptySlots.Sort((a, b) => getEmptyGoOrder(a).CompareTo(getEmptyGoOrder(b)));
         }
 
+        // 初始化底部药箱轮播图标并采样当前槽位
+        private void initBoxIcons()
+        {
+            _leftBoxIcon = getBoxIconView("Bottom/Img_BoxIcon_0");
+            _centerBoxIcon = getBoxIconView("Bottom/Img_BoxIcon_1");
+            _rightBoxIcon = getBoxIconView("Bottom/Img_BoxIcon_2");
+            _isBoxIconReady = isBoxIconValid(_leftBoxIcon)
+                && isBoxIconValid(_centerBoxIcon)
+                && isBoxIconValid(_rightBoxIcon);
+
+            if (!_isBoxIconReady) return;
+
+            _leftBoxSlot = createBoxIconSlot(_leftBoxIcon);
+            _centerBoxSlot = createBoxIconSlot(_centerBoxIcon);
+            _rightBoxSlot = createBoxIconSlot(_rightBoxIcon);
+            _leftBoxIcon.Image.raycastTarget = false;
+            _centerBoxIcon.Image.raycastTarget = false;
+            _rightBoxIcon.Image.raycastTarget = false;
+        }
+
         private static int getEmptyGoOrder(Transform transform)
         {
             const string prefix = "EmptyGo_";
@@ -169,6 +252,113 @@ namespace Module.View
                 return index;
 
             return int.MaxValue;
+        }
+
+        // 播放向右切换动画
+        private void playBoxSwitchToRight()
+        {
+            completeBoxSwitchTween();
+            _boxSwitchSequence = DOTween.Sequence()
+                .SetLink(gameObject)
+                .SetEase(Ease.OutCubic)
+                .Join(tweenBoxIcon(_centerBoxIcon, _leftBoxSlot))
+                .Join(tweenBoxIcon(_rightBoxIcon, _centerBoxSlot))
+                .Join(tweenBoxIcon(_leftBoxIcon, _rightBoxSlot))
+                .OnComplete(() =>
+                {
+                    BoxIconView oldLeft = _leftBoxIcon;
+                    _leftBoxIcon = _centerBoxIcon;
+                    _centerBoxIcon = _rightBoxIcon;
+                    _rightBoxIcon = oldLeft;
+                    _boxSwitchSequence = null;
+                });
+        }
+
+        // 播放向左切换动画
+        private void playBoxSwitchToLeft()
+        {
+            completeBoxSwitchTween();
+            _boxSwitchSequence = DOTween.Sequence()
+                .SetLink(gameObject)
+                .SetEase(Ease.OutCubic)
+                .Join(tweenBoxIcon(_centerBoxIcon, _rightBoxSlot))
+                .Join(tweenBoxIcon(_leftBoxIcon, _centerBoxSlot))
+                .Join(tweenBoxIcon(_rightBoxIcon, _leftBoxSlot))
+                .OnComplete(() =>
+                {
+                    BoxIconView oldRight = _rightBoxIcon;
+                    _rightBoxIcon = _centerBoxIcon;
+                    _centerBoxIcon = _leftBoxIcon;
+                    _leftBoxIcon = oldRight;
+                    _boxSwitchSequence = null;
+                });
+        }
+
+        // 创建单个药箱图标的并行动画
+        private Sequence tweenBoxIcon(BoxIconView iconView, BoxIconSlot targetSlot)
+        {
+            return DOTween.Sequence()
+                .SetEase(Ease.OutCubic)
+                .Join(iconView.Rect.DOAnchorPos(targetSlot.Position, BOX_SWITCH_DURATION).SetEase(Ease.OutCubic))
+                .Join(iconView.Rect.DOSizeDelta(targetSlot.Size, BOX_SWITCH_DURATION).SetEase(Ease.OutCubic))
+                .Join(iconView.Image.DOFade(targetSlot.Alpha, BOX_SWITCH_DURATION).SetEase(Ease.OutCubic));
+        }
+
+        // 停止当前药箱切换动画
+        private void killBoxSwitchTween()
+        {
+            if (_boxSwitchSequence == null) return;
+
+            _boxSwitchSequence.Kill();
+            _boxSwitchSequence = null;
+        }
+
+        // 完成当前药箱动画并同步内部图标槽位
+        private void completeBoxSwitchTween()
+        {
+            if (_boxSwitchSequence == null) return;
+
+            _boxSwitchSequence.Kill(true);
+            _boxSwitchSequence = null;
+        }
+
+        // 获取药箱图标视图
+        private BoxIconView getBoxIconView(string path)
+        {
+            Transform iconTf = transform.Find(path);
+            return new BoxIconView
+            {
+                Rect = iconTf as RectTransform,
+                Image = iconTf == null ? null : iconTf.GetComponent<Image>()
+            };
+        }
+
+        // 采样药箱图标当前状态作为槽位
+        private static BoxIconSlot createBoxIconSlot(BoxIconView iconView)
+        {
+            return new BoxIconSlot
+            {
+                Position = iconView.Rect.anchoredPosition,
+                Size = iconView.Rect.sizeDelta,
+                Alpha = iconView.Image.color.a
+            };
+        }
+
+        // 直接应用药箱槽位状态
+        private static void applyBoxIconSlot(BoxIconView iconView, BoxIconSlot slot)
+        {
+            iconView.Rect.anchoredPosition = slot.Position;
+            iconView.Rect.sizeDelta = slot.Size;
+
+            Color color = iconView.Image.color;
+            color.a = slot.Alpha;
+            iconView.Image.color = color;
+        }
+
+        // 判断药箱图标引用是否可用
+        private static bool isBoxIconValid(BoxIconView iconView)
+        {
+            return iconView.Rect != null && iconView.Image != null;
         }
 
         private void refreshLines(IReadOnlyList<SelectMaterialLineData> lines)

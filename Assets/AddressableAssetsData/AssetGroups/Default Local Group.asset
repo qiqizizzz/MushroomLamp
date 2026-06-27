@@ -37,11 +37,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2692d2ac8943de247b0517b22952ce22
-    m_Address: Art/BG_img/bg_SelectView
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5bfc99dd302073049915d36d2ff1ac04
     m_Address: Art/Card_img/potato
     m_ReadOnly: 0
@@ -89,6 +84,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0c9a5a259866944a845e6ed3cdfcf9e
     m_Address: CardConfig_Visual
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4e4cfbbede447746b0beac2ffa665ef
+    m_Address: Art/BG_img/bg_selectView
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
