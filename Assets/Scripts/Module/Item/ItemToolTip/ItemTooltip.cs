@@ -19,9 +19,13 @@ namespace Module.Item
     public class ItemTooltip : BaseItem
     {
         private const int TOOLTIP_SORTING_ORDER = 5000;
+        private const float CONTENT_PADDING_X = 14f;
+        private const float CONTENT_PADDING_Y = 14f;
+        private const float FIELD_ROW_SPACING = 8f;
+        private const float TEXT_BLOCK_PADDING_X = 8f;
+        private const float TEXT_BLOCK_PADDING_Y = 6f;
 
         [SerializeField] private float TooltipWidth = 380f;
-        [SerializeField] private float MaxHeight = 420f;
         [SerializeField] private float RowLabelWidth = 88f;
 
         private readonly List<TextMeshProUGUI> _tagTexts = new();
@@ -90,7 +94,11 @@ namespace Module.Item
             SetVisible(true);
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
+            refreshDynamicLayoutSizes();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rowRoot);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
             clampHeight();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
         }
 
         // 设置详情浮层字体
@@ -151,6 +159,8 @@ namespace Module.Item
                 _rectTransform = gameObject.AddComponent<RectTransform>();
 
             _rectTransform.sizeDelta = new Vector2(TooltipWidth, _rectTransform.sizeDelta.y <= 0 ? 240f : _rectTransform.sizeDelta.y);
+            _rectTransform.anchorMin = new Vector2(0f, 1f);
+            _rectTransform.anchorMax = new Vector2(0f, 1f);
             _rectTransform.pivot = new Vector2(0f, 1f);
 
             _imgBackground = GetComponent<Image>();
@@ -175,7 +185,7 @@ namespace Module.Item
             _canvasGroup.blocksRaycasts = false;
 
             _contentRoot = getOrCreateRect("Content", transform);
-            setupStretch(_contentRoot, new Vector2(14f, 14f), new Vector2(-14f, -14f));
+            setupTopLeft(_contentRoot, new Vector2(CONTENT_PADDING_X, -CONTENT_PADDING_Y), new Vector2(getContentWidth(), 0f));
             setupVerticalLayout(_contentRoot.gameObject, 8f, TextAnchor.UpperLeft);
             ensureFitter(_contentRoot.gameObject);
 
@@ -190,6 +200,7 @@ namespace Module.Item
         {
             _headerRoot = getOrCreateRect("Header", _contentRoot);
             setupHorizontalLayout(_headerRoot.gameObject, 10f, TextAnchor.MiddleLeft);
+            setLayout(_headerRoot.gameObject, getContentWidth(), 58f, getContentWidth(), 58f);
 
             _imgIcon = getOrCreateImage("Img_Icon", _headerRoot, new Color(0.92f, 0.83f, 0.66f, 1f));
             setLayout(_imgIcon.gameObject, 54f, 54f, 54f, 54f);
@@ -215,6 +226,7 @@ namespace Module.Item
             HorizontalLayoutGroup layout = setupHorizontalLayout(_tagRoot.gameObject, 6f, TextAnchor.UpperLeft);
             layout.childControlWidth = false;
             layout.childForceExpandWidth = false;
+            setLayout(_tagRoot.gameObject, getContentWidth(), 28f, getContentWidth(), 28f);
             ContentSizeFitter fitter = ensureFitter(_tagRoot.gameObject);
             fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
         }
@@ -251,6 +263,12 @@ namespace Module.Item
             return new Vector2(Mathf.Abs(fallbackOffset.x), verticalOffset);
         }
 
+        // 获取内容区固定宽度
+        private float getContentWidth()
+        {
+            return Mathf.Max(1f, TooltipWidth - CONTENT_PADDING_X * 2f);
+        }
+
         // 创建文本块
         private RectTransform createTextBlock(string blockName, string textName, out TextMeshProUGUI text)
         {
@@ -261,11 +279,12 @@ namespace Module.Item
 
             image.color = new Color(0.95f, 0.78f, 0.52f, 0.14f);
             image.raycastTarget = false;
-            setupVerticalLayout(block.gameObject, 0f, TextAnchor.UpperLeft);
-            ensureFitter(block.gameObject);
+            removeVerticalLayout(block.gameObject);
+            removeFitter(block.gameObject);
+            setLayout(block.gameObject, getContentWidth(), 32f, getContentWidth(), 32f);
 
-            text = getOrCreateText(textName, block, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.Left);
-            setPadding(text.rectTransform, 8f, 6f);
+            text = getOrCreateText(textName, block, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.TopLeft);
+            setupTextBlockTextRect(text.rectTransform, getTextBlockTextWidth(), 20f);
             return block;
         }
 
@@ -331,16 +350,17 @@ namespace Module.Item
         private GameObject createFieldRow(string rowName, string label, string value)
         {
             RectTransform row = getOrCreateRect(rowName, _rowRoot);
-            setupHorizontalLayout(row.gameObject, 8f, TextAnchor.UpperLeft);
-            ensureFitter(row.gameObject);
+            setupHorizontalLayout(row.gameObject, FIELD_ROW_SPACING, TextAnchor.UpperLeft);
+            removeFitter(row.gameObject);
+            setLayout(row.gameObject, getContentWidth(), 24f, getContentWidth(), 24f);
 
-            TextMeshProUGUI labelText = getOrCreateText("Txt_Label", row, 15f, new Color(0.74f, 0.62f, 0.48f, 1f), TextAlignmentOptions.Left);
+            TextMeshProUGUI labelText = getOrCreateText("Txt_Label", row, 15f, new Color(0.74f, 0.62f, 0.48f, 1f), TextAlignmentOptions.TopLeft);
             labelText.text = label;
             setLayout(labelText.gameObject, RowLabelWidth, 24f, RowLabelWidth, -1f);
 
-            TextMeshProUGUI valueText = getOrCreateText("Txt_Value", row, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.Left);
+            TextMeshProUGUI valueText = getOrCreateText("Txt_Value", row, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.TopLeft);
             valueText.text = value;
-            setFlexibleLayout(valueText.gameObject);
+            setPreferredFlexibleLayout(valueText.gameObject, getFieldValueWidth(), 24f, getFieldValueWidth(), -1f);
             return row.gameObject;
         }
 
@@ -349,23 +369,142 @@ namespace Module.Item
         {
             for (int i = 0; i < _tagTexts.Count; i++)
                 if (_tagTexts[i] != null)
-                    Destroy(_tagTexts[i].transform.parent.gameObject);
+                    destroyDynamicObject(_tagTexts[i].transform.parent.gameObject);
 
             _tagTexts.Clear();
 
             for (int i = 0; i < _fieldRows.Count; i++)
                 if (_fieldRows[i] != null)
-                    Destroy(_fieldRows[i]);
+                    destroyDynamicObject(_fieldRows[i]);
 
             _fieldRows.Clear();
         }
 
-        // 限制最大高度
+        // 根据动态内容刷新高度
         private void clampHeight()
         {
             float preferredHeight = LayoutUtility.GetPreferredHeight(_contentRoot);
-            float contentHeight = Mathf.Min(MaxHeight, Mathf.Max(160f, preferredHeight + 28f));
+            float contentHeight = Mathf.Max(160f, preferredHeight + CONTENT_PADDING_Y * 2f);
             _rectTransform.sizeDelta = new Vector2(TooltipWidth, contentHeight);
+            _contentRoot.sizeDelta = new Vector2(getContentWidth(), preferredHeight);
+        }
+
+        // 刷新动态文本块与字段行尺寸
+        private void refreshDynamicLayoutSizes()
+        {
+            refreshFieldRowSizes();
+            refreshTextBlockSize(_descBlock, _txtDesc);
+            refreshTextBlockSize(_processBlock, _txtProcess);
+            refreshTextBlockSize(_effectBlock, _txtEffect);
+        }
+
+        // 刷新字段行高度，避免多行字段压住下一行
+        private void refreshFieldRowSizes()
+        {
+            for (int i = 0; i < _fieldRows.Count; i++)
+            {
+                if (_fieldRows[i] == null) continue;
+
+                TextMeshProUGUI labelText = _fieldRows[i].transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+                TextMeshProUGUI valueText = _fieldRows[i].transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
+                float labelHeight = getPreferredTextHeight(labelText, RowLabelWidth);
+                float valueHeight = getPreferredTextHeight(valueText, getFieldValueWidth());
+                float rowHeight = Mathf.Ceil(Mathf.Max(24f, labelHeight, valueHeight));
+                setLayout(_fieldRows[i], getContentWidth(), rowHeight, getContentWidth(), rowHeight);
+                setLayout(labelText.gameObject, RowLabelWidth, rowHeight, RowLabelWidth, rowHeight);
+                setPreferredFlexibleLayout(valueText.gameObject, getFieldValueWidth(), rowHeight, getFieldValueWidth(), rowHeight);
+            }
+        }
+
+        // 刷新大段文本块高度
+        private void refreshTextBlockSize(RectTransform block, TextMeshProUGUI text)
+        {
+            if (block == null || text == null || !block.gameObject.activeSelf) return;
+
+            float textWidth = getTextBlockTextWidth();
+            float textHeight = getPreferredTextHeight(text, textWidth);
+            float blockHeight = Mathf.Ceil(Mathf.Max(28f, textHeight + TEXT_BLOCK_PADDING_Y * 2f + 2f));
+            setLayout(block.gameObject, getContentWidth(), blockHeight, getContentWidth(), blockHeight);
+            setRectSize(block, getContentWidth(), blockHeight);
+            setupTextBlockTextRect(text.rectTransform, textWidth, Mathf.Max(1f, blockHeight - TEXT_BLOCK_PADDING_Y * 2f));
+        }
+
+        // 获取字段值文本宽度
+        private float getFieldValueWidth()
+        {
+            return Mathf.Max(1f, getContentWidth() - RowLabelWidth - FIELD_ROW_SPACING);
+        }
+
+        // 获取文本块内部文字宽度
+        private float getTextBlockTextWidth()
+        {
+            return Mathf.Max(1f, getContentWidth() - TEXT_BLOCK_PADDING_X * 2f);
+        }
+
+        // 获取 TMP 文本在指定宽度下的首选高度
+        private static float getPreferredTextHeight(TextMeshProUGUI text, float width)
+        {
+            if (text == null || string.IsNullOrWhiteSpace(text.text))
+                return 0f;
+
+            text.enableAutoSizing = false;
+            text.enableWordWrapping = true;
+            text.overflowMode = TextOverflowModes.Overflow;
+            text.ForceMeshUpdate();
+            Vector2 preferredValues = text.GetPreferredValues(text.text, width, Mathf.Infinity);
+            return Mathf.Max(preferredValues.y, getEstimatedWrappedTextHeight(text, width));
+        }
+
+        // 估算中文长句换行高度，兜住 TMP 字体 fallback 导致的首选高度偏小
+        private static float getEstimatedWrappedTextHeight(TextMeshProUGUI text, float width)
+        {
+            string value = text.text;
+            if (string.IsNullOrWhiteSpace(value))
+                return 0f;
+
+            float lineHeight = Mathf.Max(1f, text.fontSize * 1.2f);
+            float fullWidthCharCount = Mathf.Max(1f, width / Mathf.Max(1f, text.fontSize));
+            string[] lines = value.Split('\n');
+            int lineCount = 0;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                float weightedLength = getWeightedTextLength(lines[i]);
+                lineCount += Mathf.Max(1, Mathf.CeilToInt(weightedLength / fullWidthCharCount));
+            }
+
+            return lineHeight * lineCount;
+        }
+
+        // 统计文本显示宽度权重，中文按全角，英文数字按半角估算
+        private static float getWeightedTextLength(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return 0f;
+
+            float length = 0f;
+            for (int i = 0; i < value.Length; i++)
+            {
+                char c = value[i];
+                if (char.IsWhiteSpace(c))
+                {
+                    length += 0.35f;
+                    continue;
+                }
+
+                length += c <= 127 ? 0.6f : 1f;
+            }
+
+            return length;
+        }
+
+        // 移除动态节点并从布局树摘除，避免同一帧重复绑定时旧节点影响布局
+        private static void destroyDynamicObject(GameObject target)
+        {
+            if (target == null) return;
+
+            target.transform.SetParent(null, false);
+            Destroy(target);
         }
 
         // 将当前字体应用到所有已存在文本
@@ -423,17 +562,20 @@ namespace Module.Item
             text.color = color;
             text.alignment = alignment;
             text.enableWordWrapping = true;
+            text.enableAutoSizing = false;
+            text.overflowMode = TextOverflowModes.Overflow;
             text.raycastTarget = false;
             return text;
         }
 
-        // 设置拉伸布局
-        private static void setupStretch(RectTransform rectTransform, Vector2 offsetMin, Vector2 offsetMax)
+        // 设置左上角固定布局
+        private static void setupTopLeft(RectTransform rectTransform, Vector2 anchoredPosition, Vector2 sizeDelta)
         {
-            rectTransform.anchorMin = Vector2.zero;
-            rectTransform.anchorMax = Vector2.one;
-            rectTransform.offsetMin = offsetMin;
-            rectTransform.offsetMax = offsetMax;
+            rectTransform.anchorMin = new Vector2(0f, 1f);
+            rectTransform.anchorMax = new Vector2(0f, 1f);
+            rectTransform.pivot = new Vector2(0f, 1f);
+            rectTransform.anchoredPosition = anchoredPosition;
+            rectTransform.sizeDelta = sizeDelta;
         }
 
         // 设置文本内边距
@@ -443,6 +585,23 @@ namespace Module.Item
             rectTransform.anchorMax = Vector2.one;
             rectTransform.offsetMin = new Vector2(horizontal, vertical);
             rectTransform.offsetMax = new Vector2(-horizontal, -vertical);
+        }
+
+        // 固定说明块文本区域，避免 Stretch 子节点被父级高度压缩
+        private static void setupTextBlockTextRect(RectTransform rectTransform, float width, float height)
+        {
+            rectTransform.anchorMin = new Vector2(0f, 1f);
+            rectTransform.anchorMax = new Vector2(0f, 1f);
+            rectTransform.pivot = new Vector2(0f, 1f);
+            rectTransform.anchoredPosition = new Vector2(TEXT_BLOCK_PADDING_X, -TEXT_BLOCK_PADDING_Y);
+            rectTransform.sizeDelta = new Vector2(width, height);
+        }
+
+        // 立即同步 RectTransform 尺寸，避免等待布局系统刷新时出现单行高度底图
+        private static void setRectSize(RectTransform rectTransform, float width, float height)
+        {
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
         }
 
         // 设置垂直布局
@@ -489,6 +648,28 @@ namespace Module.Item
             return fitter;
         }
 
+        // 移除受父级 LayoutGroup 管理的自适应尺寸组件
+        private static void removeFitter(GameObject target)
+        {
+            ContentSizeFitter fitter = target.GetComponent<ContentSizeFitter>();
+            if (fitter != null)
+            {
+                fitter.enabled = false;
+                Destroy(fitter);
+            }
+        }
+
+        // 移除文本块内部的垂直布局，避免文本高度被压缩
+        private static void removeVerticalLayout(GameObject target)
+        {
+            VerticalLayoutGroup layout = target.GetComponent<VerticalLayoutGroup>();
+            if (layout != null)
+            {
+                layout.enabled = false;
+                Destroy(layout);
+            }
+        }
+
         // 设置固定布局尺寸
         private static void setLayout(GameObject target, float minWidth, float minHeight, float preferredWidth, float preferredHeight)
         {
@@ -509,6 +690,14 @@ namespace Module.Item
             if (layout == null)
                 layout = target.AddComponent<LayoutElement>();
 
+            layout.flexibleWidth = 1f;
+        }
+
+        // 设置带宽高约束的弹性布局
+        private static void setPreferredFlexibleLayout(GameObject target, float minWidth, float minHeight, float preferredWidth, float preferredHeight)
+        {
+            setLayout(target, minWidth, minHeight, preferredWidth, preferredHeight);
+            LayoutElement layout = target.GetComponent<LayoutElement>();
             layout.flexibleWidth = 1f;
         }
 
