@@ -50,6 +50,7 @@ namespace Module.View
         private Button _btnPauseConfirm;
         private Button _btnPauseCancel;
         private bool _isRiskSettleConfirmed;
+        private CookRoundResultData _lastShownResult;
 
         private Transform _potTrayRoot;
         private Button _btnSubmitTray;
@@ -68,6 +69,7 @@ namespace Module.View
             if (_txtOrder != null) _txtOrder.gameObject.SetActive(false);
             _txtPreview = Find<TextMeshProUGUI>("Center/Pot/Txt_Preview");
             _txtTip = Find<TextMeshProUGUI>("Bottom/Txt_Tip");
+            if (_txtTip != null) _txtTip.gameObject.SetActive(false);
 
             _imgHeatFill = Find<Image>("Left/HeatBar/Img_Fill");
             _imgHeatPreview = Find<Image>("Left/HeatBar/Img_HeatPreview");
@@ -158,6 +160,12 @@ namespace Module.View
             refreshHand(cookModel);
             refreshProcessedMaterials(cookModel);
             refreshActions(cookModel);
+
+            if (cookModel.LastRoundResult != null && cookModel.LastRoundResult != _lastShownResult)
+            {
+                _lastShownResult = cookModel.LastRoundResult;
+                showFloatingScore(cookModel.LastRoundResult);
+            }
         }
 
         // 刷新 Pot 暂存槽与投入按钮显隐
@@ -812,6 +820,43 @@ namespace Module.View
         {
             if (_txtTip != null)
                 _txtTip.text = tip;
+        }
+
+        private void showFloatingScore(CookRoundResultData result)
+        {
+            string text = result.RoundScore > 0
+                ? $"+{CookRoundResultData.FormatScore(result.RoundScore)}"
+                : CookRoundResultData.FormatScore(result.RoundScore);
+
+            // 在 Canvas 正中心创建飘字对象
+            GameObject floatObj = new GameObject("FloatingScore", typeof(RectTransform));
+            floatObj.transform.SetParent(transform, false);
+            floatObj.transform.SetAsLastSibling();
+
+            RectTransform rt = floatObj.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta = new Vector2(400f, 100f);
+
+            TextMeshProUGUI txt = floatObj.AddComponent<TextMeshProUGUI>();
+            txt.font = GetFontAsset();
+            txt.fontSize = 60;
+            txt.fontStyle = FontStyles.Bold;
+            txt.alignment = TextAlignmentOptions.Center;
+            txt.text = text;
+            txt.color = result.IsOverHeat
+                ? new Color(0.92f, 0.23f, 0.16f, 1f)
+                : new Color(0.1f, 0.7f, 0.15f, 1f);
+            txt.raycastTarget = false;
+
+            // 向上飘 + 渐隐
+            rt.DOAnchorPosY(200f, 1.2f).SetEase(Ease.OutCubic);
+            txt.DOFade(0f, 1.2f).SetEase(Ease.InQuad).OnComplete(() =>
+            {
+                if (floatObj != null) floatObj.SetActive(false);
+            });
         }
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
