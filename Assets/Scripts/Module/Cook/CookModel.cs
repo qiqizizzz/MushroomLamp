@@ -8,6 +8,7 @@
 
 using Module.Card;
 using MVC.Model;
+using Module.Level;
 using Module.Select;
 using System;
 using System.Collections.Generic;
@@ -45,6 +46,9 @@ namespace Module.Cook
         public SelectDifficulty Difficulty { get; private set; }
         public string BoxId { get; private set; }
         public string BoxName { get; private set; }
+        public string StageId { get; private set; }
+        public int StageIndex { get; private set; }
+        public int StageCount { get; private set; }
         public int TurnIndex { get; private set; }
         public int MaxTurn { get; private set; }
         public int TargetMin { get; private set; }
@@ -59,6 +63,7 @@ namespace Module.Cook
         public CookRoundResultData LastRoundResult { get; private set; }
         public bool IsMagicBoxUsed { get; private set; }
         public CookMagicBoxEffectType LastMagicBoxEffect { get; private set; }
+        public bool HasStageConfig { get; private set; }
         public int AngelRescueCount { get; private set; }
         public float DevilRisk => _devilRisk;
         public string MagicBoxStatusText { get; private set; }
@@ -91,6 +96,11 @@ namespace Module.Cook
         public bool HasCookingMaterial => hasAnySlotMaterial();
         public bool HasPotMaterial => _potEntries.Count > 0;
         public bool CanPlaceHandThisTurn => IsRunActive && !_hasPlacedHandThisTurn;
+        public bool IsStageFinished => MaxTurn > 0 && !IsRunActive && RoundState == CookRoundStateType.Finished;
+        public bool IsStageTargetReached => CurrentScore >= TargetMin;
+        public bool IsFinalStage => HasStageConfig && StageCount > 0 && StageIndex >= StageCount - 1;
+        public bool ShouldOpenFinalSummary => IsStageFinished && (!IsStageTargetReached || IsFinalStage);
+        public bool ShouldOpenStageSettle => IsStageFinished && IsStageTargetReached && !IsFinalStage;
         // 结束回合（煮熟法阵材料）：只要法阵有材料即可
         public bool CanSettle => IsRunActive && HasCookingMaterial && RoundState != CookRoundStateType.Finished;
         public bool IsOverHeatRisk => PreviewValue > TargetMax;
@@ -110,7 +120,7 @@ namespace Module.Cook
             CurrentScore = 0;
             Coin = 0;
 
-            if (startData != null && startData.HasStageConfig)
+            if (HasStageConfig)
             {
                 // 来自关卡配置表的小局参数
                 MaxTurn = Mathf.Max(1, startData.TurnCount);
@@ -604,6 +614,9 @@ namespace Module.Cook
             Difficulty = startData?.Difficulty ?? SelectDifficulty.Normal;
             BoxId = startData?.BoxId ?? string.Empty;
             BoxName = string.IsNullOrWhiteSpace(startData?.BoxName) ? "默认药箱" : startData.BoxName;
+            HasStageConfig = startData != null && startData.HasStageConfig;
+            StageId = startData?.StageId ?? string.Empty;
+            resolveStageProgress();
 
             _materialSeeds.Clear();
             if (startData?.Materials != null)
@@ -619,6 +632,39 @@ namespace Module.Cook
 
             if (_materialSeeds.Count == 0)
                 addFallbackSeeds();
+        }
+
+        // 根据当前小局配置定位大局进度
+        private void resolveStageProgress()
+        {
+            StageIndex = 0;
+            StageCount = 0;
+            if (!HasStageConfig) return;
+
+            LevelCatalogJsonConfig catalog = LevelConfigLoader.LoadCatalog();
+            if (catalog?.levels == null) return;
+
+            LevelEntryJsonData level = null;
+            for (int i = 0; i < catalog.levels.Length; i++)
+            {
+                LevelEntryJsonData currentLevel = catalog.levels[i];
+                if (currentLevel != null && currentLevel.boxId == BoxId)
+                {
+                    level = currentLevel;
+                    break;
+                }
+            }
+
+            StageCount = LevelConfigLoader.GetStageCount(level, Difficulty);
+            for (int i = 0; i < StageCount; i++)
+            {
+                StageJsonConfig stage = LevelConfigLoader.GetStage(level, Difficulty, i);
+                if (stage != null && stage.stageId == StageId)
+                {
+                    StageIndex = i;
+                    return;
+                }
+            }
         }
 
         private void startRound()

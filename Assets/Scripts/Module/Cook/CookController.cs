@@ -11,6 +11,7 @@ using Common.Defines;
 using MVC;
 using MVC.Controller;
 using MVC.View;
+using Module.StageSettle;
 using Module.View;
 
 namespace Module.Cook
@@ -18,6 +19,8 @@ namespace Module.Cook
     // 烹饪核心玩法控制器，负责局内流程与事件分发
     public class CookController : BaseController
     {
+        private bool _hasOpenedStageEndView;
+
         public CookController()
         {
             SetModel(new CookModel());
@@ -96,6 +99,7 @@ namespace Module.Cook
             CookModel cookModel = GetCookModel();
             CookRunStartData startData = args != null && args.Length > 0 ? args[0] as CookRunStartData : null;
             cookModel.StartRun(startData);
+            _hasOpenedStageEndView = false;
 
             GameApp.ViewManager.Open(ViewType.CookView, args);
             refreshCookView();
@@ -174,6 +178,7 @@ namespace Module.Cook
         {
             GetCookModel().SubmitPotTray();
             refreshCookView();
+            openStageEndViewIfNeeded();
         }
 
         // 加工手牌材料
@@ -213,6 +218,7 @@ namespace Module.Cook
         {
             GetCookModel().SkipTurn();
             refreshCookView();
+            openStageEndViewIfNeeded();
         }
 
         // 结束当前回合（煮熟法阵材料 + 推进回合，不计分）
@@ -221,13 +227,47 @@ namespace Module.Cook
             CookModel cookModel = GetCookModel();
             cookModel.SettleTurn();
             refreshCookView();
+            openStageEndViewIfNeeded();
+        }
 
-            // 死局判定：回合耗尽且再也凑不满一组 → 自动弹小局结算
-            if (cookModel.IsStageDeadEnd)
+        // 小局结束后根据目标分与小局进度进入对应结算界面
+        private void openStageEndViewIfNeeded()
+        {
+            CookModel cookModel = GetCookModel();
+            if (_hasOpenedStageEndView || !cookModel.IsStageFinished) return;
+
+            _hasOpenedStageEndView = true;
+            if (cookModel.ShouldOpenFinalSummary)
             {
-                QLog.Info($"[{nameof(CookController)}] 小局结束（死局），分数：{cookModel.GetScoreText()}");
-                ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView);
+                QLog.Info($"[{nameof(CookController)}] 小局结束，进入最终结算，分数：{cookModel.GetScoreText()}");
+                GameApp.ViewManager.Close(ViewType.CookView);
+                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
+                return;
             }
+
+            if (!cookModel.ShouldOpenStageSettle) return;
+
+            QLog.Info($"[{nameof(CookController)}] 小局达标，进入小局结算，分数：{cookModel.GetScoreText()}");
+            ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView, buildStageSettleData(cookModel));
+        }
+
+        // 构建小局结算界面展示数据
+        private static StageSettleData buildStageSettleData(CookModel cookModel)
+        {
+            return new StageSettleData
+            {
+                BoxName = cookModel.BoxName,
+                StageId = cookModel.StageId,
+                StageIndex = cookModel.StageIndex,
+                StageCount = cookModel.StageCount,
+                TurnCount = cookModel.MaxTurn,
+                TargetMin = cookModel.TargetMin,
+                TargetMax = cookModel.TargetMax,
+                CurrentScore = cookModel.CurrentScore,
+                Coin = cookModel.Coin,
+                IsTargetReached = cookModel.IsStageTargetReached,
+                IsFinalStage = cookModel.IsFinalStage
+            };
         }
 
         // 返回材料选择界面
