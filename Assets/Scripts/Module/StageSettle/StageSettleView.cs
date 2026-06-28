@@ -87,7 +87,7 @@ namespace Module.StageSettle
             setText(_txtResult, resultText);
             setText(_txtStage, stageText);
             setText(_txtTurn, data.TurnCount.ToString());
-            setText(_txtTarget, $"{data.TargetMin}~{data.TargetMax}");
+            setText(_txtTarget, data.TargetMin.ToString());
             setText(_txtScore, CookRoundResultData.FormatScore(data.CurrentScore));
             setText(_txtCoin, data.Coin.ToString());
             setText(_txtNext, nextText);

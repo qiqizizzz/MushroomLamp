@@ -602,10 +602,10 @@ namespace Module.Cook
             return $"得分 {CookRoundResultData.FormatScore(CurrentScore)}";
         }
 
-        // 获取目标区间文本
+        // 获取目标门槛分数文本（达到该分数即通过小局，TargetMax 只是回收过热上限，不在此显示）
         public string GetTargetText()
         {
-            return $"目标 {TargetMin}~{TargetMax}";
+            return $"目标 {TargetMin}";
         }
 
         // 获取金币文本
