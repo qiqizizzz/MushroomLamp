@@ -6,6 +6,7 @@
 * └──────────────────────────────────┘
 */
 
+using DG.Tweening;
 using Module.Cook;
 using Common.Defines;
 using MVC.View;
@@ -27,6 +28,8 @@ namespace Module.View
         private TextMeshProUGUI _txtTip;
 
         private Image _imgHeatFill;
+        private Image _imgHeatPreview;
+        private Tweener _heatPreviewTween;
         private Transform _slotRoot;
         private Transform _handArea;
         private Transform _handContent;
@@ -62,10 +65,28 @@ namespace Module.View
             _txtTarget = Find<TextMeshProUGUI>("Top/Txt_Target");
             _txtCoin = Find<TextMeshProUGUI>("Top/Txt_Coin");
             _txtOrder = Find<TextMeshProUGUI>("Left/Txt_Order");
+            if (_txtOrder != null) _txtOrder.gameObject.SetActive(false);
             _txtPreview = Find<TextMeshProUGUI>("Center/Pot/Txt_Preview");
             _txtTip = Find<TextMeshProUGUI>("Bottom/Txt_Tip");
 
             _imgHeatFill = Find<Image>("Left/HeatBar/Img_Fill");
+            _imgHeatPreview = Find<Image>("Left/HeatBar/Img_HeatPreview");
+            if (_imgHeatFill != null)
+            {
+                RectTransform fillRt = _imgHeatFill.rectTransform;
+                fillRt.anchorMin = new Vector2(fillRt.anchorMin.x, 0f);
+                fillRt.anchorMax = new Vector2(fillRt.anchorMax.x, 0f);
+                fillRt.offsetMin = Vector2.zero;
+                fillRt.offsetMax = Vector2.zero;
+            }
+            if (_imgHeatPreview != null)
+            {
+                RectTransform previewRt = _imgHeatPreview.rectTransform;
+                previewRt.anchorMin = new Vector2(0f, 0f);
+                previewRt.anchorMax = new Vector2(1f, 0f);
+                previewRt.offsetMin = Vector2.zero;
+                previewRt.offsetMax = Vector2.zero;
+            }
             _slotRoot = Find<Transform>("Center/Grid");
             _handArea = Find<Transform>("Bottom/HandScroll");
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
@@ -120,7 +141,7 @@ namespace Module.View
             if (_txtTip != null && _txtTip.font != null)
                 return _txtTip.font;
 
-            return _txtOrder == null ? null : _txtOrder.font;
+            return _txtTurn == null ? null : _txtTurn.font;
         }
 
         // 根据烹饪模型刷新界面
@@ -150,11 +171,13 @@ namespace Module.View
             if (_potTrayItems != null)
             {
                 var traySlots = cookModel.PotTraySlots;
+                bool isFull = cookModel.IsPotTrayFull;
+                float previewScore = isFull ? cookModel.PotTrayPreviewScore : 0f;
                 for (int i = 0; i < _potTrayItems.Length; i++)
                 {
                     if (_potTrayItems[i] == null) continue;
                     CookMaterialData mat = (traySlots != null && i < traySlots.Count) ? traySlots[i] : null;
-                    _potTrayItems[i].Bind(mat);
+                    _potTrayItems[i].Bind(mat, isFull, previewScore);
                 }
             }
 
@@ -537,11 +560,46 @@ namespace Module.View
 
             if (_imgHeatFill != null)
             {
-                float denominator = Mathf.Max(1f, cookModel.TargetMax + 4f);
-                _imgHeatFill.fillAmount = Mathf.Clamp01(cookModel.PreviewValue / denominator);
-                _imgHeatFill.color = cookModel.IsOverHeatRisk
+                float denom = Mathf.Max(1f, cookModel.TargetMax);
+                float fillRatio = Mathf.Clamp01(cookModel.CurrentScore / denom);
+                RectTransform fillRt = _imgHeatFill.rectTransform;
+                fillRt.anchorMin = new Vector2(fillRt.anchorMin.x, 0f);
+                fillRt.anchorMax = new Vector2(fillRt.anchorMax.x, fillRatio);
+                fillRt.offsetMin = Vector2.zero;
+                fillRt.offsetMax = Vector2.zero;
+                _imgHeatFill.color = cookModel.CurrentScore > cookModel.TargetMax
                     ? new Color(0.92f, 0.23f, 0.16f, 1f)
                     : new Color(0.98f, 0.62f, 0.22f, 1f);
+
+                if (_imgHeatPreview != null)
+                {
+                    float previewScore = cookModel.IsPotTrayFull ? cookModel.PotTrayPreviewScore : 0f;
+                    if (previewScore > 0f)
+                    {
+                        float previewRatio = Mathf.Clamp01(previewScore / denom);
+                        RectTransform previewRt = _imgHeatPreview.rectTransform;
+                        previewRt.anchorMin = new Vector2(previewRt.anchorMin.x, fillRatio);
+                        previewRt.anchorMax = new Vector2(previewRt.anchorMax.x, Mathf.Clamp01(fillRatio + previewRatio));
+                        previewRt.offsetMin = Vector2.zero;
+                        previewRt.offsetMax = Vector2.zero;
+
+                        _heatPreviewTween?.Kill();
+                        _imgHeatPreview.color = new Color(1f, 0.92f, 0.3f, 0f);
+                        _heatPreviewTween = _imgHeatPreview
+                            .DOFade(0.7f, 0.5f)
+                            .SetLoops(-1, DG.Tweening.LoopType.Yoyo)
+                            .SetEase(DG.Tweening.Ease.InOutSine);
+                    }
+                    else
+                    {
+                        _heatPreviewTween?.Kill();
+                        _heatPreviewTween = null;
+                        _imgHeatPreview.color = new Color(1f, 0.92f, 0.3f, 0f);
+                        RectTransform previewRt = _imgHeatPreview.rectTransform;
+                        previewRt.anchorMin = new Vector2(previewRt.anchorMin.x, 0f);
+                        previewRt.anchorMax = new Vector2(previewRt.anchorMax.x, 0f);
+                    }
+                }
             }
         }
 

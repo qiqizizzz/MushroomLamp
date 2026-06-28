@@ -72,6 +72,26 @@ namespace Module.Cook
         public bool IsPotTrayFull => PotTrayFilledCount >= _potTrayCapacity;
         public bool HasPotTrayMaterial => PotTrayFilledCount > 0;
 
+        // 暂存槽集满时的预估投锅得分，与 SubmitPotTray 实际计分逻辑一致
+        public float PotTrayPreviewScore
+        {
+            get
+            {
+                if (!IsPotTrayFull) return 0f;
+                // 临时填入 _potEntries，复用 calculateRoundResult，算完立即清掉
+                int savedSubmitOrder = _nextSubmitOrder;
+                for (int i = 0; i < _potTraySlots.Length; i++)
+                {
+                    if (_potTraySlots[i] == null) continue;
+                    _potEntries.Add(new CookPotEntryData(_nextSubmitOrder++, i, _potTraySlots[i]));
+                }
+                CookRoundResultData result = calculateRoundResult(false);
+                _potEntries.Clear();
+                _nextSubmitOrder = savedSubmitOrder;
+                return result.RoundScore;
+            }
+        }
+
         // 小局死局：回合已耗尽 + Pot 暂存槽没集满 + 把法阵里煮过的也算上仍凑不满一组
         // 即玩家再也无法集齐一组投入计分，应弹出小局结算
         public bool IsStageDeadEnd
