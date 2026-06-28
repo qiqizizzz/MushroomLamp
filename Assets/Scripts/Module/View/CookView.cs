@@ -75,6 +75,8 @@ namespace Module.View
         private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
         private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
         private bool _isHandAnimating;            // 发牌/出牌动画期间锁操作
+        private bool _dealAnimating;              // 发牌动画进行中（与弃牌兜底解锁区分）
+        private GameObject _imgBlock;             // ActionBar 上方的透明遮挡，卡牌飞行时挡住按钮点击
         private bool _firstDealPending = true;    // 面板打开后的首次发牌待播（只有它等 DealEnterDelay）
         private const float DealStagger = 0.07f;  // 依次发牌的间隔
         private const float DealDuration = 0.45f;  // 发牌飞行时长（飞久一点）
@@ -133,6 +135,13 @@ namespace Module.View
             _btnSkip = Find<Button>("Bottom/ActionBar/Btn_Skip");
             _btnSettle = Find<Button>("Bottom/ActionBar/Btn_Settle");
             _btnMagicBox = Find<Button>("Right/MagicBox/Btn_Touch");
+
+            Image imgBlock = Find<Image>("Bottom/Img_Block");
+            if (imgBlock != null)
+            {
+                _imgBlock = imgBlock.gameObject;
+                _imgBlock.SetActive(false);   // 默认不挡，只有卡牌飞行时才激活
+            }
 
             bindButtons();
             setupButtonText(_btnSettle, "结束本回合");
@@ -828,6 +837,7 @@ namespace Module.View
         private void playDealAnimation(System.Collections.Generic.IReadOnlyList<CookMaterialData> hand, HashSet<int> newIds)
         {
             setHandInteractable(false);
+            _dealAnimating = true;
             Vector2 angelPos = worldToHandContent(_imgAngel.position);
 
             float enterDelay = _firstDealPending ? DealEnterDelay : 0f;
@@ -862,7 +872,11 @@ namespace Module.View
             }
 
             // 全部飞完解锁
-            DOVirtual.DelayedCall(lastEnd + 0.02f, () => setHandInteractable(true));
+            DOVirtual.DelayedCall(lastEnd + 0.02f, () =>
+            {
+                _dealAnimating = false;
+                setHandInteractable(true);
+            });
         }
 
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
@@ -914,6 +928,10 @@ namespace Module.View
             {
                 cookModel.DealNewHand();
                 Refresh(cookModel);
+                // Refresh 内若有新牌会触发发牌动画（_dealAnimating=true），由发牌结束自行解锁；
+                // 若没有新牌（如整局最后一回合只回收不发牌），这里兜底解锁，避免遮挡残留
+                if (_isHandAnimating && !_dealAnimating)
+                    setHandInteractable(true);
                 OnDiscardAnimationDone?.Invoke();
                 OnDiscardAnimationDone = null;
             });
@@ -943,10 +961,13 @@ namespace Module.View
             return new Vector2(local.x, local.y);
         }
 
-        // 锁/解锁全部手牌的交互（动画期间禁拖拽）
+        // 锁/解锁全部手牌的交互（动画期间禁拖拽，并用透明遮挡挡住按钮点击）
         private void setHandInteractable(bool value)
         {
             _isHandAnimating = !value;
+            // value=false（卡牌正在飞行）→ 激活遮挡挡住按钮；飞行结束 → 关闭遮挡
+            if (_imgBlock != null)
+                _imgBlock.SetActive(_isHandAnimating);
             for (int i = 0; i < _handPool.Count; i++)
                 if (_handPool[i] != null) _handPool[i].SetInteractable(value);
         }
