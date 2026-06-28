@@ -6,8 +6,6 @@
 * └──────────────────────────────────┘
 */
 
-using System.Collections.Generic;
-using DG.Tweening;
 using Module.Cook;
 using Common.Defines;
 using MVC.View;
@@ -57,24 +55,6 @@ namespace Module.View
         private CookModel _cookModel;
         private readonly CookSlotItem[] _slotItems = new CookSlotItem[9];
 
-        // ── 手牌对象池 + 发牌/出牌飞行动画 ──
-        private RectTransform _imgAngel;          // 天使口袋（发牌起点）
-        private RectTransform _imgDevil;          // 恶魔口袋（出牌终点）
-        private readonly List<CookMaterialItem> _handPool = new();   // 复用，不销毁
-        private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
-        private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
-        private bool _isHandAnimating;            // 发牌/出牌动画期间锁操作
-        private bool _firstDealPending = true;    // 面板打开后的首次发牌待播（只有它等 DealEnterDelay）
-        private const float DealStagger = 0.07f;  // 依次发牌的间隔
-        private const float DealDuration = 0.45f;  // 发牌飞行时长（飞久一点）
-        private const float DiscardStagger = 0.06f;
-        private const float DiscardDuration = 0.5f;   // 出牌飞行时长（飞久一点，飞到才淡出）
-        // 面板打开后 → 首次发牌之间的等待时长（只第一次生效，给布局/Canvas 稳定时间）
-        // 后续回合发牌不再等待。可在此调整
-        private const float DealEnterDelay = 1.0f;
-
-        public bool IsHandAnimating => _isHandAnimating;
-
         public override void InitUI()
         {
             _txtTurn = Find<TextMeshProUGUI>("Top/Txt_Turn");
@@ -112,17 +92,6 @@ namespace Module.View
             initPotArea();
             initPotVisual();
             initPauseDialog();
-            initHandFlyNodes();
-        }
-
-        // 查找天使发牌锚点 / 恶魔回收锚点（位置可在 prefab 里手动微调），递归按名字找
-        private void initHandFlyNodes()
-        {
-            _imgAngel = findDeep(transform, "DealAnchor_Angel") as RectTransform;
-            _imgDevil = findDeep(transform, "RecycleAnchor_Devil") as RectTransform;
-            // 兜底：没配锚点时退回用天使/恶魔图片节点
-            if (_imgAngel == null) _imgAngel = findDeep(transform, "Img_Angel") as RectTransform;
-            if (_imgDevil == null) _imgDevil = findDeep(transform, "Img_Devil") as RectTransform;
         }
 
         // 打开界面时关闭遗留弹窗
@@ -130,7 +99,6 @@ namespace Module.View
         {
             GameApp.SoundManager?.PlayInGameBGM();
             hidePauseDialog();
-            _firstDealPending = true;   // 面板每次打开，首次发牌前等待一次 DealEnterDelay
         }
 
         // 关闭界面时恢复普通背景音乐轮播
@@ -144,12 +112,6 @@ namespace Module.View
         public Transform GetDragRoot()
         {
             return _dragRoot == null ? transform : _dragRoot;
-        }
-
-        // 获取手牌容器（供放置后的池 item 收回隐藏）
-        public Transform GetHandContent()
-        {
-            return _handContent;
         }
 
         // 获取当前界面字体
@@ -592,217 +554,24 @@ namespace Module.View
             }
         }
 
-        // 刷新手牌：对象池复用 + 发牌/出牌飞行动画（不销毁重建 item）
         private void refreshHand(CookModel cookModel)
         {
             clearDragItems();
+            clearHand();
             if (_handContent == null) return;
 
-            // 1) 先处理“出牌作废”动画：放牌后剩余手牌飞向恶魔口袋（数据已清，此处只做表现）
-            playDiscardAnimationIfNeeded(cookModel);
-
-            var hand = cookModel.HandMaterials;
-            int count = hand.Count;
-
-            // 2) 用对象池绑定当前手牌，多余的隐藏
-            ensureHandPool(count);
-
-            // 找出本次新发的牌（上次 _lastHandIds 里没有的）
-            var newIds = new HashSet<int>();
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < cookModel.HandMaterials.Count; i++)
             {
-                int id = hand[i].RuntimeId;
-                if (!_lastHandIds.Contains(id)) newIds.Add(id);
-            }
-
-            // 计算每张牌在 content 里的横向均匀目标位置
-            for (int i = 0; i < _handPool.Count; i++)
-            {
-                CookMaterialItem item = _handPool[i];
-                if (i < count)
-                {
-                    CookMaterialData mat = hand[i];
-                    item.gameObject.SetActive(true);
-                    item.Bind(mat, this);
-                    layoutHandCard(item, i, count);
-                    // 将要播发牌动画的新牌先设 scale=0（看不见），避免“摆好位置的一帧”闪现，
-                    // 随后由 playDealAnimation 从天使口袋飞入放大到 1
-                    if (_imgAngel != null && newIds.Contains(mat.RuntimeId))
-                        item.Rect.localScale = Vector3.zero;
-                }
-                else
-                {
-                    // 正飞向恶魔的 item 由出牌动画收尾隐藏，这里不强制隐藏
-                    if (!_discardingItems.Contains(item))
-                        item.gameObject.SetActive(false);
-                }
-            }
-
-            // 3) 新发的牌播放发牌飞入动画（依次从天使口袋飞出）
-            if (_imgAngel == null) initHandFlyNodes();   // 防御：锚点未就绪时重查一次
-            bool hasDeal = newIds.Count > 0 && _imgAngel != null;
-            if (hasDeal)
-                playDealAnimation(hand, newIds);
-
-            // 记录本次手牌 id，供下次 diff。
-            // 若有新牌却因锚点未就绪没能播动画，则不记录这些新牌——留到下次 refresh 补播发牌动画，
-            // 避免“第一次 refresh 抢先摆好牌、第二次就不再算新牌”导致永远无动画。
-            if (newIds.Count > 0 && !hasDeal)
-                return;
-
-            _lastHandIds.Clear();
-            for (int i = 0; i < count; i++)
-                _lastHandIds.Add(hand[i].RuntimeId);
-        }
-
-        // 确保对象池至少有 count 个 item（复用，不销毁）
-        private void ensureHandPool(int count)
-        {
-            while (_handPool.Count < count)
-            {
-                GameObject itemObj = new GameObject($"HandCard_{_handPool.Count}", typeof(RectTransform));
+                CookMaterialData materialData = cookModel.HandMaterials[i];
+                GameObject itemObj = new GameObject($"Material_{materialData.RuntimeId}", typeof(RectTransform));
                 itemObj.transform.SetParent(_handContent, false);
+
                 CookMaterialItem item = itemObj.AddComponent<CookMaterialItem>();
-                _handPool.Add(item);
-            }
-        }
-
-        // 计算并设置第 index 张手牌在 content 里的位置（横向均匀排列，居中）
-        private void layoutHandCard(CookMaterialItem item, int index, int total)
-        {
-            RectTransform rt = item.Rect;
-            Vector2 size = CookMaterialItem.CardSize;
-            float spacing = 16f;
-            float step = size.x + spacing;
-            float totalWidth = total > 0 ? (total * size.x + (total - 1) * spacing) : 0f;
-            float startX = -totalWidth * 0.5f + size.x * 0.5f;
-
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = size;
-            rt.localScale = Vector3.one;
-            rt.anchoredPosition = new Vector2(startX + index * step, 0f);
-
-            if (item.Group != null) { item.Group.alpha = 1f; item.Group.blocksRaycasts = true; }
-        }
-
-        // 发牌动画：新发的牌从天使口袋依次飞入各自的目标格位
-        // 起飞态（隐藏在天使位置）立刻设置，等待 DealEnterDelay 后再依次起飞——
-        // 给界面打开后布局/Canvas 稳定的时间，避免第一次瞬间播完看不见
-        private void playDealAnimation(System.Collections.Generic.IReadOnlyList<CookMaterialData> hand, HashSet<int> newIds)
-        {
-            setHandInteractable(false);
-            Vector2 angelPos = worldToHandContent(_imgAngel.position);
-
-            // 只有面板打开后的首次发牌等待 DealEnterDelay（给布局稳定时间）；之后回合发牌不再等
-            float enterDelay = _firstDealPending ? DealEnterDelay : 0f;
-            _firstDealPending = false;
-
-            int order = 0;
-            float lastEnd = 0f;
-            for (int i = 0; i < hand.Count && i < _handPool.Count; i++)
-            {
-                if (!newIds.Contains(hand[i].RuntimeId)) continue;
-
-                CookMaterialItem item = _handPool[i];
-                RectTransform rt = item.Rect;
-                Vector2 target = rt.anchoredPosition;
-
-                // 起点：天使口袋；scale=0（看不见，立刻设置，等待期间隐藏在天使处）
-                rt.anchoredPosition = angelPos;
-                rt.localScale = Vector3.zero;
-                if (item.Group != null) item.Group.alpha = 1f;
-
-                // 首次发牌等待 enterDelay 后，第 order 张再依次起飞
-                float delay = enterDelay + order * DealStagger;
-                lastEnd = Mathf.Max(lastEnd, delay + DealDuration);
-
-                // 位移与 scale 同步：飞到格位时 scale 刚好回到 1（只用 scale 表现，不改透明度）
-                Sequence seq = DOTween.Sequence().SetDelay(delay)
-                    .Append(rt.DOAnchorPos(target, DealDuration).SetEase(Ease.OutCubic))
-                    .Join(rt.DOScale(1f, DealDuration).SetEase(Ease.OutBack));
-                item.SetFlyTween(seq);
-                order++;
+                item.Bind(materialData, this);
             }
 
-            // 全部飞完解锁
-            DOVirtual.DelayedCall(lastEnd + 0.02f, () => setHandInteractable(true));
-        }
-
-        // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
-        private void playDiscardAnimationIfNeeded(CookModel cookModel)
-        {
-            var discarded = cookModel.DiscardedHandThisTurn;
-            if (discarded == null || discarded.Count == 0 || _imgDevil == null)
-            {
-                if (discarded != null) discarded.Clear();
-                return;
-            }
-
-            setHandInteractable(false);
-            Vector2 devilPos = worldToHandContent(_imgDevil.position);
-
-            // 作废的牌对应池中当前显示这些 id 的 item
-            int order = 0;
-            float lastEnd = 0f;
-            for (int d = 0; d < discarded.Count; d++)
-            {
-                int id = discarded[d].RuntimeId;
-                CookMaterialItem item = findPoolItemById(id);
-                if (item == null) continue;
-
-                RectTransform rt = item.Rect;
-                float delay = order * DiscardStagger;
-                lastEnd = Mathf.Max(lastEnd, delay + DiscardDuration);
-
-                CookMaterialItem captured = item;
-                _discardingItems.Add(captured);
-                // 位移与 scale 同步同时长：每张卡刚好飞到恶魔口袋时 scale=0（只用 scale，不改透明度）
-                Sequence seq = DOTween.Sequence().SetDelay(delay)
-                    .Append(rt.DOAnchorPos(devilPos, DiscardDuration).SetEase(Ease.InCubic))
-                    .Join(rt.DOScale(0f, DiscardDuration).SetEase(Ease.InCubic));
-                seq.OnComplete(() =>
-                {
-                    captured.gameObject.SetActive(false);
-                    _discardingItems.Remove(captured);
-                });
-                item.SetFlyTween(seq);
-                order++;
-            }
-
-            discarded.Clear();
-            DOVirtual.DelayedCall(lastEnd + 0.02f, () => setHandInteractable(true));
-        }
-
-        // 在对象池里找当前绑定了指定 id 且在显示中的 item
-        private CookMaterialItem findPoolItemById(int runtimeId)
-        {
-            for (int i = 0; i < _handPool.Count; i++)
-            {
-                if (_handPool[i] != null && _handPool[i].gameObject.activeSelf && _handPool[i].MaterialId == runtimeId)
-                    return _handPool[i];
-            }
-            return null;
-        }
-
-        // 世界坐标转换到 handContent 的局部坐标（直接用 InverseTransformPoint，
-        // 不经屏幕坐标，避开 WorldSpace/Overlay 相机差异导致的错位）
-        private Vector2 worldToHandContent(Vector3 worldPos)
-        {
-            RectTransform contentRt = _handContent as RectTransform;
-            if (contentRt == null) return Vector2.zero;
-
-            Vector3 local = contentRt.InverseTransformPoint(worldPos);
-            return new Vector2(local.x, local.y);
-        }
-
-        // 锁/解锁全部手牌的交互（动画期间禁拖拽）
-        private void setHandInteractable(bool value)
-        {
-            _isHandAnimating = !value;
-            for (int i = 0; i < _handPool.Count; i++)
-                if (_handPool[i] != null) _handPool[i].SetInteractable(value);
+            if (_handContent is RectTransform contentRt)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(contentRt);
         }
 
         // 刷新研磨器出口等待取走的材料
@@ -844,6 +613,14 @@ namespace Module.View
                 _btnMagicBox.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
         }
 
+        private void clearHand()
+        {
+            if (_handContent == null) return;
+
+            for (int i = _handContent.childCount - 1; i >= 0; i--)
+                Destroy(_handContent.GetChild(i).gameObject);
+        }
+
         // 清空研磨器出口材料 UI
         private void clearProcessedMaterials()
         {
@@ -860,20 +637,8 @@ namespace Module.View
             for (int i = _dragRoot.childCount - 1; i >= 0; i--)
             {
                 Transform child = _dragRoot.GetChild(i);
-                CookMaterialItem item = child.GetComponent<CookMaterialItem>();
-                if (item == null) continue;
-
-                // 对象池里的 item 不能销毁（会留下野指针导致 MissingReference）；
-                // 拖拽残留在 DragRoot 的池对象，收回手牌容器、隐藏待下次复用
-                if (_handPool.Contains(item))
-                {
-                    item.transform.SetParent(_handContent, false);
-                    item.gameObject.SetActive(false);
-                }
-                else
-                {
+                if (child.GetComponent<CookMaterialItem>() != null)
                     Destroy(child.gameObject);
-                }
             }
         }
 
