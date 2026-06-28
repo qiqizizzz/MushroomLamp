@@ -148,11 +148,19 @@ namespace Module.View
         public void ShowItemTooltip(CookMaterialData materialData, PointerEventData eventData)
         {
             if (materialData == null || eventData == null) return;
+
+            ShowItemTooltip(materialData, eventData.position);
+        }
+
+        // 按屏幕坐标显示材料详情浮层
+        public void ShowItemTooltip(CookMaterialData materialData, Vector2 screenPosition)
+        {
+            if (materialData == null) return;
             if (!ensureItemTooltip()) return;
 
             _itemTooltip.transform.SetAsLastSibling();
             _itemTooltip.Bind(materialData);
-            MoveItemTooltip(eventData);
+            MoveItemTooltip(screenPosition);
         }
 
         // 跟随鼠标移动材料详情浮层
@@ -160,7 +168,15 @@ namespace Module.View
         {
             if (_itemTooltip == null || eventData == null) return;
 
-            _itemTooltip.SetScreenPosition(eventData.position, _tooltipCanvasRect, S_TooltipOffset);
+            MoveItemTooltip(eventData.position);
+        }
+
+        // 按屏幕坐标移动材料详情浮层
+        public void MoveItemTooltip(Vector2 screenPosition)
+        {
+            if (_itemTooltip == null) return;
+
+            _itemTooltip.SetScreenPosition(screenPosition, _tooltipCanvasRect, S_TooltipOffset);
         }
 
         // 隐藏材料详情浮层

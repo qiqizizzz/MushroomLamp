@@ -40,6 +40,7 @@ namespace Module.View
         private float _displayHeight = CardHeight;
 
         private bool _isDragging;
+        private bool _isPointerInside;
         private float _targetScale = 1f;
         private UnityEngine.Material _outlineMaterial;
 
@@ -121,6 +122,7 @@ namespace Module.View
         {
             if (_rectTransform == null) return;
 
+            updatePointerHover();
             Vector3 current = _rectTransform.localScale;
             Vector3 target = Vector3.one * _targetScale;
             if ((current - target).sqrMagnitude > 0.0001f)
@@ -134,6 +136,7 @@ namespace Module.View
             if (_materialData == null || _view == null) return;
 
             _view.HideItemTooltip();
+            _isPointerInside = false;
             _isDragging = true;
             _targetScale = 1f;
             setOutline(false);
@@ -250,12 +253,58 @@ namespace Module.View
 
         protected override void OnDestroy()
         {
+            _view?.HideItemTooltip();
             if (_outlineMaterial != null)
             {
                 Destroy(_outlineMaterial);
                 _outlineMaterial = null;
             }
             base.OnDestroy();
+        }
+
+        // 主动检测鼠标是否经过材料卡，避免 Pointer 事件被子节点或布局组件截断
+        private void updatePointerHover()
+        {
+            if (_view == null || _materialData == null || _isDragging || !isActiveAndEnabled)
+                return;
+
+            Vector2 screenPosition = Input.mousePosition;
+            bool isInside = RectTransformUtility.RectangleContainsScreenPoint(
+                _rectTransform,
+                screenPosition,
+                resolveHoverCamera());
+
+            if (isInside)
+            {
+                if (!_isPointerInside)
+                {
+                    _isPointerInside = true;
+                    _targetScale = HoverScale;
+                    setOutline(true);
+                    _view.ShowItemTooltip(_materialData, screenPosition);
+                    return;
+                }
+
+                _view.MoveItemTooltip(screenPosition);
+                return;
+            }
+
+            if (!_isPointerInside) return;
+
+            _isPointerInside = false;
+            _targetScale = 1f;
+            setOutline(false);
+            _view.HideItemTooltip();
+        }
+
+        // 获取当前 UI 检测需要的相机
+        private Camera resolveHoverCamera()
+        {
+            Canvas canvas = _view == null ? null : _view.GetComponentInParent<Canvas>();
+            if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                return null;
+
+            return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
         }
 
         private void restoreToOriginalParent()
