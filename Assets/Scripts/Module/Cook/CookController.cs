@@ -11,6 +11,7 @@ using Common.Defines;
 using MVC;
 using MVC.Controller;
 using MVC.View;
+using Module.Level;
 using Module.StageSettle;
 using Module.View;
 
@@ -245,19 +246,20 @@ namespace Module.Cook
         // 构建小局结算界面展示数据
         private static StageSettleData buildStageSettleData(CookModel cookModel)
         {
+            LevelFlow levelFlow = LevelFlow.Instance;
             return new StageSettleData
             {
-                BoxName = cookModel.BoxName,
-                StageId = cookModel.StageId,
-                StageIndex = cookModel.StageIndex,
-                StageCount = cookModel.StageCount,
-                TurnCount = cookModel.MaxTurn,
-                TargetMin = cookModel.TargetMin,
-                TargetMax = cookModel.TargetMax,
+                BoxName = levelFlow.BoxName,
+                StageId = levelFlow.StageId,
+                StageIndex = levelFlow.StageIndex,
+                StageCount = levelFlow.StageCount,
+                TurnCount = levelFlow.MaxTurn,
+                TargetMin = levelFlow.TargetMin,
+                TargetMax = levelFlow.TargetMax,
                 CurrentScore = cookModel.CurrentScore,
                 Coin = cookModel.Coin,
                 IsTargetReached = cookModel.IsStageTargetReached,
-                IsFinalStage = cookModel.IsFinalStage
+                IsFinalStage = levelFlow.IsLastStage
             };
         }
 

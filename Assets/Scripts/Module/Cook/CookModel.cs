@@ -9,7 +9,6 @@
 using Module.Card;
 using MVC.Model;
 using Module.Level;
-using Module.Select;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,16 +42,7 @@ namespace Module.Cook
         private float _devilRisk;
         private bool _hasPlacedHandThisTurn;
 
-        public SelectDifficulty Difficulty { get; private set; }
-        public string BoxId { get; private set; }
-        public string BoxName { get; private set; }
-        public string StageId { get; private set; }
-        public int StageIndex { get; private set; }
-        public int StageCount { get; private set; }
         public int TurnIndex { get; private set; }
-        public int MaxTurn { get; private set; }
-        public int TargetMin { get; private set; }
-        public int TargetMax { get; private set; }
         public float CurrentScore { get; private set; }
         public int Coin { get; private set; }
         public float PreviewValue { get; private set; }
@@ -63,8 +53,6 @@ namespace Module.Cook
         public CookRoundResultData LastRoundResult { get; private set; }
         public bool IsMagicBoxUsed { get; private set; }
         public CookMagicBoxEffectType LastMagicBoxEffect { get; private set; }
-        public bool HasStageConfig { get; private set; }
-        public int AngelRescueCount { get; private set; }
         public float DevilRisk => _devilRisk;
         public string MagicBoxStatusText { get; private set; }
         public IReadOnlyList<CookMaterialData> HandMaterials => _handMaterials;
@@ -99,14 +87,14 @@ namespace Module.Cook
         // GM 测试开关：开启后小局恒视为达标，便于测试小局推进全流程
         public static bool ForceStageWin;
 
-        public bool IsStageFinished => MaxTurn > 0 && !IsRunActive && RoundState == CookRoundStateType.Finished;
-        public bool IsStageTargetReached => ForceStageWin || CurrentScore >= TargetMin;
-        public bool IsFinalStage => HasStageConfig && StageCount > 0 && StageIndex >= StageCount - 1;
+        public bool IsStageFinished => LevelFlow.Instance.MaxTurn > 0 && !IsRunActive && RoundState == CookRoundStateType.Finished;
+        public bool IsStageTargetReached => ForceStageWin || CurrentScore >= LevelFlow.Instance.TargetMin;
+        public bool IsFinalStage => LevelFlow.Instance.HasStageConfig && LevelFlow.Instance.IsLastStage;
         public bool ShouldOpenFinalSummary => IsStageFinished && (!IsStageTargetReached || IsFinalStage);
         public bool ShouldOpenStageSettle => IsStageFinished && IsStageTargetReached && !IsFinalStage;
         // 结束回合（煮熟法阵材料）：只要法阵有材料即可
         public bool CanSettle => IsRunActive && HasCookingMaterial && RoundState != CookRoundStateType.Finished;
-        public bool IsOverHeatRisk => PreviewValue > TargetMax;
+        public bool IsOverHeatRisk => PreviewValue > LevelFlow.Instance.TargetMax;
 
         public CookModel()
         {
@@ -123,26 +111,8 @@ namespace Module.Cook
             CurrentScore = 0;
             Coin = 0;
 
-            if (HasStageConfig)
-            {
-                // 来自关卡配置表的小局参数
-                MaxTurn = Mathf.Max(1, startData.TurnCount);
-                TargetMin = startData.TargetMin;
-                TargetMax = startData.TargetMax;
-                AngelRescueCount = Mathf.Max(0, startData.AngelRescueCount);
-                _potTrayCapacity = Mathf.Max(1, startData.PotTrayCapacity);
-                _handCount = startData.HandCount > 0 ? startData.HandCount : HAND_COUNT;
-            }
-            else
-            {
-                // 兜底：旧难度硬编码
-                MaxTurn = getMaxTurn(Difficulty);
-                TargetMin = getBaseTarget(Difficulty);
-                TargetMax = TargetMin + (Difficulty == SelectDifficulty.Hard ? 3 : 4);
-                AngelRescueCount = getStartAngelRescueCount(Difficulty);
-                _potTrayCapacity = POT_TRAY_CAPACITY;
-                _handCount = HAND_COUNT;
-            }
+            _potTrayCapacity = Mathf.Max(1, LevelFlow.Instance.PotTrayCapacity);
+            _handCount = LevelFlow.Instance.HandCount > 0 ? LevelFlow.Instance.HandCount : HAND_COUNT;
 
             // 暂存槽容量可能变化，重建数组
             _potTraySlots = new CookMaterialData[_potTrayCapacity];
@@ -479,7 +449,7 @@ namespace Module.Cook
                     LastTip = "魔盒赐予火候 +4，但恶魔风险 +2";
                     break;
                 case CookMagicBoxEffectType.ExpandTarget:
-                    TargetMax += 3;
+                    LevelFlow.Instance.ExpandTarget(3);
                     _devilRisk += 1f;
                     LastTip = "魔盒扩大安全上限 +3，但恶魔风险 +1";
                     break;
@@ -567,7 +537,7 @@ namespace Module.Cook
         // 获取当前回合进度文本
         public string GetTurnText()
         {
-            return $"回合 {TurnIndex}/{MaxTurn}";
+            return $"回合 {TurnIndex}/{LevelFlow.Instance.MaxTurn}";
         }
 
         // 获取当前总分文本
@@ -579,7 +549,7 @@ namespace Module.Cook
         // 获取目标区间文本
         public string GetTargetText()
         {
-            return $"目标 {TargetMin}~{TargetMax}";
+            return $"目标 {LevelFlow.Instance.TargetMin}~{LevelFlow.Instance.TargetMax}";
         }
 
         // 获取金币文本
@@ -598,7 +568,7 @@ namespace Module.Cook
         public string GetPotText()
         {
             if (_potEntries.Count == 0)
-                return $"{BoxName}\n{GetTargetText()}\n锅中暂无材料\n把熟好的材料拖到这里";
+                return $"{LevelFlow.Instance.BoxName}\n{GetTargetText()}\n锅中暂无材料\n把熟好的材料拖到这里";
 
             List<string> lines = new List<string>
             {
@@ -614,12 +584,7 @@ namespace Module.Cook
 
         private void setupStartData(CookRunStartData startData)
         {
-            Difficulty = startData?.Difficulty ?? SelectDifficulty.Normal;
-            BoxId = startData?.BoxId ?? string.Empty;
-            BoxName = string.IsNullOrWhiteSpace(startData?.BoxName) ? "默认药箱" : startData.BoxName;
-            HasStageConfig = startData != null && startData.HasStageConfig;
-            StageId = startData?.StageId ?? string.Empty;
-            resolveStageProgress();
+            LevelFlow.Instance.PrepareRun(startData);
 
             _materialSeeds.Clear();
             if (startData?.Materials != null)
@@ -635,39 +600,6 @@ namespace Module.Cook
 
             if (_materialSeeds.Count == 0)
                 addFallbackSeeds();
-        }
-
-        // 根据当前小局配置定位大局进度
-        private void resolveStageProgress()
-        {
-            StageIndex = 0;
-            StageCount = 0;
-            if (!HasStageConfig) return;
-
-            LevelCatalogJsonConfig catalog = LevelConfigLoader.LoadCatalog();
-            if (catalog?.levels == null) return;
-
-            LevelEntryJsonData level = null;
-            for (int i = 0; i < catalog.levels.Length; i++)
-            {
-                LevelEntryJsonData currentLevel = catalog.levels[i];
-                if (currentLevel != null && currentLevel.boxId == BoxId)
-                {
-                    level = currentLevel;
-                    break;
-                }
-            }
-
-            StageCount = LevelConfigLoader.GetStageCount(level, Difficulty);
-            for (int i = 0; i < StageCount; i++)
-            {
-                StageJsonConfig stage = LevelConfigLoader.GetStage(level, Difficulty, i);
-                if (stage != null && stage.stageId == StageId)
-                {
-                    StageIndex = i;
-                    return;
-                }
-            }
         }
 
         private void startRound()
@@ -866,16 +798,16 @@ namespace Module.Cook
             int comboCount = adjacentComboCount + orderComboCount;
             float comboBonus = comboCount * 2f;
             float roundScore = baseScore + processBonus + slotBonus + comboBonus + _magicBoxBonus;
-            bool isTargetMatched = roundScore >= TargetMin && roundScore <= TargetMax;
-            bool isOverHeat = roundScore > TargetMax;
-            bool isAngelRescued = includePenalty && isOverHeat && AngelRescueCount > 0;
+            bool isTargetMatched = roundScore >= LevelFlow.Instance.TargetMin && roundScore <= LevelFlow.Instance.TargetMax;
+            bool isOverHeat = roundScore > LevelFlow.Instance.TargetMax;
+            bool isAngelRescued = includePenalty && isOverHeat && LevelFlow.Instance.AngelRescueCount > 0;
             float rawPenalty = isOverHeat ? 3f + _devilRisk : 0f;
             float penaltyScore = includePenalty ? rawPenalty : 0f;
             if (isAngelRescued)
                 penaltyScore = Mathf.Ceil(penaltyScore * 0.5f);
 
             if (isAngelRescued)
-                AngelRescueCount--;
+                LevelFlow.Instance.ConsumeAngelRescue();
 
             int coinReward = isTargetMatched ? 3 : 1;
             string comboText = buildComboText(adjacentComboCount, orderComboCount);
@@ -979,7 +911,7 @@ namespace Module.Cook
 
         private bool advanceTurn()
         {
-            if (TurnIndex >= MaxTurn)
+            if (TurnIndex >= LevelFlow.Instance.MaxTurn)
             {
                 IsRunActive = false;
                 RoundState = CookRoundStateType.Finished;
@@ -1032,32 +964,11 @@ namespace Module.Cook
             }
         }
 
-        private static int getMaxTurn(SelectDifficulty difficulty)
-        {
-            return difficulty == SelectDifficulty.Easy ? 5 : 6;
-        }
-
-        // 根据难度获取当天目标下限
-        private static int getBaseTarget(SelectDifficulty difficulty)
-        {
-            return difficulty switch
-            {
-                SelectDifficulty.Easy => 14,
-                SelectDifficulty.Hard => 22,
-                _ => 18
-            };
-        }
-
-        private static int getStartAngelRescueCount(SelectDifficulty difficulty)
-        {
-            return difficulty == SelectDifficulty.Hard ? 1 : 2;
-        }
-
         // ── 供 CardAbility / ItemEffect 调用的状态修改接口 ──
 
         public void AddBonus(float value) { _magicBoxBonus += value; }
         public void AddDevil(float value) { _devilRisk = Mathf.Max(0f, _devilRisk + value); }
-        public void ExpandTarget(int value) { TargetMax += value; }
+        public void ExpandTarget(int value) { LevelFlow.Instance.ExpandTarget(value); }
 
         private static string getSettleTip(CookRoundResultData result)
         {
@@ -1103,7 +1014,7 @@ namespace Module.Cook
         private void refreshMagicBoxStatusText()
         {
             string boxState = IsMagicBoxUsed ? "魔盒已触碰" : "魔盒未触碰";
-            string angelState = AngelRescueCount > 0 ? $"天使救援 {AngelRescueCount}" : "天使救援 0";
+            string angelState = LevelFlow.Instance.AngelRescueCount > 0 ? $"天使救援 {LevelFlow.Instance.AngelRescueCount}" : "天使救援 0";
             string devilState = _devilRisk > 0 ? $"恶魔风险 +{CookRoundResultData.FormatScore(_devilRisk)}" : "恶魔风险 0";
             MagicBoxStatusText = $"{boxState}\n{angelState}\n{devilState}";
         }

@@ -9,6 +9,7 @@
 using Module.Cook;
 using Common.Defines;
 using MVC.View;
+using Module.Level;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -526,7 +527,7 @@ namespace Module.View
 
             if (_imgHeatFill != null)
             {
-                float denominator = Mathf.Max(1f, cookModel.TargetMax + 4f);
+                float denominator = Mathf.Max(1f, LevelFlow.Instance.TargetMax + 4f);
                 _imgHeatFill.fillAmount = Mathf.Clamp01(cookModel.PreviewValue / denominator);
                 _imgHeatFill.color = cookModel.IsOverHeatRisk
                     ? new Color(0.92f, 0.23f, 0.16f, 1f)
