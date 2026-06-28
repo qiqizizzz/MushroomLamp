@@ -79,7 +79,8 @@ namespace Module.Cook
 
         public override void OpenView(IBaseView view)
         {
-            refreshCookView();
+            // 不在此处刷新——startCookRun 会在 Open 之后调 refreshCookView，
+            // 避免 Open() 清空 _lastHandIds 后立刻刷出动画，紧接着 startCookRun 再刷一次导致无动画
         }
 
         // 获取烹饪玩法模型
@@ -92,6 +93,7 @@ namespace Module.Cook
         private void openCookView(object[] args)
         {
             GameApp.ViewManager.Open(ViewType.CookView, args);
+            refreshCookView();
         }
 
         // 开始一局烹饪玩法

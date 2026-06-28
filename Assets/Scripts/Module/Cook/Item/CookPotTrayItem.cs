@@ -6,6 +6,7 @@
 * └──────────────────────────────────┘
 */
 
+using DG.Tweening;
 using Module.Cook;
 using MVC.View;
 using TMPro;
@@ -29,10 +30,13 @@ namespace Module.View
         private bool _hasMaterial;
         private CookMaterialData _materialData;
         private bool _dropAccepted;
+        private Tweener _flashTween;
 
         private Image _imgBackground;
+        private Image _imgFlash;
         private Image _imgIcon;
         private TextMeshProUGUI _txtName;
+        private TextMeshProUGUI _txtScore;
         private GameObject _dragIconObject;
         private RectTransform _dragIconRect;
 
@@ -51,16 +55,13 @@ namespace Module.View
             applyFont(view == null ? null : view.GetFontAsset());
         }
 
-        // 绑定暂存槽材料
-        public void Bind(CookMaterialData material)
+        // 绑定暂存槽材料；isFull=整个 PotTray 已集满
+        public void Bind(CookMaterialData material, bool isFull = false, float trayPreviewScore = 0f)
         {
             ensureReferences();
 
             _hasMaterial = material != null;
             _materialData = material;
-
-            if (_imgBackground != null)
-                _imgBackground.color = _hasMaterial ? _occupiedColor : _emptyColor;
 
             if (_imgIcon != null)
             {
@@ -69,10 +70,52 @@ namespace Module.View
             }
 
             if (_txtName != null)
-            {
-                _txtName.enabled = true;
                 _txtName.text = material?.Config?.name ?? "空";
+
+            if (_imgBackground != null)
+                _imgBackground.color = _hasMaterial ? _occupiedColor : _emptyColor;
+
+            if (isFull && _hasMaterial)
+            {
+                startFlash();
+                if (_txtScore != null)
+                {
+                    _txtScore.gameObject.SetActive(true);
+                    _txtScore.text = $"+{trayPreviewScore:0.#}";
+                }
             }
+            else
+            {
+                stopFlash();
+                if (_txtScore != null)
+                    _txtScore.gameObject.SetActive(false);
+            }
+        }
+
+        private void startFlash()
+        {
+            if (_imgFlash == null) return;
+            _imgFlash.gameObject.SetActive(true);
+            _flashTween?.Kill();
+            _flashTween = _imgFlash
+                .DOFade(0.7f, 0.5f)
+                .From(0f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
+        }
+
+        private void stopFlash()
+        {
+            _flashTween?.Kill();
+            _flashTween = null;
+            if (_imgFlash != null)
+                _imgFlash.gameObject.SetActive(false);
+        }
+
+        protected override void OnDestroy()
+        {
+            stopFlash();
+            base.OnDestroy();
         }
 
         public void OnDrop(PointerEventData eventData)
@@ -155,12 +198,23 @@ namespace Module.View
         private void ensureReferences()
         {
             _imgBackground = getOrCreateImage("Img_Background", _emptyColor);
+            _imgFlash = getOrCreateImage("Img_Flash", new Color(1f, 0.95f, 0.3f, 0f));
             _imgIcon = getOrCreateImage("Img_Icon", Color.white);
             _txtName = getOrCreateText("Txt_Name", 18);
+            _txtScore = getOrCreateText("Txt_Score", 22);
+
+            _txtScore.color = new Color(0.1f, 0.55f, 0.1f, 1f);
+            _txtScore.fontStyle = FontStyles.Bold;
 
             setupRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
+            setupRect(_imgFlash.rectTransform, Vector2.zero, Vector2.one);
             setupRect(_imgIcon.rectTransform, new Vector2(0.18f, 0.28f), new Vector2(0.82f, 0.85f));
-            setupRect(_txtName.rectTransform, new Vector2(0.05f, 0.02f), new Vector2(0.95f, 0.26f));
+            setupRect(_txtName.rectTransform, new Vector2(0.05f, 0.02f), new Vector2(0.95f, 0.24f));
+            setupRect(_txtScore.rectTransform, new Vector2(0.05f, 0.74f), new Vector2(0.95f, 0.98f));
+
+            _imgFlash.raycastTarget = false;
+            _imgFlash.gameObject.SetActive(false);
+            _txtScore.gameObject.SetActive(false);
         }
 
         private Image getOrCreateImage(string childName, Color color)
@@ -177,9 +231,8 @@ namespace Module.View
             if (image == null)
                 image = child.gameObject.AddComponent<Image>();
 
-            if (childName == "Img_Background")
-                image.color = color;
-            else
+            image.color = color;
+            if (childName != "Img_Background")
                 image.raycastTarget = false;
 
             return image;
