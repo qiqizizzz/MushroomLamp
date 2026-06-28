@@ -638,11 +638,26 @@ namespace Module.Cook
                 addFallbackSeeds();
         }
 
+        // 供 View 在弃牌动画结束后调用，发出新手牌（避免弃牌和发牌同帧导致动画对象被复用）
+        public void DealNewHand()
+        {
+            if (_pendingDeal)
+            {
+                _pendingDeal = false;
+                dealHandMaterials();
+                refreshPreviewValue();
+                RoundState = CookRoundStateType.Operating;
+            }
+        }
+
+        private bool _pendingDeal;
+
         private void startRound()
         {
             // 换回合前，本回合没用掉的手牌/研磨材料一律回收进恶魔弃牌堆（含玩家没放牌直接结束的情况），
             // 否则天使抽牌堆会越来越少。放牌路径已在 PlaceMaterial 回收过，此时手牌已空，不会重复。
             // 同时记入 DiscardedHandThisTurn，让表现层把这些牌飞向恶魔口袋（View 消费后自行清空）。
+            bool hasDiscard = _handMaterials.Count > 0;
             for (int i = 0; i < _handMaterials.Count; i++)
             {
                 DiscardedHandThisTurn.Add(_handMaterials[i]);
@@ -661,9 +676,19 @@ namespace Module.Cook
             IsMagicBoxUsed = false;
             LastMagicBoxEffect = CookMagicBoxEffectType.None;
             refreshMagicBoxStatusText();
-            dealHandMaterials();
-            refreshPreviewValue();
-            RoundState = CookRoundStateType.Operating;
+
+            if (hasDiscard)
+            {
+                // 有旧牌要飞向恶魔：先不发新牌，等 View 弃牌动画结束后调 DealNewHand()
+                _pendingDeal = true;
+                RoundState = CookRoundStateType.Operating;
+            }
+            else
+            {
+                dealHandMaterials();
+                refreshPreviewValue();
+                RoundState = CookRoundStateType.Operating;
+            }
         }
 
         private void clearRunBoard()

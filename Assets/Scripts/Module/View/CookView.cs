@@ -603,7 +603,7 @@ namespace Module.View
             Common.QLog.Info("[CookView] refreshHand: handCount=" + cookModel.HandMaterials.Count + " lastHandIds=" + _lastHandIds.Count + " firstDealPending=" + _firstDealPending + " angelReady=" + (_imgAngel != null));
 
             // 1) 先处理"出牌作废"动画：放牌后剩余手牌飞向恶魔口袋（数据已清，此处只做表现）
-            playDiscardAnimationIfNeeded(cookModel);
+            float discardEndTime = playDiscardAnimationIfNeeded(cookModel);
 
             var hand = cookModel.HandMaterials;
             int count = hand.Count;
@@ -700,7 +700,6 @@ namespace Module.View
             setHandInteractable(false);
             Vector2 angelPos = worldToHandContent(_imgAngel.position);
 
-            // 只有面板打开后的首次发牌等待 DealEnterDelay（给布局稳定时间）；之后回合发牌不再等
             float enterDelay = _firstDealPending ? DealEnterDelay : 0f;
             _firstDealPending = false;
             Common.QLog.Info("[CookView] playDealAnimation: enterDelay=" + enterDelay + " newIds=" + newIds.Count + " angelPos=" + worldToHandContent(_imgAngel.position));
@@ -737,13 +736,13 @@ namespace Module.View
         }
 
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
-        private void playDiscardAnimationIfNeeded(CookModel cookModel)
+        private float playDiscardAnimationIfNeeded(CookModel cookModel)
         {
             var discarded = cookModel.DiscardedHandThisTurn;
             if (discarded == null || discarded.Count == 0 || _imgDevil == null)
             {
                 if (discarded != null) discarded.Clear();
-                return;
+                return 0f;
             }
 
             setHandInteractable(false);
@@ -778,7 +777,16 @@ namespace Module.View
             }
 
             discarded.Clear();
-            DOVirtual.DelayedCall(lastEnd + 0.02f, () => setHandInteractable(true));
+
+            // 全部弃牌飞完后：通知 model 发新牌，再刷新 View
+            float endTime = lastEnd + 0.05f;
+            DOVirtual.DelayedCall(endTime, () =>
+            {
+                cookModel.DealNewHand();
+                Refresh(cookModel);
+            });
+
+            return endTime;
         }
 
         // 在对象池里找当前绑定了指定 id 且在显示中的 item
