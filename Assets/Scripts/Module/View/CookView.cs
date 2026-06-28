@@ -1,4 +1,4 @@
-/*
+﻿/*
 * ┌──────────────────────────────────┐
 * │  描    述: 烹饪核心玩法界面，负责承接玩法状态刷新
 * │  类    名: CookView.cs
@@ -74,7 +74,7 @@ namespace Module.View
         private const float DiscardDuration = 0.5f;   // 出牌飞行时长（飞久一点，飞到才淡出）
         // 面板打开后 → 首次发牌之间的等待时长（只第一次生效，给布局/Canvas 稳定时间）
         // 后续回合发牌不再等待。可在此调整
-        private const float DealEnterDelay = 1.0f;
+        private const float DealEnterDelay = 0.3f;
 
         public bool IsHandAnimating => _isHandAnimating;
 
@@ -152,7 +152,9 @@ namespace Module.View
         {
             GameApp.SoundManager?.PlayInGameBGM();
             hidePauseDialog();
-            _firstDealPending = true;   // 面板每次打开，首次发牌前等待一次 DealEnterDelay
+            _firstDealPending = true;
+            _lastHandIds.Clear();   // 重置，确保 Open 后首次 refreshHand 把全部牌视为新牌
+            Common.QLog.Info("[CookView] Open() called, firstDealPending=true, lastHandIds cleared, angelReady=" + (_imgAngel != null));
         }
 
         // 关闭界面时恢复普通背景音乐轮播
@@ -663,8 +665,10 @@ namespace Module.View
             clearDragItems();
             if (_handContent == null) return;
 
-            // 1) 先处理“出牌作废”动画：放牌后剩余手牌飞向恶魔口袋（数据已清，此处只做表现）
-            playDiscardAnimationIfNeeded(cookModel);
+            Common.QLog.Info("[CookView] refreshHand: handCount=" + cookModel.HandMaterials.Count + " lastHandIds=" + _lastHandIds.Count + " firstDealPending=" + _firstDealPending + " angelReady=" + (_imgAngel != null));
+
+            // 1) 先处理"出牌作废"动画：放牌后剩余手牌飞向恶魔口袋（数据已清，此处只做表现）
+            float discardEndTime = playDiscardAnimationIfNeeded(cookModel);
 
             var hand = cookModel.HandMaterials;
             int count = hand.Count;
@@ -690,7 +694,7 @@ namespace Module.View
                     item.gameObject.SetActive(true);
                     item.Bind(mat, this);
                     layoutHandCard(item, i, count);
-                    // 将要播发牌动画的新牌先设 scale=0（看不见），避免“摆好位置的一帧”闪现，
+                    // 将要播发牌动画的新牌先设 scale=0（看不见），避免"摆好位置的一帧"闪现，
                     // 随后由 playDealAnimation 从天使口袋飞入放大到 1
                     if (_imgAngel != null && newIds.Contains(mat.RuntimeId))
                         item.Rect.localScale = Vector3.zero;
@@ -706,12 +710,13 @@ namespace Module.View
             // 3) 新发的牌播放发牌飞入动画（依次从天使口袋飞出）
             if (_imgAngel == null) initHandFlyNodes();   // 防御：锚点未就绪时重查一次
             bool hasDeal = newIds.Count > 0 && _imgAngel != null;
+            Common.QLog.Info("[CookView] refreshHand: newIds=" + newIds.Count + " hasDeal=" + hasDeal);
             if (hasDeal)
                 playDealAnimation(hand, newIds);
 
             // 记录本次手牌 id，供下次 diff。
             // 若有新牌却因锚点未就绪没能播动画，则不记录这些新牌——留到下次 refresh 补播发牌动画，
-            // 避免“第一次 refresh 抢先摆好牌、第二次就不再算新牌”导致永远无动画。
+            // 避免"第一次 refresh 抢先摆好牌、第二次就不再算新牌"导致永远无动画。
             if (newIds.Count > 0 && !hasDeal)
                 return;
 
@@ -760,9 +765,9 @@ namespace Module.View
             setHandInteractable(false);
             Vector2 angelPos = worldToHandContent(_imgAngel.position);
 
-            // 只有面板打开后的首次发牌等待 DealEnterDelay（给布局稳定时间）；之后回合发牌不再等
             float enterDelay = _firstDealPending ? DealEnterDelay : 0f;
             _firstDealPending = false;
+            Common.QLog.Info("[CookView] playDealAnimation: enterDelay=" + enterDelay + " newIds=" + newIds.Count + " angelPos=" + worldToHandContent(_imgAngel.position));
 
             int order = 0;
             float lastEnd = 0f;
@@ -796,13 +801,13 @@ namespace Module.View
         }
 
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
-        private void playDiscardAnimationIfNeeded(CookModel cookModel)
+        private float playDiscardAnimationIfNeeded(CookModel cookModel)
         {
             var discarded = cookModel.DiscardedHandThisTurn;
             if (discarded == null || discarded.Count == 0 || _imgDevil == null)
             {
                 if (discarded != null) discarded.Clear();
-                return;
+                return 0f;
             }
 
             setHandInteractable(false);
@@ -837,7 +842,16 @@ namespace Module.View
             }
 
             discarded.Clear();
-            DOVirtual.DelayedCall(lastEnd + 0.02f, () => setHandInteractable(true));
+
+            // 全部弃牌飞完后：通知 model 发新牌，再刷新 View
+            float endTime = lastEnd + 0.05f;
+            DOVirtual.DelayedCall(endTime, () =>
+            {
+                cookModel.DealNewHand();
+                Refresh(cookModel);
+            });
+
+            return endTime;
         }
 
         // 在对象池里找当前绑定了指定 id 且在显示中的 item
