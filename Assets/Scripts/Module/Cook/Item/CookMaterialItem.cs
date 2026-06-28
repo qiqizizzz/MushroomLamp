@@ -16,7 +16,9 @@ using UnityEngine.UI;
 namespace Module.View
 {
     // 烹饪材料 UI 项，负责展示材料并处理拖拽输入
-    public class CookMaterialItem : BaseItem, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class CookMaterialItem : BaseItem,
+        IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private const float CardWidth = 150f;
         private const float CardHeight = 180f;
@@ -83,6 +85,7 @@ namespace Module.View
         {
             if (_materialData == null || _view == null) return;
 
+            _view.HideItemTooltip();
             _originalParent = transform.parent;
             _originalSiblingIndex = transform.GetSiblingIndex();
             _originalAnchoredPosition = _rectTransform.anchoredPosition;
@@ -117,6 +120,23 @@ namespace Module.View
             if (_dropAccepted) return;
 
             restoreToOriginalParent();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_view == null || _materialData == null) return;
+
+            _view.ShowItemTooltip(_materialData, eventData);
+        }
+
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            _view?.MoveItemTooltip(eventData);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _view?.HideItemTooltip();
         }
 
         // 标记拖拽已被目标区域接收

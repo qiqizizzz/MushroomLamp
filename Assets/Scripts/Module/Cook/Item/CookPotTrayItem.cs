@@ -17,7 +17,7 @@ namespace Module.View
 {
     // Pot 暂存槽：接收法阵槽拖来的材料；自身可拖出与其它暂存槽换位
     public class CookPotTrayItem : BaseItem,
-        IDropHandler, IPointerEnterHandler, IPointerExitHandler,
+        IDropHandler, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private readonly Color _emptyColor = new Color(0.90f, 0.74f, 0.50f, 0.85f);
@@ -27,6 +27,7 @@ namespace Module.View
         private CookView _view;
         private int _trayIndex;
         private bool _hasMaterial;
+        private CookMaterialData _materialData;
         private bool _dropAccepted;
 
         private Image _imgBackground;
@@ -56,6 +57,7 @@ namespace Module.View
             ensureReferences();
 
             _hasMaterial = material != null;
+            _materialData = material;
 
             if (_imgBackground != null)
                 _imgBackground.color = _hasMaterial ? _occupiedColor : _emptyColor;
@@ -75,6 +77,7 @@ namespace Module.View
 
         public void OnDrop(PointerEventData eventData)
         {
+            _view?.HideItemTooltip();
             if (_view == null || eventData.pointerDrag == null) return;
 
             // 来自法阵槽：移到暂存槽
@@ -99,12 +102,23 @@ namespace Module.View
         {
             if (_imgBackground != null && !_hasMaterial)
                 _imgBackground.color = _highlightColor;
+
+            if (_hasMaterial && _materialData != null)
+                _view?.ShowItemTooltip(_materialData, eventData);
+        }
+
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            if (_hasMaterial)
+                _view?.MoveItemTooltip(eventData);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             if (_imgBackground != null && !_hasMaterial)
                 _imgBackground.color = _emptyColor;
+
+            _view?.HideItemTooltip();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -112,6 +126,7 @@ namespace Module.View
             if (!_hasMaterial || _view == null) return;
             if (_imgIcon == null || _imgIcon.sprite == null) return;
 
+            _view.HideItemTooltip();
             _dropAccepted = false;
             createDragIcon(_imgIcon.sprite);
             setVisualVisible(false);

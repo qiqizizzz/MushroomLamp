@@ -16,7 +16,9 @@ using UnityEngine.UI;
 namespace Module.View
 {
     // 烹饪法阵槽位 UI 项，负责展示槽位状态并接收材料拖拽
-    public class CookSlotItem : BaseItem, IDropHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class CookSlotItem : BaseItem, IDropHandler,
+        IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private readonly Color _emptyColor = new Color(0.96f, 0.82f, 0.58f, 0.92f);
         private readonly Color _highlightColor = new Color(0.99f, 0.94f, 0.42f, 1f);
@@ -28,6 +30,7 @@ namespace Module.View
         private CookView _view;
         private int _slotIndex;
         private bool _hasMaterial;
+        private CookMaterialData _materialData;
         private Color _currentEmptyColor;
         private bool _dropAccepted;
 
@@ -65,6 +68,7 @@ namespace Module.View
             _hasMaterial = slotData != null && slotData.HasMaterial;
             _currentEmptyColor = getEmptyColor(slotData);
             CookMaterialData material = slotData?.Material;
+            _materialData = material;
 
             if (_imgBackground != null)
                 _imgBackground.color = _hasMaterial ? _occupiedColor : _currentEmptyColor;
@@ -99,6 +103,7 @@ namespace Module.View
 
         public void OnDrop(PointerEventData eventData)
         {
+            _view?.HideItemTooltip();
             if (_view == null || eventData.pointerDrag == null) return;
 
             CookMaterialItem materialItem = eventData.pointerDrag.GetComponent<CookMaterialItem>();
@@ -119,12 +124,23 @@ namespace Module.View
         {
             if (_imgBackground != null && !_hasMaterial)
                 _imgBackground.color = _highlightColor;
+
+            if (_hasMaterial && _materialData != null)
+                _view?.ShowItemTooltip(_materialData, eventData);
+        }
+
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            if (_hasMaterial)
+                _view?.MoveItemTooltip(eventData);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             if (_imgBackground != null && !_hasMaterial)
                 _imgBackground.color = _currentEmptyColor;
+
+            _view?.HideItemTooltip();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -132,6 +148,7 @@ namespace Module.View
             if (!_hasMaterial || _view == null) return;
             if (_imgIcon == null || _imgIcon.sprite == null) return;
 
+            _view.HideItemTooltip();
             _dropAccepted = false;
             createDragIcon(_imgIcon.sprite);
             setMaterialVisualVisible(false);
