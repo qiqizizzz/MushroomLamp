@@ -6,13 +6,16 @@
 * └──────────────────────────────────┘
 */
 
+using Common;
 using System.Collections.Generic;
 using DG.Tweening;
 using Module.Cook;
 using Common.Defines;
 using MVC.View;
+using Module.Item;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Module.View
@@ -20,6 +23,9 @@ namespace Module.View
     // 烹饪核心玩法界面，负责刷新一阶段玩法状态与转发操作事件
     public class CookView : BaseView
     {
+        private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
+        private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
+
         private TextMeshProUGUI _txtTurn;
         private TextMeshProUGUI _txtScore;
         private TextMeshProUGUI _txtTarget;
@@ -58,6 +64,8 @@ namespace Module.View
         private CookPotTrayItem[] _potTrayItems;
 
         private CookModel _cookModel;
+        private ItemTooltip _itemTooltip;
+        private RectTransform _tooltipCanvasRect;
         private readonly CookSlotItem[] _slotItems = new CookSlotItem[9];
 
         // ── 手牌对象池 + 发牌/出牌飞行动画 ──
@@ -160,8 +168,21 @@ namespace Module.View
         // 关闭界面时恢复普通背景音乐轮播
         public override void Close(params object[] args)
         {
+            HideItemTooltip();
             GameApp.SoundManager?.PlayRandomBGM();
             base.Close(args);
+        }
+
+        // 销毁界面时同步清理挂在全局 Canvas 下的详情浮层
+        protected override void OnDestroy()
+        {
+            if (_itemTooltip != null)
+            {
+                Destroy(_itemTooltip.gameObject);
+                _itemTooltip = null;
+            }
+
+            base.OnDestroy();
         }
 
         // 获取拖拽层
@@ -185,11 +206,54 @@ namespace Module.View
             return _txtTurn == null ? null : _txtTurn.font;
         }
 
+        // 显示材料详情浮层
+        public void ShowItemTooltip(CookMaterialData materialData, PointerEventData eventData)
+        {
+            if (materialData == null || eventData == null) return;
+
+            ShowItemTooltip(materialData, eventData.position);
+        }
+
+        // 按屏幕坐标显示材料详情浮层
+        public void ShowItemTooltip(CookMaterialData materialData, Vector2 screenPosition)
+        {
+            if (materialData == null) return;
+            if (!ensureItemTooltip()) return;
+
+            _itemTooltip.transform.SetAsLastSibling();
+            _itemTooltip.Bind(materialData);
+            MoveItemTooltip(screenPosition);
+        }
+
+        // 跟随鼠标移动材料详情浮层
+        public void MoveItemTooltip(PointerEventData eventData)
+        {
+            if (_itemTooltip == null || eventData == null) return;
+
+            MoveItemTooltip(eventData.position);
+        }
+
+        // 按屏幕坐标移动材料详情浮层
+        public void MoveItemTooltip(Vector2 screenPosition)
+        {
+            if (_itemTooltip == null) return;
+
+            _itemTooltip.SetScreenPosition(screenPosition, _tooltipCanvasRect, S_TooltipOffset);
+        }
+
+        // 隐藏材料详情浮层
+        public void HideItemTooltip()
+        {
+            if (_itemTooltip != null)
+                _itemTooltip.Hide();
+        }
+
         // 根据烹饪模型刷新界面
         public void Refresh(CookModel cookModel)
         {
             if (cookModel == null) return;
 
+            HideItemTooltip();
             _isRiskSettleConfirmed = false;
             _cookModel = cookModel;
             refreshTop(cookModel);
@@ -923,9 +987,19 @@ namespace Module.View
                 _btnMagicBox.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
         }
 
+        private void clearHand()
+        {
+            HideItemTooltip();
+            if (_handContent == null) return;
+
+            for (int i = _handContent.childCount - 1; i >= 0; i--)
+                Destroy(_handContent.GetChild(i).gameObject);
+        }
+
         // 清空研磨器出口材料 UI
         private void clearProcessedMaterials()
         {
+            HideItemTooltip();
             if (_processedContent == null) return;
 
             for (int i = _processedContent.childCount - 1; i >= 0; i--)
@@ -934,6 +1008,7 @@ namespace Module.View
 
         private void clearDragItems()
         {
+            HideItemTooltip();
             if (_dragRoot == null) return;
 
             for (int i = _dragRoot.childCount - 1; i >= 0; i--)
@@ -1004,6 +1079,35 @@ namespace Module.View
             }
 
             return "材料不在可研磨区域";
+        }
+
+        // 确保材料详情浮层已经实例化到场景 Canvas
+        private bool ensureItemTooltip()
+        {
+            if (_itemTooltip != null)
+                return true;
+
+            Transform parent = GameApp.ViewManager?.canvasTf ?? transform;
+            GameObject tooltipObj = ResManager.Instantiate(ITEM_TOOLTIP_PATH, parent);
+            if (tooltipObj == null) return false;
+
+            _itemTooltip = tooltipObj.GetComponent<ItemTooltip>();
+            if (_itemTooltip == null)
+                _itemTooltip = tooltipObj.AddComponent<ItemTooltip>();
+
+            tooltipObj.name = "ItemTooltip";
+            tooltipObj.transform.SetAsLastSibling();
+            _tooltipCanvasRect = parent as RectTransform;
+            if (_tooltipCanvasRect == null)
+                _tooltipCanvasRect = tooltipObj.GetComponentInParent<Canvas>()?.transform as RectTransform;
+
+            if (_itemTooltip != null)
+            {
+                _itemTooltip.SetFontAsset(GetFontAsset());
+                _itemTooltip.Hide();
+            }
+
+            return _itemTooltip != null;
         }
 
         // 点击结算按钮

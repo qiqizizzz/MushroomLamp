@@ -16,8 +16,9 @@ using UnityEngine.UI;
 namespace Module.View
 {
     // 烹饪材料 UI 项，负责展示材料并处理拖拽输入
-    public class CookMaterialItem : BaseItem, IBeginDragHandler, IDragHandler, IEndDragHandler,
-        IPointerEnterHandler, IPointerExitHandler
+    public class CookMaterialItem : BaseItem,
+        IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private const float CardWidth = 160f;
         private const float CardHeight = 192f;
@@ -40,6 +41,7 @@ namespace Module.View
 
         private bool _isHovering;
         private bool _isDragging;
+        private bool _isPointerInside;
         private bool _interactable = true;   // 动画期间锁住拖拽
         private float _targetScale = 1f;
         private UnityEngine.Material _outlineMaterial;
@@ -117,15 +119,24 @@ namespace Module.View
             _isHovering = true;
             _targetScale = HoverScale;
             setOutline(true);
+            if (_view != null && _materialData != null)
+                _view.ShowItemTooltip(_materialData, eventData);
             // 注意：不能用 SetAsLastSibling 置顶——会触发 HorizontalLayoutGroup 重排导致连锁闪烁
+        }
+
+        // 鼠标移动时同步移动详情浮层
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            if (!_isDragging)
+                _view?.MoveItemTooltip(eventData);
         }
 
         // 鼠标移出：还原
         public void OnPointerExit(PointerEventData eventData)
         {
-            _isHovering = false;
             _targetScale = 1f;
             setOutline(false);
+            _view?.HideItemTooltip();
         }
 
         // 每帧平滑过渡缩放（差值变大，不跳变）
@@ -133,6 +144,7 @@ namespace Module.View
         {
             if (_rectTransform == null) return;
 
+            updatePointerHover();
             Vector3 current = _rectTransform.localScale;
             Vector3 target = Vector3.one * _targetScale;
             if ((current - target).sqrMagnitude > 0.0001f)
@@ -146,8 +158,9 @@ namespace Module.View
             if (_materialData == null || _view == null || !_interactable) return;
 
             KillFlyTween();
+            _view.HideItemTooltip();
+            _isPointerInside = false;
             _isDragging = true;
-            _isHovering = false;
             _targetScale = 1f;
             setOutline(false);
 
@@ -269,12 +282,58 @@ namespace Module.View
         protected override void OnDestroy()
         {
             KillFlyTween();
+            _view?.HideItemTooltip();
             if (_outlineMaterial != null)
             {
                 Destroy(_outlineMaterial);
                 _outlineMaterial = null;
             }
             base.OnDestroy();
+        }
+
+        // 主动检测鼠标是否经过材料卡，避免 Pointer 事件被子节点或布局组件截断
+        private void updatePointerHover()
+        {
+            if (_view == null || _materialData == null || _isDragging || !isActiveAndEnabled)
+                return;
+
+            Vector2 screenPosition = Input.mousePosition;
+            bool isInside = RectTransformUtility.RectangleContainsScreenPoint(
+                _rectTransform,
+                screenPosition,
+                resolveHoverCamera());
+
+            if (isInside)
+            {
+                if (!_isPointerInside)
+                {
+                    _isPointerInside = true;
+                    _targetScale = HoverScale;
+                    setOutline(true);
+                    _view.ShowItemTooltip(_materialData, screenPosition);
+                    return;
+                }
+
+                _view.MoveItemTooltip(screenPosition);
+                return;
+            }
+
+            if (!_isPointerInside) return;
+
+            _isPointerInside = false;
+            _targetScale = 1f;
+            setOutline(false);
+            _view.HideItemTooltip();
+        }
+
+        // 获取当前 UI 检测需要的相机
+        private Camera resolveHoverCamera()
+        {
+            Canvas canvas = _view == null ? null : _view.GetComponentInParent<Canvas>();
+            if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                return null;
+
+            return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
         }
 
         private void restoreToOriginalParent()
