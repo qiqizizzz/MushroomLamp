@@ -18,6 +18,8 @@ namespace Module.Item
     // 通用道具详情浮层，支持简单材料与复杂材料按字段数量自动伸缩
     public class ItemTooltip : BaseItem
     {
+        private const int TOOLTIP_SORTING_ORDER = 5000;
+
         [SerializeField] private float TooltipWidth = 380f;
         [SerializeField] private float MaxHeight = 420f;
         [SerializeField] private float RowLabelWidth = 88f;
@@ -34,6 +36,7 @@ namespace Module.Item
         private RectTransform _descBlock;
         private RectTransform _processBlock;
         private RectTransform _effectBlock;
+        private Canvas _canvas;
         private CanvasGroup _canvasGroup;
         private Image _imgBackground;
         private Image _imgIcon;
@@ -108,19 +111,18 @@ namespace Module.Item
             }
 
             Camera eventCamera = resolveCanvasCamera(canvasRect);
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition + offset, eventCamera, out Vector2 localPoint))
+            Vector2 resolvedOffset = resolveOffset(screenPosition, canvasRect, eventCamera, offset);
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition + resolvedOffset, eventCamera, out Vector2 localPoint))
                 return;
 
             Vector2 size = _rectTransform.rect.size;
-            Rect rect = canvasRect.rect;
-            float halfWidth = size.x * _rectTransform.pivot.x;
-            float rightWidth = size.x * (1f - _rectTransform.pivot.x);
-            float halfHeight = size.y * _rectTransform.pivot.y;
-            float topHeight = size.y * (1f - _rectTransform.pivot.y);
+            if (size.x <= 0f || size.y <= 0f)
+                size = _rectTransform.sizeDelta;
 
-            localPoint.x = Mathf.Clamp(localPoint.x, rect.xMin + halfWidth, rect.xMax - rightWidth);
-            localPoint.y = Mathf.Clamp(localPoint.y, rect.yMin + halfHeight, rect.yMax - topHeight);
-            _rectTransform.anchoredPosition = localPoint;
+            Rect rect = canvasRect.rect;
+            localPoint.x = Mathf.Clamp(localPoint.x, rect.xMin, rect.xMax - size.x);
+            localPoint.y = Mathf.Clamp(localPoint.y, rect.yMin + size.y, rect.yMax);
+            _rectTransform.position = canvasRect.TransformPoint(localPoint);
         }
 
         // 隐藏详情浮层
@@ -157,6 +159,13 @@ namespace Module.Item
 
             _imgBackground.color = new Color(0.18f, 0.13f, 0.10f, 0.94f);
             _imgBackground.raycastTarget = false;
+
+            _canvas = GetComponent<Canvas>();
+            if (_canvas == null)
+                _canvas = gameObject.AddComponent<Canvas>();
+
+            _canvas.overrideSorting = true;
+            _canvas.sortingOrder = TOOLTIP_SORTING_ORDER;
 
             _canvasGroup = GetComponent<CanvasGroup>();
             if (_canvasGroup == null)
@@ -226,6 +235,20 @@ namespace Module.Item
             _descBlock = createTextBlock("DescBlock", "Txt_Desc", out _txtDesc);
             _processBlock = createTextBlock("ProcessBlock", "Txt_Process", out _txtProcess);
             _effectBlock = createTextBlock("EffectBlock", "Txt_Effect", out _txtEffect);
+        }
+
+        // 根据鼠标位置选择详情框显示方向，底部材料默认往上弹
+        private Vector2 resolveOffset(Vector2 screenPosition, RectTransform canvasRect, Camera eventCamera, Vector2 fallbackOffset)
+        {
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, eventCamera, out Vector2 cursorLocalPoint))
+                return fallbackOffset;
+
+            float tooltipHeight = Mathf.Max(_rectTransform.rect.height, _rectTransform.sizeDelta.y);
+            float verticalOffset = cursorLocalPoint.y < canvasRect.rect.center.y
+                ? tooltipHeight + Mathf.Abs(fallbackOffset.y)
+                : -Mathf.Abs(fallbackOffset.y);
+
+            return new Vector2(Mathf.Abs(fallbackOffset.x), verticalOffset);
         }
 
         // 创建文本块
