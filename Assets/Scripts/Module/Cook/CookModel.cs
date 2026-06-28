@@ -1053,6 +1053,14 @@ namespace Module.Cook
         {
             if (TurnIndex >= MaxTurn)
             {
+                // 最后一回合结束：把剩余手牌标记为待回收，供 View 播放飞向恶魔的动画
+                for (int i = 0; i < _handMaterials.Count; i++)
+                {
+                    DiscardedHandThisTurn.Add(_handMaterials[i]);
+                    recycleToDiscard(_handMaterials[i]);
+                }
+                _handMaterials.Clear();
+
                 IsRunActive = false;
                 RoundState = CookRoundStateType.Finished;
                 LastTip = $"{LastTip}，整局结束";

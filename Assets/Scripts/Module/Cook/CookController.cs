@@ -234,15 +234,29 @@ namespace Module.Cook
         }
 
         // 小局结束后统一进入小局结算界面（StageSettleView）
-        // 是否达标 / 是否最后小局只影响结算界面右下角按钮去向（商店 or 最终结算）
+        // 等手牌飞向恶魔的回收动画结束后再打开，避免结算界面和动画同时出现
         private void openStageEndViewIfNeeded()
         {
             CookModel cookModel = GetCookModel();
             if (_hasOpenedStageEndView || !cookModel.IsStageFinished) return;
 
             _hasOpenedStageEndView = true;
-            QLog.Info($"[{nameof(CookController)}] 小局结束，进入小局结算，分数：{cookModel.GetScoreText()}");
-            ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView, buildStageSettleData(cookModel));
+
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            if (cookView != null && cookModel.DiscardedHandThisTurn.Count > 0)
+            {
+                // 有弃牌动画待播，等动画结束后再打开结算
+                cookView.OnDiscardAnimationDone += () =>
+                {
+                    QLog.Info($"[{nameof(CookController)}] 小局结束，进入小局结算，分数：{cookModel.GetScoreText()}");
+                    ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView, buildStageSettleData(cookModel));
+                };
+            }
+            else
+            {
+                QLog.Info($"[{nameof(CookController)}] 小局结束，进入小局结算，分数：{cookModel.GetScoreText()}");
+                ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView, buildStageSettleData(cookModel));
+            }
         }
 
         // 构建小局结算界面展示数据

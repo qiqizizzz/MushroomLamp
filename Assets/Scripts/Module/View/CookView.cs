@@ -85,6 +85,7 @@ namespace Module.View
         private const float DealEnterDelay = 0.3f;
 
         public bool IsHandAnimating => _isHandAnimating;
+        public System.Action OnDiscardAnimationDone;
 
         public override void InitUI()
         {
@@ -907,12 +908,14 @@ namespace Module.View
 
             discarded.Clear();
 
-            // 全部弃牌飞完后：通知 model 发新牌，再刷新 View
+            // 全部弃牌飞完后：通知 model 发新牌，再刷新 View，并触发外部回调
             float endTime = lastEnd + 0.05f;
             DOVirtual.DelayedCall(endTime, () =>
             {
                 cookModel.DealNewHand();
                 Refresh(cookModel);
+                OnDiscardAnimationDone?.Invoke();
+                OnDiscardAnimationDone = null;
             });
 
             return endTime;
