@@ -23,6 +23,11 @@ namespace Module.View
         private const float CardWidth = 150f;
         private const float CardHeight = 180f;
 
+        // 悬停效果参数（缩放可在此微调）
+        private const float HoverScale = 1.2f;      // 悬停目标缩放
+        private const float ScaleLerpSpeed = 12f;   // 缩放过渡速度
+        private const float OutlineWidth = 3f;      // 描边宽度（像素）
+
         private CookView _view;
         private CookMaterialData _materialData;
         private RectTransform _rectTransform;
@@ -33,6 +38,10 @@ namespace Module.View
         private bool _dropAccepted;
         private float _displayWidth = CardWidth;
         private float _displayHeight = CardHeight;
+
+        private bool _isDragging;
+        private float _targetScale = 1f;
+        private UnityEngine.Material _outlineMaterial;
 
         private Image _imgBackground;
         private Image _imgIcon;
@@ -81,11 +90,54 @@ namespace Module.View
             applyDisplaySize(_displayWidth, _displayHeight);
         }
 
+        // 鼠标移入：放大 + 显示描边
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_isDragging) return;
+            _targetScale = HoverScale;
+            setOutline(true);
+            if (_view != null && _materialData != null)
+                _view.ShowItemTooltip(_materialData, eventData);
+            // 注意：不能用 SetAsLastSibling 置顶——会触发 HorizontalLayoutGroup 重排导致连锁闪烁
+        }
+
+        // 鼠标移动时同步移动详情浮层
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            if (!_isDragging)
+                _view?.MoveItemTooltip(eventData);
+        }
+
+        // 鼠标移出：还原
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _targetScale = 1f;
+            setOutline(false);
+            _view?.HideItemTooltip();
+        }
+
+        // 每帧平滑过渡缩放（差值变大，不跳变）
+        protected override void OnUpdate()
+        {
+            if (_rectTransform == null) return;
+
+            Vector3 current = _rectTransform.localScale;
+            Vector3 target = Vector3.one * _targetScale;
+            if ((current - target).sqrMagnitude > 0.0001f)
+                _rectTransform.localScale = Vector3.Lerp(current, target, Time.deltaTime * ScaleLerpSpeed);
+            else
+                _rectTransform.localScale = target;
+        }
+
         public void OnBeginDrag(PointerEventData eventData)
         {
             if (_materialData == null || _view == null) return;
 
             _view.HideItemTooltip();
+            _isDragging = true;
+            _targetScale = 1f;
+            setOutline(false);
+
             _originalParent = transform.parent;
             _originalSiblingIndex = transform.GetSiblingIndex();
             _originalAnchoredPosition = _rectTransform.anchoredPosition;
@@ -117,26 +169,10 @@ namespace Module.View
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            _isDragging = false;
             if (_dropAccepted) return;
 
             restoreToOriginalParent();
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (_view == null || _materialData == null) return;
-
-            _view.ShowItemTooltip(_materialData, eventData);
-        }
-
-        public void OnPointerMove(PointerEventData eventData)
-        {
-            _view?.MoveItemTooltip(eventData);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            _view?.HideItemTooltip();
         }
 
         // 标记拖拽已被目标区域接收
@@ -171,7 +207,9 @@ namespace Module.View
             if (_canvasGroup == null)
                 _canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-            _imgBackground = getOrCreateImage("Img_Background", transform, new Color(0.95f, 0.89f, 0.74f, 1f));
+            // 背景不再高亮，设为完全透明（保留节点以兼容布局）
+            _imgBackground = getOrCreateImage("Img_Background", transform, new Color(0f, 0f, 0f, 0f));
+            _imgBackground.raycastTarget = true;   // 仍负责接收悬停/点击
             _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white);
             _txtName = getOrCreateText("Txt_Name", transform, 22, TextAlignmentOptions.Center);
             _txtValue = getOrCreateText("Txt_Value", transform, 30, TextAlignmentOptions.Center);
@@ -182,6 +220,42 @@ namespace Module.View
             setupChildRect(_txtName.rectTransform, new Vector2(0.06f, 0.76f), new Vector2(0.94f, 0.98f), Vector2.zero, Vector2.zero);
             setupChildRect(_txtValue.rectTransform, new Vector2(0.08f, 0.2f), new Vector2(0.92f, 0.42f), Vector2.zero, Vector2.zero);
             setupChildRect(_txtTag.rectTransform, new Vector2(0.08f, 0.02f), new Vector2(0.92f, 0.2f), Vector2.zero, Vector2.zero);
+        }
+
+        // 切换图标描边（悬停时贴合轮廓的白描边）
+        private void setOutline(bool on)
+        {
+            if (_imgIcon == null) return;
+
+            if (on)
+            {
+                if (_outlineMaterial == null)
+                {
+                    Shader shader = Shader.Find("UI/Outline");
+                    if (shader == null) return;
+                    _outlineMaterial = new UnityEngine.Material(shader);
+                    _outlineMaterial.SetColor("_OutlineColor", Color.white);
+                    _outlineMaterial.SetFloat("_OutlineWidth", OutlineWidth);
+                }
+                _outlineMaterial.SetFloat("_OutlineEnabled", 1f);
+                _imgIcon.material = _outlineMaterial;
+            }
+            else
+            {
+                if (_outlineMaterial != null)
+                    _outlineMaterial.SetFloat("_OutlineEnabled", 0f);
+                _imgIcon.material = null;   // 还原默认材质
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            if (_outlineMaterial != null)
+            {
+                Destroy(_outlineMaterial);
+                _outlineMaterial = null;
+            }
+            base.OnDestroy();
         }
 
         private void restoreToOriginalParent()

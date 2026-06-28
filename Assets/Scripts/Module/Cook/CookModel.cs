@@ -46,6 +46,11 @@ namespace Module.Cook
         public float CurrentScore { get; private set; }
         public int Coin { get; private set; }
         public float PreviewValue { get; private set; }
+
+        // 小局关卡参数对外统一从 CookModel 取（内部走 LevelFlow），View 层不直接碰单例
+        public int MaxTurn => LevelFlow.Instance.MaxTurn;
+        public int TargetMin => LevelFlow.Instance.TargetMin;
+        public int TargetMax => LevelFlow.Instance.TargetMax;
         public bool IsRunActive { get; private set; }
         public CookRoundStateType RoundState { get; private set; }
         public string LastTip { get; private set; }
@@ -88,13 +93,13 @@ namespace Module.Cook
         public static bool ForceStageWin;
 
         public bool IsStageFinished => LevelFlow.Instance.MaxTurn > 0 && !IsRunActive && RoundState == CookRoundStateType.Finished;
-        public bool IsStageTargetReached => ForceStageWin || CurrentScore >= LevelFlow.Instance.TargetMin;
+        public bool IsStageTargetReached => ForceStageWin || CurrentScore >= TargetMin;
         public bool IsFinalStage => LevelFlow.Instance.HasStageConfig && LevelFlow.Instance.IsLastStage;
         public bool ShouldOpenFinalSummary => IsStageFinished && (!IsStageTargetReached || IsFinalStage);
         public bool ShouldOpenStageSettle => IsStageFinished && IsStageTargetReached && !IsFinalStage;
         // 结束回合（煮熟法阵材料）：只要法阵有材料即可
         public bool CanSettle => IsRunActive && HasCookingMaterial && RoundState != CookRoundStateType.Finished;
-        public bool IsOverHeatRisk => PreviewValue > LevelFlow.Instance.TargetMax;
+        public bool IsOverHeatRisk => PreviewValue > TargetMax;
 
         public CookModel()
         {
@@ -549,7 +554,7 @@ namespace Module.Cook
         // 获取当前回合进度文本
         public string GetTurnText()
         {
-            return $"回合 {TurnIndex}/{LevelFlow.Instance.MaxTurn}";
+            return $"回合 {TurnIndex}/{MaxTurn}";
         }
 
         // 获取当前总分文本
@@ -561,7 +566,7 @@ namespace Module.Cook
         // 获取目标区间文本
         public string GetTargetText()
         {
-            return $"目标 {LevelFlow.Instance.TargetMin}~{LevelFlow.Instance.TargetMax}";
+            return $"目标 {TargetMin}~{TargetMax}";
         }
 
         // 获取金币文本
@@ -823,8 +828,8 @@ namespace Module.Cook
             int comboCount = adjacentComboCount + orderComboCount;
             float comboBonus = comboCount * 2f;
             float roundScore = baseScore + processBonus + slotBonus + comboBonus + _magicBoxBonus;
-            bool isTargetMatched = roundScore >= LevelFlow.Instance.TargetMin && roundScore <= LevelFlow.Instance.TargetMax;
-            bool isOverHeat = roundScore > LevelFlow.Instance.TargetMax;
+            bool isTargetMatched = roundScore >= TargetMin && roundScore <= TargetMax;
+            bool isOverHeat = roundScore > TargetMax;
             bool isAngelRescued = includePenalty && isOverHeat && LevelFlow.Instance.AngelRescueCount > 0;
             float rawPenalty = isOverHeat ? 3f + _devilRisk : 0f;
             float penaltyScore = includePenalty ? rawPenalty : 0f;
@@ -936,7 +941,7 @@ namespace Module.Cook
 
         private bool advanceTurn()
         {
-            if (TurnIndex >= LevelFlow.Instance.MaxTurn)
+            if (TurnIndex >= MaxTurn)
             {
                 IsRunActive = false;
                 RoundState = CookRoundStateType.Finished;

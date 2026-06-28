@@ -11,7 +11,6 @@ using Module.Cook;
 using Common.Defines;
 using MVC.View;
 using Module.Item;
-using Module.Level;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -191,6 +190,11 @@ namespace Module.View
         // 刷新 Pot 暂存槽与投入按钮显隐
         private void refreshPotTray(CookModel cookModel)
         {
+            // 座位数以小局配置 PotTrayCapacity 为准；与当前不一致则重建
+            int capacity = cookModel.PotTrayCapacity;
+            if (_potTrayItems == null || _potTrayItems.Length != capacity)
+                rebuildPotTray(capacity);
+
             if (_potTrayItems != null)
             {
                 var traySlots = cookModel.PotTraySlots;
@@ -417,9 +421,8 @@ namespace Module.View
         // 初始化 Pot 暂存槽与投入按钮
         private void initPotArea()
         {
-            int capacity = _cookModel?.PotTrayCapacity ?? 3;
-            initPotTray(capacity);
-
+            // 座位数依赖小局配置（PotTrayCapacity），此时 _cookModel 尚未就绪，
+            // 真正建座位放到 refreshPotTray（model 已传入）按真实容量建
             if (_btnSubmitTray != null)
             {
                 _btnSubmitTray.onClick.RemoveAllListeners();
@@ -428,7 +431,18 @@ namespace Module.View
             }
         }
 
-        // 在 TrayRoot 下创建 N 个暂存槽
+        // 按容量重建暂存槽：先即时清掉 TrayRoot 下旧座位，再建 N 个
+        private void rebuildPotTray(int capacity)
+        {
+            if (_potTrayRoot == null) return;
+
+            for (int i = _potTrayRoot.childCount - 1; i >= 0; i--)
+                DestroyImmediate(_potTrayRoot.GetChild(i).gameObject);
+
+            initPotTray(capacity);
+        }
+
+        // 在 TrayRoot 下创建 N 个暂存槽（全新建，不复用旧对象）
         private void initPotTray(int capacity)
         {
             if (_potTrayRoot == null) return;
@@ -436,13 +450,9 @@ namespace Module.View
             _potTrayItems = new CookPotTrayItem[capacity];
             for (int i = 0; i < capacity; i++)
             {
-                Transform trayTf = _potTrayRoot.Find($"Tray_{i}");
-                if (trayTf == null)
-                {
-                    GameObject trayObj = new GameObject($"Tray_{i}", typeof(RectTransform));
-                    trayObj.transform.SetParent(_potTrayRoot, false);
-                    trayTf = trayObj.transform;
-                }
+                GameObject trayObj = new GameObject($"Tray_{i}", typeof(RectTransform));
+                trayObj.transform.SetParent(_potTrayRoot, false);
+                Transform trayTf = trayObj.transform;
 
                 CookPotTrayItem trayItem = trayTf.GetComponent<CookPotTrayItem>();
                 if (trayItem == null)
@@ -575,7 +585,7 @@ namespace Module.View
 
             if (_imgHeatFill != null)
             {
-                float denominator = Mathf.Max(1f, LevelFlow.Instance.TargetMax + 4f);
+                float denominator = Mathf.Max(1f, cookModel.TargetMax + 4f);
                 _imgHeatFill.fillAmount = Mathf.Clamp01(cookModel.PreviewValue / denominator);
                 _imgHeatFill.color = cookModel.IsOverHeatRisk
                     ? new Color(0.92f, 0.23f, 0.16f, 1f)

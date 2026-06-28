@@ -34,6 +34,7 @@ namespace Module.Item
         private RectTransform _descBlock;
         private RectTransform _processBlock;
         private RectTransform _effectBlock;
+        private CanvasGroup _canvasGroup;
         private Image _imgBackground;
         private Image _imgIcon;
         private TextMeshProUGUI _txtName;
@@ -128,6 +129,18 @@ namespace Module.Item
             SetVisible(false);
         }
 
+        // 设置显示状态，保持根物体激活以便后续悬停可以立刻重新显示
+        public override void SetVisible(bool isVisible)
+        {
+            if (!gameObject.activeSelf)
+                gameObject.SetActive(true);
+
+            ensureHierarchy();
+            _canvasGroup.alpha = isVisible ? 1f : 0f;
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
+        }
+
         // 确保基础 UI 层级存在
         private void ensureHierarchy()
         {
@@ -144,6 +157,13 @@ namespace Module.Item
 
             _imgBackground.color = new Color(0.18f, 0.13f, 0.10f, 0.94f);
             _imgBackground.raycastTarget = false;
+
+            _canvasGroup = GetComponent<CanvasGroup>();
+            if (_canvasGroup == null)
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
 
             _contentRoot = getOrCreateRect("Content", transform);
             setupStretch(_contentRoot, new Vector2(14f, 14f), new Vector2(-14f, -14f));
