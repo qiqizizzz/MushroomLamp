@@ -230,24 +230,15 @@ namespace Module.Cook
             openStageEndViewIfNeeded();
         }
 
-        // 小局结束后根据目标分与小局进度进入对应结算界面
+        // 小局结束后统一进入小局结算界面（StageSettleView）
+        // 是否达标 / 是否最后小局只影响结算界面右下角按钮去向（商店 or 最终结算）
         private void openStageEndViewIfNeeded()
         {
             CookModel cookModel = GetCookModel();
             if (_hasOpenedStageEndView || !cookModel.IsStageFinished) return;
 
             _hasOpenedStageEndView = true;
-            if (cookModel.ShouldOpenFinalSummary)
-            {
-                QLog.Info($"[{nameof(CookController)}] 小局结束，进入最终结算，分数：{cookModel.GetScoreText()}");
-                GameApp.ViewManager.Close(ViewType.CookView);
-                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
-                return;
-            }
-
-            if (!cookModel.ShouldOpenStageSettle) return;
-
-            QLog.Info($"[{nameof(CookController)}] 小局达标，进入小局结算，分数：{cookModel.GetScoreText()}");
+            QLog.Info($"[{nameof(CookController)}] 小局结束，进入小局结算，分数：{cookModel.GetScoreText()}");
             ApplyControllerFunc(ControllerType.StageSettle, EventDefines.OpenStageSettleView, buildStageSettleData(cookModel));
         }
 

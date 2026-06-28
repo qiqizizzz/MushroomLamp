@@ -1,5 +1,6 @@
 using System.Linq;
 using Common.Defines;
+using Module.Player;
 using MVC;
 using UnityEngine;
 
@@ -67,6 +68,36 @@ namespace Module.Debug
             GUILayout.Space(6f);
             if (GUILayout.Button("Close All", GUILayout.Height(30f)))
                 GameApp.ViewManager.CloseAll();
+
+            GUILayout.EndArea();
+
+            drawMoneyColumn(panelWidth);
+        }
+
+        // 独立的金币列，放在面板右侧（不与 View 按钮同列）
+        private void drawMoneyColumn(float leftPanelWidth)
+        {
+            const float colWidth = 200f;
+            var rect = new Rect(16f + leftPanelWidth + 12f, 16f, colWidth, 300f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+
+            GUILayout.Label("金币 GM");
+            GUILayout.Label($"当前：{PlayerDataManager.Instance.Money}");
+            GUILayout.Space(6f);
+
+            if (GUILayout.Button("+10", GUILayout.Height(28f)))
+                PlayerDataManager.Instance.AddMoney(10);
+            if (GUILayout.Button("+50", GUILayout.Height(28f)))
+                PlayerDataManager.Instance.AddMoney(50);
+            if (GUILayout.Button("+100", GUILayout.Height(28f)))
+                PlayerDataManager.Instance.AddMoney(100);
+            if (GUILayout.Button("清零", GUILayout.Height(28f)))
+                PlayerDataManager.Instance.AddMoney(-PlayerDataManager.Instance.Money);
+
+            GUILayout.Space(10f);
+            GUILayout.Label("测试");
+            bool forceWin = GUILayout.Toggle(Module.Cook.CookModel.ForceStageWin, " 永不失败(恒达标)");
+            Module.Cook.CookModel.ForceStageWin = forceWin;
 
             GUILayout.EndArea();
         }

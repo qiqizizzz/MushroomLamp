@@ -105,35 +105,27 @@ namespace Module.Select
                 $"难度={model.Difficulty} boxId={entry?.id} boxName={entry?.displayName} " +
                 $"boxIndex={model.SelectedBoxIndex}/{model.BoxCount}");
 
+            // 初始化关卡流程（定位第一小局），后续商店推进沿用 LevelFlow
+            var materials = collectMaterials(detail);
+            LevelFlow.Instance.Begin(entry?.id, entry?.displayName, model.Difficulty, materials);
+
             GameApp.ViewManager.Close(ViewType.SelectBoxView);
-            ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, buildCookStartData(model, entry, detail));
+            ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, LevelFlow.Instance.BuildStartData());
         }
 
-        // 构建烹饪玩法启动数据
-        private static CookRunStartData buildCookStartData(
-            SelectBoxModel model,
-            SelectBoxCatalogEntry entry,
-            SelectBoxDetailJsonConfig detail)
+        // 从箱子详情提取材料种子列表
+        private static System.Collections.Generic.List<CookMaterialSeedData> collectMaterials(SelectBoxDetailJsonConfig detail)
         {
-            CookRunStartData startData = new CookRunStartData
-            {
-                Difficulty = model.Difficulty,
-                BoxId = entry?.id,
-                BoxName = entry?.displayName
-            };
-
-            // 从关卡配置表读取本小局参数（阶段A：先取第一小局；小局推进留待阶段B）
-            applyStageConfig(startData, entry?.id, model.Difficulty, 0);
-
+            var result = new System.Collections.Generic.List<CookMaterialSeedData>();
             SelectMaterialLineData[] lines = detail?.ToRuntimeLines();
-            if (lines == null) return startData;
+            if (lines == null) return result;
 
             for (int i = 0; i < lines.Length; i++)
             {
                 SelectMaterialLineData line = lines[i];
                 if (line == null || string.IsNullOrWhiteSpace(line.label)) continue;
 
-                startData.Materials.Add(new CookMaterialSeedData
+                result.Add(new CookMaterialSeedData
                 {
                     MaterialName = line.label,
                     Count = line.count,
@@ -141,39 +133,7 @@ namespace Module.Select
                 });
             }
 
-            return startData;
-        }
-
-        // 按 boxId（=大局）+ 难度 + 小局序号，从配置表填充启动参数
-        private static void applyStageConfig(
-            CookRunStartData startData, string boxId, SelectDifficulty difficulty, int stageIndex)
-        {
-            LevelCatalogJsonConfig catalog = LevelConfigLoader.LoadCatalog();
-            if (catalog?.levels == null) return;
-
-            // 用 boxId 匹配大局
-            LevelEntryJsonData level = null;
-            foreach (LevelEntryJsonData lv in catalog.levels)
-            {
-                if (lv != null && lv.boxId == boxId) { level = lv; break; }
-            }
-            if (level == null) return;
-
-            StageJsonConfig stage = LevelConfigLoader.GetStage(level, difficulty, stageIndex);
-            if (stage == null)
-            {
-                QLog.Error($"[{nameof(SelectBoxController)}] 小局配置缺失：boxId={boxId} 难度={difficulty} index={stageIndex}");
-                return;
-            }
-
-            startData.HasStageConfig = true;
-            startData.StageId = stage.stageId;
-            startData.TurnCount = stage.turnCount;
-            startData.PotTrayCapacity = stage.potTrayCapacity;
-            startData.TargetMin = stage.targetMin;
-            startData.TargetMax = stage.targetMax;
-            startData.HandCount = stage.handCount;
-            startData.AngelRescueCount = stage.angelRescueCount;
+            return result;
         }
 
         private SelectBoxModel ensureModel()

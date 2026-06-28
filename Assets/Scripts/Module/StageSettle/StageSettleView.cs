@@ -80,7 +80,7 @@ namespace Module.StageSettle
 
             string stageText = data.StageCount > 0 ? $"{data.StageIndex + 1}/{data.StageCount}" : "-";
             string resultText = data.IsTargetReached ? "目标达成" : "目标未达成";
-            string nextText = data.IsFinalStage ? "最终结算" : "进入商店";
+            string nextText = data.GoToFinalSummary ? "最终结算" : "进入商店";
 
             setText(_txtTitle, "小局结算");
             setText(_txtSubtitle, $"{data.BoxName} · 小局 {stageText}");
@@ -91,9 +91,9 @@ namespace Module.StageSettle
             setText(_txtScore, CookRoundResultData.FormatScore(data.CurrentScore));
             setText(_txtCoin, data.Coin.ToString());
             setText(_txtNext, nextText);
-            setText(_txtTip, data.IsTargetReached
-                ? "本小局目标已经完成，可以进入下一段准备"
-                : "本小局未达到目标，进入最终结算");
+            setText(_txtTip, data.GoToFinalSummary
+                ? (data.IsTargetReached ? "已通关全部小局，进入最终结算" : "本小局未达到目标，进入最终结算")
+                : "本小局目标已完成，进入商店准备下一小局");
 
             if (_imgResultBadge != null)
                 _imgResultBadge.color = data.IsTargetReached

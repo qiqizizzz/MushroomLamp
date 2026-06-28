@@ -1,5 +1,7 @@
 using Common.Defines;
 using Module.Confirm;
+using Module.Level;
+using Module.Player;
 using MVC;
 using MVC.Controller;
 using MVC.View;
@@ -37,23 +39,50 @@ namespace Module.Shop
 
         private void OnOpenShopView(object[] args)
         {
-            int? gold = null;
-            if (args != null && args.Length > 0 && args[0] is int value)
-                gold = value;
-
-            _shopModel.Refresh(gold);
+            _shopModel.Refresh();
             GameApp.ViewManager.Open((int)ViewType.ShopView, args);
             RefreshView();
         }
 
+        private const int RefreshCost = 5;   // 刷新货架费用（固定）
+
         private void OnRefresh(object[] args)
         {
+            if (PlayerDataManager.Instance.Money < RefreshCost)
+            {
+                ConfirmController.Show(new ConfirmModel
+                {
+                    mode = ConfirmModel.Mode.ConfirmOnly,
+                    title = "金币不足",
+                    message = $"刷新货架需要 {RefreshCost} 金币\n当前金币 {PlayerDataManager.Instance.Money}。",
+                    confirmText = "知道了"
+                });
+                return;
+            }
+
+            PlayerDataManager.Instance.SpendMoney(RefreshCost);
             _shopModel.Refresh();
             RefreshView();
         }
 
         private void OnRecycle(object[] args) { }
-        private void OnContinue(object[] args) { }
+
+        // 继续：推进到下一小局；若已是最后小局则进入最终结算
+        private void OnContinue(object[] args)
+        {
+            GameApp.ViewManager.Close((int)ViewType.ShopView);
+
+            if (LevelFlow.Instance.AdvanceStage())
+            {
+                // 还有下一小局 → 用新小局参数重开 Cook
+                ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, LevelFlow.Instance.BuildStartData());
+            }
+            else
+            {
+                // 已是最后小局 → 进入最终结算
+                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
+            }
+        }
 
         private void OnBuyItem(object[] args)
         {
@@ -80,8 +109,12 @@ namespace Module.Shop
                 cancelText = "取消",
                 onConfirm = () =>
                 {
-                    _shopModel.SetGold(_shopModel.Gold - slotData.price);
-                    slotData.isPurchased = true;
+                    if (PlayerDataManager.Instance.SpendMoney(slotData.price))
+                    {
+                        if (slotData.isCard)
+                            PlayerDataManager.Instance.AddCard(slotData.id);
+                        slotData.isPurchased = true;
+                    }
                     RefreshView();
                 }
             });

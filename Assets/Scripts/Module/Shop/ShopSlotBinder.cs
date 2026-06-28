@@ -33,27 +33,21 @@ namespace Module.Shop
 
         // 旧的私有 LoadSprite 已废弃（真机分支直接返回 null 导致图丢失），统一改走 ArtAssetLoader
 
+        // 整个卡槽即购买按钮：绑根节点上的 Button
         private void bindBuyButton(ShopSlotData data, Action<ShopSlotData> onBuy)
         {
-            Transform buyTf = transform.Find("Btn_Buy");
-            if (buyTf == null) return;
-
-            Button btn = buyTf.GetComponent<Button>();
+            Button btn = GetComponent<Button>();
             if (btn == null) return;
 
             btn.onClick.RemoveAllListeners();
 
-            TextMeshProUGUI label = buyTf.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
-
             if (data.isPurchased)
             {
                 btn.interactable = false;
-                if (label != null) label.text = "已购买";
             }
             else
             {
                 btn.interactable = true;
-                if (label != null) label.text = "购买";
                 btn.onClick.AddListener(() => onBuy?.Invoke(data));
             }
         }

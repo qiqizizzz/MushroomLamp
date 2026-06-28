@@ -22,5 +22,8 @@ namespace Module.StageSettle
         public int Coin;
         public bool IsTargetReached;
         public bool IsFinalStage;
+
+        // 右下角按钮去向：未达标 或 最后小局 → 最终结算；否则 → 商店
+        public bool GoToFinalSummary => !IsTargetReached || IsFinalStage;
     }
 }

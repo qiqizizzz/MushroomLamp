@@ -96,8 +96,11 @@ namespace Module.Cook
         public bool HasCookingMaterial => hasAnySlotMaterial();
         public bool HasPotMaterial => _potEntries.Count > 0;
         public bool CanPlaceHandThisTurn => IsRunActive && !_hasPlacedHandThisTurn;
+        // GM 测试开关：开启后小局恒视为达标，便于测试小局推进全流程
+        public static bool ForceStageWin;
+
         public bool IsStageFinished => MaxTurn > 0 && !IsRunActive && RoundState == CookRoundStateType.Finished;
-        public bool IsStageTargetReached => CurrentScore >= TargetMin;
+        public bool IsStageTargetReached => ForceStageWin || CurrentScore >= TargetMin;
         public bool IsFinalStage => HasStageConfig && StageCount > 0 && StageIndex >= StageCount - 1;
         public bool ShouldOpenFinalSummary => IsStageFinished && (!IsStageTargetReached || IsFinalStage);
         public bool ShouldOpenStageSettle => IsStageFinished && IsStageTargetReached && !IsFinalStage;

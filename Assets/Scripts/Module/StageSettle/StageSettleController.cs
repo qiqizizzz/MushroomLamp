@@ -15,6 +15,8 @@ namespace Module.StageSettle
     // 小局结算界面控制器，负责打开结算界面与后续跳转
     public class StageSettleController : BaseController
     {
+        private StageSettleData _currentData;
+
         public StageSettleController()
         {
             GameApp.ViewManager.Register(ViewType.StageSettleView, new ViewInfo
@@ -45,15 +47,21 @@ namespace Module.StageSettle
         // 打开小局结算界面并透传展示数据
         private void onOpen(object[] args)
         {
+            _currentData = args != null && args.Length > 0 ? args[0] as StageSettleData : null;
             GameApp.ViewManager.Open(ViewType.StageSettleView, args);
         }
 
-        // 进入商店：关结算界面 + 关 CookView + 开 ShopView
+        // 右下角按钮：根据数据决定去商店还是最终结算
         private void onToShop(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.StageSettleView);
             GameApp.ViewManager.Close(ViewType.CookView);
-            ApplyControllerFunc(ControllerType.Shop, "OpenShopView");
+
+            // 未达标 或 最后小局 → 最终结算；否则 → 商店
+            if (_currentData != null && _currentData.GoToFinalSummary)
+                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
+            else
+                ApplyControllerFunc(ControllerType.Shop, "OpenShopView");
         }
     }
 }
