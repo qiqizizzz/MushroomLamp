@@ -7,6 +7,7 @@
 */
 
 using Module.View;
+using MVC.View;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -14,7 +15,7 @@ using UnityEngine.UI;
 namespace Module.Cook
 {
     // 烹饪加工区 UI 项，负责接收材料拖拽并触发研磨
-    public class CookProcessAreaItem : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+    public class CookProcessAreaItem : BaseItem, IDropHandler, IPointerEnterHandler, IPointerExitHandler
     {
         private readonly Color _idleColor = new Color(0.24f, 0.18f, 0.29f, 0.88f);
         private readonly Color _highlightColor = new Color(0.43f, 0.29f, 0.52f, 0.96f);
@@ -22,7 +23,7 @@ namespace Module.Cook
         private CookView _view;
         private Image _imgBackground;
 
-        private void Awake()
+        protected override void OnAwake()
         {
             _imgBackground = GetComponent<Image>();
         }

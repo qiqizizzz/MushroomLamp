@@ -7,6 +7,7 @@
 */
 
 using Module.Cook;
+using MVC.View;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,7 +16,7 @@ using UnityEngine.UI;
 namespace Module.View
 {
     // 烹饪法阵槽位 UI 项，负责展示槽位状态并接收材料拖拽
-    public class CookSlotItem : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class CookSlotItem : BaseItem, IDropHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private readonly Color _emptyColor = new Color(0.96f, 0.82f, 0.58f, 0.92f);
         private readonly Color _highlightColor = new Color(0.99f, 0.94f, 0.42f, 1f);
@@ -43,7 +44,7 @@ namespace Module.View
         public int SlotIndex => _slotIndex;
         public bool HasMaterial => _hasMaterial;
 
-        private void Awake()
+        protected override void OnAwake()
         {
             ensureReferences();
         }

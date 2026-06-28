@@ -7,6 +7,7 @@
 */
 
 using Module.View;
+using MVC.View;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -14,7 +15,7 @@ using UnityEngine.UI;
 namespace Module.Cook
 {
     // 烹饪材料区 UI 项，负责接收本回合法阵材料撤回
-    public class CookHandAreaItem : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+    public class CookHandAreaItem : BaseItem, IDropHandler, IPointerEnterHandler, IPointerExitHandler
     {
         private readonly Color _highlightColor = new Color(1f, 0.92f, 0.58f, 0.28f);
 
@@ -22,7 +23,7 @@ namespace Module.Cook
         private Image _imgBackground;
         private Color _normalColor;
 
-        private void Awake()
+        protected override void OnAwake()
         {
             _imgBackground = GetComponent<Image>();
             if (_imgBackground != null)

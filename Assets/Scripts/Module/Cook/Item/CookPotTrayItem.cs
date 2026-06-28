@@ -2,10 +2,12 @@
 * ┌──────────────────────────────────┐
 * │  描    述: Pot 暂存槽 UI 项，接收法阵材料并支持槽间换位
 * │  类    名: CookPotTrayItem.cs
+* │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
 using Module.Cook;
+using MVC.View;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,7 +16,7 @@ using UnityEngine.UI;
 namespace Module.View
 {
     // Pot 暂存槽：接收法阵槽拖来的材料；自身可拖出与其它暂存槽换位
-    public class CookPotTrayItem : MonoBehaviour,
+    public class CookPotTrayItem : BaseItem,
         IDropHandler, IPointerEnterHandler, IPointerExitHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler
     {
@@ -36,7 +38,7 @@ namespace Module.View
         public int TrayIndex => _trayIndex;
         public bool HasMaterial => _hasMaterial;
 
-        private void Awake()
+        protected override void OnAwake()
         {
             ensureReferences();
         }

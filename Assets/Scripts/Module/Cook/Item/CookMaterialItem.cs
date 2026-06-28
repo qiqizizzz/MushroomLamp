@@ -7,6 +7,7 @@
 */
 
 using Module.Cook;
+using MVC.View;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,7 +16,7 @@ using UnityEngine.UI;
 namespace Module.View
 {
     // 烹饪材料 UI 项，负责展示材料并处理拖拽输入
-    public class CookMaterialItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class CookMaterialItem : BaseItem, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private const float CardWidth = 150f;
         private const float CardHeight = 180f;
@@ -39,7 +40,7 @@ namespace Module.View
 
         public int MaterialId => _materialData?.RuntimeId ?? -1;
 
-        private void Awake()
+        protected override void OnAwake()
         {
             ensureReferences();
         }
