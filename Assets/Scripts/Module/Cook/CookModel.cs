@@ -169,7 +169,7 @@ namespace Module.Cook
 
             RoundState = CookRoundStateType.ReadyToSettle;
             refreshPreviewValue();
-            LastTip = $"已放入 {material.MaterialName}，结束回合后获得熟度 +{slot.EnchantText}";
+            LastTip = $"已放入 {material.Config.name}，结束回合后获得熟度 +{slot.EnchantText}";
             return true;
         }
 
@@ -255,7 +255,7 @@ namespace Module.Cook
             _hasPlacedHandThisTurn = false;
             RoundState = CanSettle ? CookRoundStateType.ReadyToSettle : CookRoundStateType.Operating;
             refreshPreviewValue();
-            LastTip = material == null ? "槽位已清空" : $"已撤回 {material.MaterialName}";
+            LastTip = material == null ? "槽位已清空" : $"已撤回 {material.Config.name}";
             return true;
         }
 
@@ -308,7 +308,7 @@ namespace Module.Cook
             refreshPreviewValue();
             LastTip = IsPotTrayFull
                 ? $"暂存槽已集满 {_potTrayCapacity} 个，可投入锅中"
-                : $"已放入暂存槽 {material.MaterialName}（{PotTrayFilledCount}/{_potTrayCapacity}）";
+                : $"已放入暂存槽 {material.Config.name}（{PotTrayFilledCount}/{_potTrayCapacity}）";
             return true;
         }
 
@@ -345,7 +345,7 @@ namespace Module.Cook
             _potTraySlots[trayIndex] = null;
             _slots[emptySlot].Place(material, _nextPlaceOrder++);
             refreshPreviewValue();
-            LastTip = $"已撤回 {material.MaterialName} 到法阵";
+            LastTip = $"已撤回 {material.Config.name} 到法阵";
             return true;
         }
 
@@ -364,6 +364,16 @@ namespace Module.Cook
                 return false;
             }
 
+            // 收集本批投入材料（按暂存槽顺序），用于效果条件判断
+            List<CookMaterialData> batch = new List<CookMaterialData>();
+            for (int i = 0; i < _potTraySlots.Length; i++)
+                if (_potTraySlots[i] != null) batch.Add(_potTraySlots[i]);
+
+            // 计算本批卡牌效果加分（「加分」类，结算时生效）
+            int effectBonus = 0;
+            for (int i = 0; i < batch.Count; i++)
+                effectBonus += Module.Material.MaterialEffect.CalcBonus(batch, i);
+
             for (int i = 0; i < _potTraySlots.Length; i++)
             {
                 CookMaterialData material = _potTraySlots[i];
@@ -374,15 +384,17 @@ namespace Module.Cook
                 _potTraySlots[i] = null;
             }
 
-            // 投入即计分：基于本批 _potEntries 计分并累加到总分，然后清空准备下一批
+            // 投入即计分：基础计分 + 卡牌效果加分，累加到总分，然后清空准备下一批
             CookRoundResultData result = calculateRoundResult(true);
-            CurrentScore += result.RoundScore - result.PenaltyScore;
+            CurrentScore += result.RoundScore - result.PenaltyScore + effectBonus;
             Coin += result.CoinReward;
             LastRoundResult = result;
             _potEntries.Clear();
 
             refreshPreviewValue();
             LastTip = getSettleTip(result);
+            if (effectBonus != 0)
+                LastTip += $"，卡牌效果额外 +{effectBonus} 分";
             return true;
         }
 
@@ -402,15 +414,15 @@ namespace Module.Cook
                 return false;
             }
 
-            if (!material.CanProcess)
+            if (!material.Config.canProcess)
             {
-                LastTip = $"{material.MaterialName} 不可研磨";
+                LastTip = $"{material.Config.name} 不可研磨";
                 return false;
             }
 
             if (material.IsProcessed)
             {
-                LastTip = $"{material.MaterialName} 已加工过";
+                LastTip = $"{material.Config.name} 已加工过";
                 return false;
             }
 
@@ -419,7 +431,7 @@ namespace Module.Cook
             _handMaterials.Remove(material);
             _processedMaterials.Add(material);
             material.Ability.OnProcessed(this);
-            LastTip = $"已研磨 {material.MaterialName}，请从研磨器出口拖入法阵";
+            LastTip = $"已研磨 {material.Config.name}，请从研磨器出口拖入法阵";
             return true;
         }
 
@@ -484,7 +496,7 @@ namespace Module.Cook
             _hasPlacedHandThisTurn = false;
             refreshPreviewValue();
             RoundState = CanSettle ? CookRoundStateType.ReadyToSettle : CookRoundStateType.Operating;
-            LastTip = material == null ? "槽位已清空" : $"已撤回 {material.MaterialName}";
+            LastTip = material == null ? "槽位已清空" : $"已撤回 {material.Config.name}";
             return true;
         }
 
@@ -592,7 +604,7 @@ namespace Module.Cook
                 for (int i = 0; i < startData.Materials.Count; i++)
                 {
                     CookMaterialSeedData seed = startData.Materials[i];
-                    if (seed == null || string.IsNullOrWhiteSpace(seed.MaterialName)) continue;
+                    if (seed == null || (string.IsNullOrWhiteSpace(seed.MaterialId) && string.IsNullOrWhiteSpace(seed.MaterialName))) continue;
 
                     _materialSeeds.Add(seed);
                 }
@@ -702,16 +714,29 @@ namespace Module.Cook
 
         private CookMaterialData createMaterial(CookMaterialSeedData seed)
         {
-            string materialName = seed.MaterialName;
-            CardAbility ability = CardAbilityRegistry.Get(materialName);
-            int value = ability.GetBaseValue(materialName);
-            string tag = ability.GetTag(materialName);
-            bool canProcess = value >= 5;
-            float requiredCookValue = ability.GetRequiredCookValue(materialName);
-            CookMaterialData mat = new CookMaterialData(_nextMaterialId++, materialName, value, tag, canProcess, requiredCookValue, seed.Icon, ability);
-            ability.OnDrawn(this);
-            return mat;
+            // 按 id 从 MaterialCatalog 读配置
+            Module.Material.MaterialJsonData cfg =
+                string.IsNullOrEmpty(seed.MaterialId) ? null : Module.Material.MaterialCatalogLoader.GetById(seed.MaterialId);
+
+            if (cfg == null)
+            {
+                // 配置缺失：用种子信息造一个临时配置，避免崩
+                Common.QLog.Error($"[CookModel] 材料配置缺失：id={seed.MaterialId} name={seed.MaterialName}");
+                cfg = new Module.Material.MaterialJsonData
+                {
+                    id = seed.MaterialId ?? string.Empty,
+                    name = seed.MaterialName ?? "未知材料",
+                    category = "素材",
+                    tags = new[] { "素材" },
+                    baseValue = 1,
+                    canProcess = false,
+                    requiredCookValue = 2
+                };
+            }
+
+            return new CookMaterialData(_nextMaterialId++, cfg, seed.Icon, CardAbility.Default);
         }
+
 
         private CookMaterialData findHandMaterial(int materialId)
         {
@@ -985,10 +1010,10 @@ namespace Module.Cook
 
         private void addFallbackSeeds()
         {
-            _materialSeeds.Add(new CookMaterialSeedData { MaterialName = "胡萝卜", Count = 2 });
-            _materialSeeds.Add(new CookMaterialSeedData { MaterialName = "土豆", Count = 2 });
-            _materialSeeds.Add(new CookMaterialSeedData { MaterialName = "蘑菇", Count = 1 });
-            _materialSeeds.Add(new CookMaterialSeedData { MaterialName = "南瓜", Count = 1 });
+            _materialSeeds.Add(new CookMaterialSeedData { MaterialId = "VEG_002", Count = 2 });   // 胡萝卜
+            _materialSeeds.Add(new CookMaterialSeedData { MaterialId = "VEG_001", Count = 2 });   // 土豆
+            _materialSeeds.Add(new CookMaterialSeedData { MaterialId = "VEG_007", Count = 1 });   // 蘑菇
+            _materialSeeds.Add(new CookMaterialSeedData { MaterialId = "VEG_008", Count = 1 });   // 南瓜块
         }
 
         private void copyFirstHandMaterial()
@@ -1002,11 +1027,7 @@ namespace Module.Cook
             CookMaterialData source = _handMaterials[0];
             _handMaterials.Add(new CookMaterialData(
                 _nextMaterialId++,
-                source.MaterialName,
-                source.BaseValue,
-                source.TagText,
-                source.CanProcess,
-                source.RequiredCookValue,
+                source.Config,
                 source.Icon,
                 source.Ability));
         }

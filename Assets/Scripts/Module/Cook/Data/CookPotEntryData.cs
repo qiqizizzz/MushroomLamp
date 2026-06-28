@@ -32,13 +32,13 @@ namespace Module.Cook
         {
             SubmitOrder = submitOrder;
             SourceSlotIndex = sourceSlotIndex;
-            MaterialName = material.MaterialName;
-            BaseValue = material.BaseValue;
+            MaterialName = material.Config.name;
+            BaseValue = material.Config.baseValue;
             CurrentValue = material.CurrentValue;
             TagText = material.TagText;
             Icon = material.Icon;
             CookProgress = material.CookProgress;
-            RequiredCookValue = material.RequiredCookValue;
+            RequiredCookValue = material.Config.requiredCookValue;
 
             resolveCookScore();
         }

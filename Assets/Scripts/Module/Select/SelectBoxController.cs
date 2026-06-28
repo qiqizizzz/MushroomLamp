@@ -123,10 +123,11 @@ namespace Module.Select
             for (int i = 0; i < lines.Length; i++)
             {
                 SelectMaterialLineData line = lines[i];
-                if (line == null || string.IsNullOrWhiteSpace(line.label)) continue;
+                if (line == null || (string.IsNullOrWhiteSpace(line.materialId) && string.IsNullOrWhiteSpace(line.label))) continue;
 
                 result.Add(new CookMaterialSeedData
                 {
+                    MaterialId = line.materialId,
                     MaterialName = line.label,
                     Count = line.count,
                     Icon = line.icon

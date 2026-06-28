@@ -3,44 +3,34 @@
   "summaryTitle": "简介",
   "lines": [
     {
+      "materialId": "VEG_002",
       "iconPath": "Art/Card_img/carrot",
       "label": "胡萝卜",
-      "count": 2
-    },
-    {
-      "iconPath": "Art/Card_img/potato",
-      "label": "土豆",
       "count": 3
     },
     {
-      "iconPath": "Art/Card_img/mushroom",
-      "label": "蘑菇",
-      "count": 1
-    },
-    {
-      "iconPath": "Art/Card_img/pumpkin",
-      "label": "南瓜",
-      "count": 1
-    },
-    {
-      "iconPath": "Art/Card_img/carrot",
-      "label": "胡萝卜",
-      "count": 1
-    },
-    {
+      "materialId": "VEG_001",
       "iconPath": "Art/Card_img/potato",
       "label": "土豆",
+      "count": 5
+    },
+    {
+      "materialId": "VEG_007",
+      "iconPath": "Art/Card_img/mushroom",
+      "label": "蘑菇",
       "count": 2
     },
     {
-      "iconPath": "Art/Card_img/mushroom",
-      "label": "蘑菇",
-      "count": 1
-    },
-    {
+      "materialId": "VEG_008",
       "iconPath": "Art/Card_img/pumpkin",
       "label": "南瓜",
-      "count": 1
+      "count": 2
+    },
+    {
+      "materialId": "VEG_003",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "白菜叶",
+      "count": 2
     }
   ]
 }

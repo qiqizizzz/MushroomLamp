@@ -666,17 +666,17 @@ namespace Module.View
                 if (materialData.RuntimeId != materialId) continue;
 
                 if (materialData.IsProcessed)
-                    return $"{materialData.MaterialName} 已研磨";
+                    return $"{materialData.Config.name} 已研磨";
 
-                if (!materialData.CanProcess)
-                    return $"{materialData.MaterialName} 不可研磨";
+                if (!materialData.Config.canProcess)
+                    return $"{materialData.Config.name} 不可研磨";
             }
 
             for (int i = 0; i < _cookModel.ProcessedMaterials.Count; i++)
             {
                 CookMaterialData materialData = _cookModel.ProcessedMaterials[i];
                 if (materialData.RuntimeId == materialId)
-                    return $"{materialData.MaterialName} 已在研磨器出口，请拖入法阵";
+                    return $"{materialData.Config.name} 已在研磨器出口，请拖入法阵";
             }
 
             return "材料不在可研磨区域";
@@ -710,7 +710,7 @@ namespace Module.View
                 CookMaterialData materialData = _cookModel.HandMaterials[i];
                 if (materialData.RuntimeId != materialId) continue;
 
-                return materialData.CanProcess && !materialData.IsProcessed;
+                return materialData.Config.canProcess && !materialData.IsProcessed;
             }
 
             return false;

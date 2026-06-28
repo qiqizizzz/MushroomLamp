@@ -87,7 +87,7 @@ namespace Module.View
             if (_txtName != null)
             {
                 _txtName.enabled = true;
-                _txtName.text = material?.MaterialName ?? "空槽";
+                _txtName.text = material?.Config?.name ?? "空槽";
             }
 
             if (_txtValue != null)

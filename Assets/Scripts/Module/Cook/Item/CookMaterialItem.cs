@@ -56,7 +56,7 @@ namespace Module.View
             applyFont(view == null ? null : view.GetFontAsset());
 
             if (_txtName != null)
-                _txtName.text = materialData?.MaterialName ?? string.Empty;
+                _txtName.text = materialData?.Config?.name ?? string.Empty;
 
             if (_txtValue != null)
                 _txtValue.text = materialData == null ? string.Empty : materialData.ValueText;
