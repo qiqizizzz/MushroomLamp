@@ -23,6 +23,9 @@ namespace Module.Cook
         private const int POT_TRAY_CAPACITY = 3;   // Pot 暂存槽数量（后续由关卡配置覆盖）
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
+        // 三区牌堆：天使抽牌堆 → 手牌筛选区 → 恶魔弃牌堆；卡实例全程复用，牌只在三区间流转、永不减少
+        private readonly List<CookMaterialData> _drawPile = new();      // 天使抽牌堆
+        private readonly List<CookMaterialData> _discardPile = new();   // 恶魔弃牌堆（含放法阵的、作废的）
         private readonly List<CookMaterialData> _handMaterials = new();
         private readonly List<CookMaterialData> _processedMaterials = new();
         private readonly List<CookPotEntryData> _potEntries = new();
@@ -61,6 +64,10 @@ namespace Module.Cook
         public float DevilRisk => _devilRisk;
         public string MagicBoxStatusText { get; private set; }
         public IReadOnlyList<CookMaterialData> HandMaterials => _handMaterials;
+        public int DrawPileCount => _drawPile.Count;        // 天使抽牌堆剩余
+        public int DiscardPileCount => _discardPile.Count;  // 恶魔弃牌堆数量
+        // 本回合放牌后作废、需飞向恶魔的剩余手牌（仅供表现层做飞出动画，下次发牌前由 View 消费）
+        public List<CookMaterialData> DiscardedHandThisTurn { get; } = new();
         public IReadOnlyList<CookMaterialData> ProcessedMaterials => _processedMaterials;
         public IReadOnlyList<CookPotEntryData> PotEntries => _potEntries;
         public IReadOnlyList<CookSlotData> Slots => _slots;
@@ -122,6 +129,8 @@ namespace Module.Cook
             // 暂存槽容量可能变化，重建数组
             _potTraySlots = new CookMaterialData[_potTrayCapacity];
 
+            buildDeck();   // 把大局配置的卡牌库展开成具体卡实例，洗入天使抽牌堆
+
             IsRunActive = true;
             RoundState = CookRoundStateType.RoundStart;
             LastTip = "每回合选择一个材料放入法阵，熟后拖入锅中";
@@ -171,6 +180,13 @@ namespace Module.Cook
             _placeHistory.Add(slotIndex);
             _hasPlacedHandThisTurn = true;
             material.Ability.OnPlaced(this, slotIndex);
+
+            // 放一张即锁定本回合：剩余手牌作废，回收进恶魔弃牌堆（视觉飞向恶魔），不可撤回
+            DiscardedHandThisTurn.Clear();
+            DiscardedHandThisTurn.AddRange(_handMaterials);
+            for (int i = 0; i < _handMaterials.Count; i++)
+                recycleToDiscard(_handMaterials[i]);
+            _handMaterials.Clear();
 
             RoundState = CookRoundStateType.ReadyToSettle;
             refreshPreviewValue();
@@ -227,6 +243,8 @@ namespace Module.Cook
             if (!IsRunActive) return false;
             if (!isValidSlotIndex(slotIndex)) return false;
             if (!_slots[slotIndex].HasMaterial) return false;
+            // 放牌即锁定本回合，剩余手牌已作废，不允许撤回
+            if (_hasPlacedHandThisTurn) return false;
 
             return _placeHistory.Contains(slotIndex);
         }
@@ -386,6 +404,7 @@ namespace Module.Cook
 
                 CookPotEntryData potEntry = new CookPotEntryData(_nextSubmitOrder++, i, material);
                 _potEntries.Add(potEntry);
+                recycleToDiscard(material);   // 投入计分的牌回收进弃牌堆，洗牌后可再抽到（牌不减少）
                 _potTraySlots[i] = null;
             }
 
@@ -621,6 +640,17 @@ namespace Module.Cook
 
         private void startRound()
         {
+            // 换回合前，本回合没用掉的手牌/研磨材料一律回收进恶魔弃牌堆（含玩家没放牌直接结束的情况），
+            // 否则天使抽牌堆会越来越少。放牌路径已在 PlaceMaterial 回收过，此时手牌已空，不会重复。
+            // 同时记入 DiscardedHandThisTurn，让表现层把这些牌飞向恶魔口袋（View 消费后自行清空）。
+            for (int i = 0; i < _handMaterials.Count; i++)
+            {
+                DiscardedHandThisTurn.Add(_handMaterials[i]);
+                recycleToDiscard(_handMaterials[i]);
+            }
+            for (int i = 0; i < _processedMaterials.Count; i++)
+                recycleToDiscard(_processedMaterials[i]);
+
             _handMaterials.Clear();
             _placeHistory.Clear();
             _processedMaterials.Clear();
@@ -690,31 +720,66 @@ namespace Module.Cook
             return -1;
         }
 
-        private void dealHandMaterials()
+        // 构建牌库：把大局配置的种子（MaterialId+Count）展开成具体卡实例，洗入天使抽牌堆
+        private void buildDeck()
         {
-            List<CookMaterialSeedData> pool = buildSeedPool();
-            if (pool.Count == 0) return;
+            _drawPile.Clear();
+            _discardPile.Clear();
 
-            int count = Mathf.Min(_handCount, Mathf.Max(pool.Count, _handCount));
-            for (int i = 0; i < count; i++)
-            {
-                CookMaterialSeedData seed = pool[_random.Next(pool.Count)];
-                _handMaterials.Add(createMaterial(seed));
-            }
-        }
-
-        private List<CookMaterialSeedData> buildSeedPool()
-        {
-            List<CookMaterialSeedData> pool = new List<CookMaterialSeedData>();
             for (int i = 0; i < _materialSeeds.Count; i++)
             {
                 CookMaterialSeedData seed = _materialSeeds[i];
                 int count = Mathf.Max(1, seed.Count);
                 for (int c = 0; c < count; c++)
-                    pool.Add(seed);
+                    _drawPile.Add(createMaterial(seed));
             }
 
-            return pool;
+            shuffle(_drawPile);
+        }
+
+        // 发牌：从天使抽牌堆抽 _handCount 张到手牌；抽空则把恶魔弃牌堆洗回天使堆再抽
+        private void dealHandMaterials()
+        {
+            for (int i = 0; i < _handCount; i++)
+            {
+                if (_drawPile.Count == 0)
+                {
+                    reshuffleDiscardIntoDraw();
+                    if (_drawPile.Count == 0) break;   // 牌库彻底空（理论上不会）
+                }
+
+                int last = _drawPile.Count - 1;
+                CookMaterialData card = _drawPile[last];
+                _drawPile.RemoveAt(last);
+                _handMaterials.Add(card);
+            }
+        }
+
+        // 天使堆抽空：把恶魔弃牌堆全部洗回天使堆
+        private void reshuffleDiscardIntoDraw()
+        {
+            if (_discardPile.Count == 0) return;
+            _drawPile.AddRange(_discardPile);
+            _discardPile.Clear();
+            shuffle(_drawPile);
+        }
+
+        // 一张卡回收进恶魔弃牌堆（放法阵的、作废的牌都走这里，卡实例不丢）
+        private void recycleToDiscard(CookMaterialData card)
+        {
+            if (card == null) return;
+            card.ResetForRecycle();   // 重置熟度等过程状态
+            _discardPile.Add(card);
+        }
+
+        // Fisher–Yates 洗牌
+        private void shuffle(List<CookMaterialData> pile)
+        {
+            for (int i = pile.Count - 1; i > 0; i--)
+            {
+                int j = _random.Next(i + 1);
+                (pile[i], pile[j]) = (pile[j], pile[i]);
+            }
         }
 
         private CookMaterialData createMaterial(CookMaterialSeedData seed)

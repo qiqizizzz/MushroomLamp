@@ -6,9 +6,9 @@
 * └──────────────────────────────────┘
 */
 
+using DG.Tweening;
 using Module.Cook;
 using MVC.View;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -19,8 +19,8 @@ namespace Module.View
     public class CookMaterialItem : BaseItem, IBeginDragHandler, IDragHandler, IEndDragHandler,
         IPointerEnterHandler, IPointerExitHandler
     {
-        private const float CardWidth = 150f;
-        private const float CardHeight = 180f;
+        private const float CardWidth = 160f;
+        private const float CardHeight = 192f;
 
         // 悬停效果参数（缩放可在此微调）
         private const float HoverScale = 1.2f;      // 悬停目标缩放
@@ -40,14 +40,43 @@ namespace Module.View
 
         private bool _isHovering;
         private bool _isDragging;
+        private bool _interactable = true;   // 动画期间锁住拖拽
         private float _targetScale = 1f;
         private UnityEngine.Material _outlineMaterial;
+        private Tween _flyTween;
+
+        // 供 CookView 编排飞行动画用
+        public RectTransform Rect { get { ensureReferences(); return _rectTransform; } }
+        public CanvasGroup Group { get { ensureReferences(); return _canvasGroup; } }
+        public static Vector2 CardSize => new Vector2(CardWidth, CardHeight);
+
+        // 动画期间锁住交互（禁止拖拽/悬停响应）
+        public void SetInteractable(bool value)
+        {
+            _interactable = value;
+            if (!value)
+            {
+                _isHovering = false;
+                _targetScale = 1f;
+                setOutline(false);
+            }
+        }
+
+        // 杀掉正在进行的飞行动画
+        public void KillFlyTween()
+        {
+            if (_flyTween != null) { _flyTween.Kill(); _flyTween = null; }
+        }
+
+        // 记录飞行 Tween（CookView 创建后回传，便于统一清理）
+        public void SetFlyTween(Tween tween)
+        {
+            KillFlyTween();
+            _flyTween = tween;
+        }
 
         private Image _imgBackground;
         private Image _imgIcon;
-        private TextMeshProUGUI _txtName;
-        private TextMeshProUGUI _txtValue;
-        private TextMeshProUGUI _txtTag;
 
         public int MaterialId => _materialData?.RuntimeId ?? -1;
 
@@ -64,17 +93,8 @@ namespace Module.View
             _materialData = materialData;
             _view = view;
             _dropAccepted = false;
-            applyFont(view == null ? null : view.GetFontAsset());
 
-            if (_txtName != null)
-                _txtName.text = materialData?.Config?.name ?? string.Empty;
-
-            if (_txtValue != null)
-                _txtValue.text = materialData == null ? string.Empty : materialData.ValueText;
-
-            if (_txtTag != null)
-                _txtTag.text = materialData?.TagText ?? string.Empty;
-
+            // 手牌表现层不显示任何文本，只展示图标
             if (_imgIcon != null)
             {
                 _imgIcon.sprite = materialData?.Icon;
@@ -93,7 +113,7 @@ namespace Module.View
         // 鼠标移入：放大 + 显示描边
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (_isDragging) return;
+            if (_isDragging || !_interactable) return;
             _isHovering = true;
             _targetScale = HoverScale;
             setOutline(true);
@@ -123,8 +143,9 @@ namespace Module.View
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (_materialData == null || _view == null) return;
+            if (_materialData == null || _view == null || !_interactable) return;
 
+            KillFlyTween();
             _isDragging = true;
             _isHovering = false;
             _targetScale = 1f;
@@ -173,11 +194,21 @@ namespace Module.View
             _dropAccepted = true;
         }
 
-        // 接受拖拽放置并销毁拖拽中的临时 UI
+        // 接受拖拽放置。注意：本 item 来自对象池，绝不能销毁（会留野指针导致 MissingReference）；
+        // 这里只标记接收并隐藏，放置后 model 数据变化会触发 refreshHand 统一复用/布局
         public void AcceptDropAndDestroy()
         {
             _dropAccepted = true;
-            Destroy(gameObject);
+            _isDragging = false;
+            KillFlyTween();
+            // 收回手牌容器并隐藏，等待 refreshHand 复用
+            if (_view != null)
+            {
+                Transform handContent = _view.GetHandContent();
+                if (handContent != null) transform.SetParent(handContent, false);
+            }
+            if (_canvasGroup != null) { _canvasGroup.alpha = 1f; _canvasGroup.blocksRaycasts = true; }
+            gameObject.SetActive(false);
         }
 
         private void ensureReferences()
@@ -203,15 +234,10 @@ namespace Module.View
             _imgBackground = getOrCreateImage("Img_Background", transform, new Color(0f, 0f, 0f, 0f));
             _imgBackground.raycastTarget = true;   // 仍负责接收悬停/点击
             _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white);
-            _txtName = getOrCreateText("Txt_Name", transform, 22, TextAlignmentOptions.Center);
-            _txtValue = getOrCreateText("Txt_Value", transform, 30, TextAlignmentOptions.Center);
-            _txtTag = getOrCreateText("Txt_Tag", transform, 18, TextAlignmentOptions.Center);
 
             setupChildRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            setupChildRect(_imgIcon.rectTransform, new Vector2(0.2f, 0.38f), new Vector2(0.8f, 0.82f), Vector2.zero, Vector2.zero);
-            setupChildRect(_txtName.rectTransform, new Vector2(0.06f, 0.76f), new Vector2(0.94f, 0.98f), Vector2.zero, Vector2.zero);
-            setupChildRect(_txtValue.rectTransform, new Vector2(0.08f, 0.2f), new Vector2(0.92f, 0.42f), Vector2.zero, Vector2.zero);
-            setupChildRect(_txtTag.rectTransform, new Vector2(0.08f, 0.02f), new Vector2(0.92f, 0.2f), Vector2.zero, Vector2.zero);
+            // 无文本，图标铺满整张卡
+            setupChildRect(_imgIcon.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         }
 
         // 切换图标描边（悬停时贴合轮廓的白描边）
@@ -242,6 +268,7 @@ namespace Module.View
 
         protected override void OnDestroy()
         {
+            KillFlyTween();
             if (_outlineMaterial != null)
             {
                 Destroy(_outlineMaterial);
@@ -334,45 +361,6 @@ namespace Module.View
 
             image.color = color;
             return image;
-        }
-
-        private static TextMeshProUGUI getOrCreateText(
-            string childName,
-            Transform parent,
-            int fontSize,
-            TextAlignmentOptions alignment)
-        {
-            Transform child = parent.Find(childName);
-            if (child == null)
-            {
-                GameObject obj = new GameObject(childName, typeof(RectTransform));
-                obj.transform.SetParent(parent, false);
-                child = obj.transform;
-            }
-
-            TextMeshProUGUI text = child.GetComponent<TextMeshProUGUI>();
-            if (text == null)
-                text = child.gameObject.AddComponent<TextMeshProUGUI>();
-
-            text.fontSize = fontSize;
-            text.alignment = alignment;
-            text.color = new Color(0.18f, 0.13f, 0.09f, 1f);
-            text.enableWordWrapping = false;
-            return text;
-        }
-
-        private void applyFont(TMP_FontAsset fontAsset)
-        {
-            if (fontAsset == null) return;
-
-            if (_txtName != null)
-                _txtName.font = fontAsset;
-
-            if (_txtValue != null)
-                _txtValue.font = fontAsset;
-
-            if (_txtTag != null)
-                _txtTag.font = fontAsset;
         }
 
         private static void setupChildRect(

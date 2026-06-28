@@ -58,5 +58,11 @@ namespace Module.Cook
         {
             CookProgress = Mathf.Max(0f, CookProgress + value);
         }
+
+        // 回收进弃牌堆时重置每局过程状态（熟度），避免洗回再抽时残留上次的烹饪进度
+        public void ResetForRecycle()
+        {
+            CookProgress = 0f;
+        }
     }
 }
