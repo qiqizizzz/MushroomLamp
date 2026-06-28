@@ -8,7 +8,6 @@
 
 using System;
 using Common.Defines;
-using Module.Card;
 using Module.Cook;
 using Module.Debug;
 using Module.GameUI;
@@ -90,7 +89,6 @@ public class GameScene : MonoBehaviour
     // 注册框架自带控制器
     private void registerModule()
     {
-        CardAbilityRegistry.RegisterAll();
         ItemEffectRegistry.RegisterAll();
 
         GameApp.ControllerManager.Register(ControllerType.GameUI, new GameUIController());

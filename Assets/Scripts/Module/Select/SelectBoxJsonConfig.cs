@@ -30,6 +30,7 @@ namespace Module.Select
     [Serializable]
     public class SelectMaterialLineJsonData
     {
+        public string materialId;   // 材料配置 id（VEG_xxx）
         // Assets/Art 下的 Sprite 路径（不含扩展名），如 Art/Card_img/carrot
         public string iconPath;
         public string label;
@@ -43,6 +44,7 @@ namespace Module.Select
 
             return new SelectMaterialLineData
             {
+                materialId = materialId,
                 icon = icon,
                 label = label,
                 count = count

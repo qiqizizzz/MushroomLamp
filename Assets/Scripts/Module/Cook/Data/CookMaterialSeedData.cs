@@ -15,7 +15,8 @@ namespace Module.Cook
     [Serializable]
     public class CookMaterialSeedData
     {
-        public string MaterialName;
+        public string MaterialId;     // 材料配置 id（VEG_xxx），从 MaterialCatalog 读数据
+        public string MaterialName;   // 显示名（兜底，优先用 catalog 的 name）
         public int Count;
         public Sprite Icon;
     }

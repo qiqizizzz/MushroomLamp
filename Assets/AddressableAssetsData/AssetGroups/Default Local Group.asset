@@ -117,6 +117,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d4337ac6d5238ea41be595efcc50e3c5
+    m_Address: MaterialCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: db62ccc3d4f32da43bb07aed1327f368
     m_Address: Levels/Stages/Stage_herb_hard
     m_ReadOnly: 0

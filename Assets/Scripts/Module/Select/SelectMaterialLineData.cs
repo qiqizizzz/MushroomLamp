@@ -14,6 +14,7 @@ namespace Module.Select
     [Serializable]
     public class SelectMaterialLineData
     {
+        public string materialId;   // 材料配置 id（VEG_xxx）
         public Sprite icon;
         public string label;
         public int count = 1;
