@@ -63,6 +63,12 @@ namespace Common.Defines
         public const string OpenStageSettleView = "OpenStageSettleView";
         public const string StageSettleToShop = "StageSettleToShop";
 
+        // 21 点玩法
+        public const string OpenBlackjackView = "OpenBlackjackView";
+        public const string BlackjackDraw = "BlackjackDraw";
+        public const string BlackjackReturn = "BlackjackReturn";
+        public const string BlackjackRestart = "BlackjackRestart";
+
         // 商店子页面（购买 + 背包）
         public const string OpenStoreView = "OpenStoreView";
         public const string StoreReturn = "StoreReturn";

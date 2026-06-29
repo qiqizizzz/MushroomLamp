@@ -55,6 +55,11 @@ namespace Module.Debug
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
                         GameApp.ControllerManager.ApplyFunc((int)ControllerType.StageSettle, EventDefines.OpenStageSettleView);
                 }
+                else if (viewType == ViewType.BlackjackView)
+                {
+                    if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
+                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Blackjack, EventDefines.OpenBlackjackView);
+                }
                 else if (viewType == ViewType.StoreView)
                 {
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))

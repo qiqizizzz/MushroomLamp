@@ -20,6 +20,7 @@ namespace MVC
         SummaryView = 7,
         SettingsView = 8,
         StageSettleView = 9,
-        StoreView = 10
+        StoreView = 10,
+        BlackjackView = 11
     }
 }
