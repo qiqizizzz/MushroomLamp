@@ -19,6 +19,7 @@ namespace MVC
         Confirm = 6,
         Summary = 7,
         Settings = 8,
-        StageSettle = 9
+        StageSettle = 9,
+        Store = 10
     }
 }

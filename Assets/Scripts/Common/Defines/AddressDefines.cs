@@ -21,6 +21,8 @@ namespace Common.Defines
         public const string UI_AlmanacView = "UI/View/AlmanacView";
         public const string UI_ShopCardSlot = "UI/Shop/ShopCardSlot";
         public const string UI_ShopPropSlot = "UI/Shop/ShopPropSlot";
+        public const string UI_StoreView = "UI/View/StoreView";
+        public const string UI_StoreBagItem = "UI/Store/StoreBagItem";
         public const string UI_ConfirmView = "UI/View/ConfirmView";
         public const string UI_SummaryView = "UI/View/SummaryView";
         public const string UI_SettingsView = "UI/View/SettingsView";

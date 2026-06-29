@@ -1,6 +1,6 @@
 /*
 * ┌──────────────────────────────────┐
-* │  描    述: 通用循环复用网格列表（垂直滚动·环形对象池·容器模式）
+* │  描    述: 通用循环复用网格列表（垂直/水平滚动·环形对象池·容器模式）
 * │  类    名: LoopGridView.cs
 * └──────────────────────────────────┘
 */
@@ -13,46 +13,69 @@ using UnityEngine.UI;
 namespace Common.UI
 {
     /// <summary>
-    /// 通用循环网格（容器模式）：固定列数、垂直滚动。
+    /// 通用循环网格（容器模式）：支持垂直或水平滚动。
     ///
-    /// Content 下预先摆好 columns*poolRows 个“EmptyGo”容器（设计期占位）；
-    /// Init 时在每个 EmptyGo 容器下实例化一个 slot 作为子物体。
-    /// 滚动时移动的是 EmptyGo 容器（slot 随父级一起走），再刷新该容器内 slot 的数据，
-    /// 从而避免随数据量增长创建更多 item。可应用于任意 ScrollView。
+    /// 概念抽象（与方向无关）：
+    ///   - 交叉轴（cross）：与滚动方向垂直的那一维，数量固定 = crossCount。
+    ///     垂直滚动时交叉轴是“列”（columns）；水平滚动时交叉轴是“行”（rows）。
+    ///   - 主轴（line）：滚动方向那一维，按需环形复用，池中常驻 poolLines 条线。
+    ///     垂直滚动时主轴是“行”；水平滚动时主轴是“列”。
     ///
-    /// 用法：
-    ///   grid.Init(scrollRect, slotPrefab, columns, poolRows, cellSize, spacing, OnUpdateSlot, padding);
-    ///   grid.SetTotalCount(dataCount);
+    /// Content 下预先摆好 crossCount*poolLines 个“EmptyGo”容器（设计期占位，不足自动补建）；
+    /// Init 时在每个容器下挂一个 slot。滚动时移动容器（slot 随父级一起走）并刷新数据，
+    /// 主轴上滚出可视区的整条线（容器）会被复用到另一端，从而数量恒定。
+    ///
+    /// 垂直用法（向后兼容）：
+    ///   grid.Init(scroll, slotPrefab, columns, poolRows, cellSize, spacing, OnUpdateSlot, padding);
+    /// 水平用法：
+    ///   grid.InitHorizontal(scroll, slotPrefab, rows, poolColumns, cellSize, spacing, OnUpdateSlot, padding);
+    ///
+    /// 两者都通过 SetTotalCount(dataCount) 设置数据总数。
     /// OnUpdateSlot(int dataIndex, GameObject slot) 负责把第 dataIndex 条数据填到 slot 上。
     /// </summary>
     public class LoopGridView : MonoBehaviour
     {
+        public enum Direction { Vertical, Horizontal }
+
         private ScrollRect _scroll;
         private RectTransform _content;
         private Action<int, GameObject> _onUpdateSlot;
 
-        private int _columns = 1;
-        private int _poolRows = 1;
+        private Direction _direction = Direction.Vertical;
+        private int _crossCount = 1;   // 交叉轴格子数（垂直=列数；水平=行数）
+        private int _poolLines = 1;     // 主轴常驻线数（垂直=行；水平=列）
         private Vector2 _cellSize;
         private Vector2 _spacing;
         private RectOffset _padding;
 
         private int _totalCount;
-        private int _totalRows;
+        private int _totalLines;        // 主轴总线数
 
-        private RectTransform[] _cells;     // EmptyGo 容器池（被搬运的对象），长度 = columns * poolRows
-        private GameObject[] _slots;        // 每个容器下挂的 slot
-        private int[] _cellDataIndex;       // 每个容器当前代表的数据索引（-1=空）
-        private int _firstRow = -1;
+        private RectTransform[] _cells;   // EmptyGo 容器池，长度 = crossCount * poolLines
+        private GameObject[] _slots;      // 每个容器下挂的 slot
+        private int[] _cellDataIndex;     // 每个容器当前代表的数据索引（-1=空）
+        private int _firstLine = -1;
         private bool _inited;
 
-        /// <summary>
-        /// 初始化。Content 下需已有 columns*poolRows 个容器（EmptyGo）；
-        /// 容器数量不足时自动补建，多余的会被禁用。
-        /// </summary>
+        /// <summary>初始化（垂直滚动，向后兼容旧签名）。columns=列数，poolRows=池中行数。</summary>
         public void Init(ScrollRect scroll, GameObject slotPrefab, int columns, int poolRows,
                          Vector2 cellSize, Vector2 spacing, Action<int, GameObject> onUpdateSlot,
                          RectOffset padding = null)
+        {
+            InitInternal(Direction.Vertical, scroll, slotPrefab, columns, poolRows, cellSize, spacing, onUpdateSlot, padding);
+        }
+
+        /// <summary>初始化（水平滚动）。rows=行数（通常 1），poolColumns=池中列数。</summary>
+        public void InitHorizontal(ScrollRect scroll, GameObject slotPrefab, int rows, int poolColumns,
+                                   Vector2 cellSize, Vector2 spacing, Action<int, GameObject> onUpdateSlot,
+                                   RectOffset padding = null)
+        {
+            InitInternal(Direction.Horizontal, scroll, slotPrefab, rows, poolColumns, cellSize, spacing, onUpdateSlot, padding);
+        }
+
+        private void InitInternal(Direction direction, ScrollRect scroll, GameObject slotPrefab,
+                                  int crossCount, int poolLines, Vector2 cellSize, Vector2 spacing,
+                                  Action<int, GameObject> onUpdateSlot, RectOffset padding)
         {
             if (scroll == null || slotPrefab == null || onUpdateSlot == null)
             {
@@ -60,15 +83,17 @@ namespace Common.UI
                 return;
             }
 
+            _direction = direction;
             _scroll = scroll;
             _content = scroll.content;
-            _columns = Mathf.Max(1, columns);
-            _poolRows = Mathf.Max(1, poolRows);
+            _crossCount = Mathf.Max(1, crossCount);
+            _poolLines = Mathf.Max(1, poolLines);
             _cellSize = cellSize;
             _spacing = spacing;
             _padding = padding ?? new RectOffset(0, 0, 0, 0);
             _onUpdateSlot = onUpdateSlot;
 
+            // Content 锚点/轴心置于左上，所有定位以左上为原点（X 向右为正，Y 向下为负）
             _content.anchorMin = new Vector2(0f, 1f);
             _content.anchorMax = new Vector2(0f, 1f);
             _content.pivot = new Vector2(0f, 1f);
@@ -86,11 +111,11 @@ namespace Common.UI
             if (!_inited) return;
 
             _totalCount = Mathf.Max(0, count);
-            _totalRows = Mathf.CeilToInt(_totalCount / (float)_columns);
+            _totalLines = Mathf.CeilToInt(_totalCount / (float)_crossCount);
 
             resizeContent();
 
-            _firstRow = -1;
+            _firstLine = -1;
             _content.anchoredPosition = Vector2.zero;
             relayout(0);
         }
@@ -99,17 +124,16 @@ namespace Common.UI
         public void Refresh()
         {
             if (!_inited) return;
-            int first = calcFirstRow();
-            _firstRow = -1;
+            int first = calcFirstLine();
+            _firstLine = -1;
             relayout(first);
         }
 
         // 复用 Content 下现有 EmptyGo 容器，并在每个容器下挂一个 slot
         private void prepareCells(GameObject slotPrefab)
         {
-            int poolCount = _columns * _poolRows;
+            int poolCount = _crossCount * _poolLines;
 
-            // 收集 Content 下现有容器（设计期占位 EmptyGo）
             var existing = new List<RectTransform>();
             for (int i = 0; i < _content.childCount; i++)
             {
@@ -126,13 +150,13 @@ namespace Common.UI
                 RectTransform cell;
                 if (i < existing.Count)
                 {
-                    cell = existing[i];           // 复用现有 EmptyGo
+                    cell = existing[i];
                 }
                 else
                 {
                     var go = new GameObject("EmptyGo_" + i, typeof(RectTransform));
                     cell = go.GetComponent<RectTransform>();
-                    cell.SetParent(_content, false);   // 数量不足时补建
+                    cell.SetParent(_content, false);
                 }
 
                 cell.anchorMin = new Vector2(0f, 1f);
@@ -141,14 +165,13 @@ namespace Common.UI
                 cell.sizeDelta = _cellSize;
                 cell.gameObject.SetActive(true);
 
-                // 容器下若没有 slot 就实例化一个；保证 slot 始终挂在 EmptyGo 下
                 GameObject slot = cell.childCount > 0 ? cell.GetChild(0).gameObject : null;
                 if (slot == null)
                     slot = Instantiate(slotPrefab, cell);
+                if (!slot.activeSelf) slot.SetActive(true);   // 模板可能为禁用态，实例化后需激活
 
                 var slotRt = slot.GetComponent<RectTransform>();
                 if (slotRt == null) slotRt = slot.AddComponent<RectTransform>();
-                // slot 填满容器
                 slotRt.anchorMin = Vector2.zero;
                 slotRt.anchorMax = Vector2.one;
                 slotRt.offsetMin = Vector2.zero;
@@ -160,69 +183,91 @@ namespace Common.UI
                 _cellDataIndex[i] = -1;
             }
 
-            // 多余的现有容器禁用
             for (int i = poolCount; i < existing.Count; i++)
                 existing[i].gameObject.SetActive(false);
         }
 
-        private void resizeContent()
+        // 主轴方向上每条线的步进（cell + 间距）
+        private float lineStride()
         {
-            float height = _padding.top + _padding.bottom;
-            if (_totalRows > 0)
-                height += _totalRows * _cellSize.y + (_totalRows - 1) * _spacing.y;
-
-            float width = _padding.left + _padding.right
-                          + _columns * _cellSize.x + (_columns - 1) * _spacing.x;
-
-            _content.sizeDelta = new Vector2(width, height);
+            return _direction == Direction.Vertical
+                ? _cellSize.y + _spacing.y
+                : _cellSize.x + _spacing.x;
         }
 
-        private int calcFirstRow()
+        private void resizeContent()
         {
-            float y = _content.anchoredPosition.y;
-            float rowH = _cellSize.y + _spacing.y;
-            if (rowH <= 0f) return 0;
+            if (_direction == Direction.Vertical)
+            {
+                float height = _padding.top + _padding.bottom;
+                if (_totalLines > 0)
+                    height += _totalLines * _cellSize.y + (_totalLines - 1) * _spacing.y;
 
-            int row = Mathf.FloorToInt((y - _padding.top) / rowH);
-            return Mathf.Clamp(row, 0, Mathf.Max(0, _totalRows - _poolRows));
+                float width = _padding.left + _padding.right
+                              + _crossCount * _cellSize.x + (_crossCount - 1) * _spacing.x;
+
+                _content.sizeDelta = new Vector2(width, height);
+            }
+            else
+            {
+                float width = _padding.left + _padding.right;
+                if (_totalLines > 0)
+                    width += _totalLines * _cellSize.x + (_totalLines - 1) * _spacing.x;
+
+                float height = _padding.top + _padding.bottom
+                               + _crossCount * _cellSize.y + (_crossCount - 1) * _spacing.y;
+
+                _content.sizeDelta = new Vector2(width, height);
+            }
+        }
+
+        // 计算当前可视区主轴上的“首行/首列”索引
+        private int calcFirstLine()
+        {
+            float stride = lineStride();
+            if (stride <= 0f) return 0;
+
+            float offset;
+            if (_direction == Direction.Vertical)
+                offset = _content.anchoredPosition.y - _padding.top; // 向下滚 content.y 增大
+            else
+                offset = -_content.anchoredPosition.x - _padding.left; // 向左滚 content.x 减小
+
+            int line = Mathf.FloorToInt(offset / stride);
+            return Mathf.Clamp(line, 0, Mathf.Max(0, _totalLines - _poolLines));
         }
 
         private void onScroll(Vector2 _)
         {
-            int first = calcFirstRow();
-            if (first != _firstRow)
+            int first = calcFirstLine();
+            if (first != _firstLine)
                 relayout(first);
         }
 
-        // 把容器池重新映射到从 firstRow 开始的若干行
-        private void relayout(int firstRow)
+        // 把容器池重新映射到从 firstLine 开始的若干条主轴线
+        private void relayout(int firstLine)
         {
-            _firstRow = firstRow;
+            _firstLine = firstLine;
 
-            for (int r = 0; r < _poolRows; r++)
+            for (int l = 0; l < _poolLines; l++)
             {
-                int dataRow = firstRow + r;
-                // 物理槽用 dataRow % poolRows 环形映射：
-                // 向下滚动时，移出顶部的整行容器（EmptyGo）正好被复用为底部新行
-                int slotRow = ((dataRow % _poolRows) + _poolRows) % _poolRows;
+                int dataLine = firstLine + l;
+                // 环形映射：滚出一端的整条线（容器）被复用到另一端
+                int slotLine = ((dataLine % _poolLines) + _poolLines) % _poolLines;
 
-                for (int c = 0; c < _columns; c++)
+                for (int c = 0; c < _crossCount; c++)
                 {
-                    int cellIdx = slotRow * _columns + c;
+                    int cellIdx = slotLine * _crossCount + c;
                     RectTransform cell = _cells[cellIdx];
 
-                    int dataIndex = dataRow * _columns + c;
-                    bool valid = dataRow < _totalRows && dataIndex < _totalCount;
+                    int dataIndex = dataLine * _crossCount + c;
+                    bool valid = dataLine < _totalLines && dataIndex < _totalCount;
 
-                    // 移动的是 EmptyGo 容器（slot 是它的子物体，随之一起移动）
-                    float x = _padding.left + c * (_cellSize.x + _spacing.x) + _cellSize.x * 0.5f;
-                    float y = -(_padding.top + dataRow * (_cellSize.y + _spacing.y) + _cellSize.y * 0.5f);
-                    cell.anchoredPosition = new Vector2(x, y);
+                    cell.anchoredPosition = cellPosition(dataLine, c);
 
                     if (cell.gameObject.activeSelf != valid)
                         cell.gameObject.SetActive(valid);
 
-                    // 只刷新 slot 数据
                     if (valid && _cellDataIndex[cellIdx] != dataIndex)
                     {
                         _cellDataIndex[cellIdx] = dataIndex;
@@ -233,6 +278,25 @@ namespace Common.UI
                         _cellDataIndex[cellIdx] = -1;
                     }
                 }
+            }
+        }
+
+        // 计算容器在 Content 内的锚定位置（左上为原点）
+        private Vector2 cellPosition(int dataLine, int crossIndex)
+        {
+            if (_direction == Direction.Vertical)
+            {
+                // 交叉轴=列(crossIndex)，主轴=行(dataLine)
+                float x = _padding.left + crossIndex * (_cellSize.x + _spacing.x) + _cellSize.x * 0.5f;
+                float y = -(_padding.top + dataLine * (_cellSize.y + _spacing.y) + _cellSize.y * 0.5f);
+                return new Vector2(x, y);
+            }
+            else
+            {
+                // 交叉轴=行(crossIndex)，主轴=列(dataLine)
+                float x = _padding.left + dataLine * (_cellSize.x + _spacing.x) + _cellSize.x * 0.5f;
+                float y = -(_padding.top + crossIndex * (_cellSize.y + _spacing.y) + _cellSize.y * 0.5f);
+                return new Vector2(x, y);
             }
         }
 

@@ -55,6 +55,20 @@ namespace Module.Debug
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
                         GameApp.ControllerManager.ApplyFunc((int)ControllerType.StageSettle, EventDefines.OpenStageSettleView);
                 }
+                else if (viewType == ViewType.StoreView)
+                {
+                    if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
+                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Store, EventDefines.OpenStoreView);
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("背包数量", GUILayout.Width(60f));
+                    foreach (int n in new[] { 5, 12, 30, 100 })
+                    {
+                        if (GUILayout.Button(n.ToString(), GUILayout.Height(24f)))
+                            GameApp.ControllerManager.ApplyFunc((int)ControllerType.Store, EventDefines.StoreSetBagCount, n);
+                    }
+                    GUILayout.EndHorizontal();
+                }
                 else if (GUILayout.Button(label, GUILayout.Height(28f)))
                 {
                     if (isOpen)

@@ -19,6 +19,7 @@ namespace MVC
         ConfirmView = 6,
         SummaryView = 7,
         SettingsView = 8,
-        StageSettleView = 9
+        StageSettleView = 9,
+        StoreView = 10
     }
 }

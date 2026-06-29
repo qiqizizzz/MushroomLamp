@@ -18,6 +18,7 @@ using Module.Confirm;
 using Module.Select;
 using Module.Settings;
 using Module.Shop;
+using Module.Store;
 using Module.StageSettle;
 using Module.Summary;
 using MVC;
@@ -96,6 +97,7 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.SelectBox, new SelectBoxController());
         GameApp.ControllerManager.Register(ControllerType.Cook, new CookController());
         GameApp.ControllerManager.Register(ControllerType.Shop, new ShopController());
+        GameApp.ControllerManager.Register(ControllerType.Store, new StoreController());
         GameApp.ControllerManager.Register(ControllerType.Almanac, new AlmanacController());
         GameApp.ControllerManager.Register(ControllerType.Confirm, new ConfirmController());
         GameApp.ControllerManager.Register(ControllerType.Summary, new SummaryController());

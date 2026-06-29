@@ -63,6 +63,12 @@ namespace Common.Defines
         public const string OpenStageSettleView = "OpenStageSettleView";
         public const string StageSettleToShop = "StageSettleToShop";
 
+        // 商店子页面（购买 + 背包）
+        public const string OpenStoreView = "OpenStoreView";
+        public const string StoreReturn = "StoreReturn";
+        public const string StoreBuy = "StoreBuy";
+        public const string StoreSetBagCount = "StoreSetBagCount";
+
         // 设置
         public const string OpenSettingsView = "OpenSettingsView";
         public const string SettingsClose = "SettingsClose";

@@ -16,6 +16,7 @@ namespace Module.Shop
         private Button _btnRefresh;
         private Button _btnRecycle;
         private Button _btnContinue;
+        private Button _btnStore;
 
         private readonly List<Transform> _cardSlots = new();
         private readonly List<Transform> _itemSlots = new();
@@ -29,6 +30,7 @@ namespace Module.Shop
             _btnRefresh = Find<Button>("Bottom/Btn_RefreshShelf");
             _btnRecycle = Find<Button>("Bottom/Btn_Recycle");
             _btnContinue = Find<Button>("Bottom/Btn_Continue");
+            _btnStore = findOptional<Button>("Bottom/Btn_Store");
 
             bindButtons();
             collectSlots();
@@ -51,6 +53,14 @@ namespace Module.Shop
             bind(_btnRefresh, () => ApplyFunc("Shop.Refresh"));
             bind(_btnRecycle, () => ApplyFunc("Shop.Recycle"));
             bind(_btnContinue, () => ApplyFunc("Shop.Continue"));
+            bind(_btnStore, () => ApplyControllerFunc(MVC.ControllerType.Store, Common.Defines.EventDefines.OpenStoreView));
+        }
+
+        // 可选节点查找：缺失时返回 null，不打印错误日志
+        private T findOptional<T>(string path) where T : Component
+        {
+            Transform t = transform.Find(path);
+            return t != null ? t.GetComponent<T>() : null;
         }
 
         private static void bind(Button btn, UnityEngine.Events.UnityAction action)
