@@ -20,6 +20,7 @@ namespace MVC
         Summary = 7,
         Settings = 8,
         StageSettle = 9,
-        Store = 10
+        Store = 10,
+        Blackjack = 11
     }
 }
