@@ -26,10 +26,11 @@ namespace Module.Item
         private const float TEXT_BLOCK_PADDING_Y = 6f;
 
         [SerializeField] private float TooltipWidth = 380f;
-        [SerializeField] private float RowLabelWidth = 88f;
+        [SerializeField] private float RowLabelWidth = 96f;
 
         private readonly List<TextMeshProUGUI> _tagTexts = new();
-        private readonly List<GameObject> _fieldRows = new();
+        private readonly List<GameObject> _dynamicFieldRows = new();
+        private readonly Dictionary<string, TooltipFieldRow> _fixedFieldRows = new();
 
         private RectTransform _rectTransform;
         private RectTransform _contentRoot;
@@ -38,8 +39,6 @@ namespace Module.Item
         private RectTransform _tagRoot;
         private RectTransform _rowRoot;
         private RectTransform _descBlock;
-        private RectTransform _processBlock;
-        private RectTransform _effectBlock;
         private Canvas _canvas;
         private CanvasGroup _canvasGroup;
         private Image _imgBackground;
@@ -48,8 +47,7 @@ namespace Module.Item
         private TextMeshProUGUI _txtSubtitle;
         private TextMeshProUGUI _txtPrice;
         private TextMeshProUGUI _txtDesc;
-        private TextMeshProUGUI _txtProcess;
-        private TextMeshProUGUI _txtEffect;
+        private GameObject _tagTemplate;
         private GameObject _fieldRowTemplate;
         private TMP_FontAsset _fontAsset;
 
@@ -89,8 +87,6 @@ namespace Module.Item
             bindTags(data.Tags);
             bindFields(data.Fields);
             bindBlock(_descBlock, _txtDesc, data.Desc);
-            bindBlock(_processBlock, _txtProcess, data.ProcessText);
-            bindBlock(_effectBlock, _txtEffect, data.EffectText);
             SetVisible(true);
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
@@ -229,24 +225,25 @@ namespace Module.Item
             setLayout(_tagRoot.gameObject, getContentWidth(), 28f, getContentWidth(), 28f);
             ContentSizeFitter fitter = ensureFitter(_tagRoot.gameObject);
             fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            _tagTemplate = getOrCreateTagTemplate();
         }
 
         // 创建字段行容器
         private void createRowRoot()
         {
             _rowRoot = getOrCreateRect("RowRoot", _contentRoot);
-            setupVerticalLayout(_rowRoot.gameObject, 4f, TextAnchor.UpperLeft);
+            setupVerticalLayout(_rowRoot.gameObject, 2f, TextAnchor.UpperLeft);
             ensureFitter(_rowRoot.gameObject);
             _fieldRowTemplate = createFieldRow("FieldRow_Template", string.Empty, string.Empty);
             _fieldRowTemplate.SetActive(false);
+            ensureFixedFieldRows();
         }
 
-        // 创建描述、加工和效果文本块
+        // 创建描述文本块
         private void createTextBlocks()
         {
             _descBlock = createTextBlock("DescBlock", "Txt_Desc", out _txtDesc);
-            _processBlock = createTextBlock("ProcessBlock", "Txt_Process", out _txtProcess);
-            _effectBlock = createTextBlock("EffectBlock", "Txt_Effect", out _txtEffect);
         }
 
         // 根据鼠标位置选择详情框显示方向，底部材料默认往上弹
@@ -274,11 +271,9 @@ namespace Module.Item
         {
             RectTransform block = getOrCreateRect(blockName, _contentRoot);
             Image image = block.GetComponent<Image>();
-            if (image == null)
-                image = block.gameObject.AddComponent<Image>();
+            if (image != null)
+                image.enabled = false;
 
-            image.color = new Color(0.95f, 0.78f, 0.52f, 0.14f);
-            image.raycastTarget = false;
             removeVerticalLayout(block.gameObject);
             removeFitter(block.gameObject);
             setLayout(block.gameObject, getContentWidth(), 32f, getContentWidth(), 32f);
@@ -286,6 +281,61 @@ namespace Module.Item
             text = getOrCreateText(textName, block, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.TopLeft);
             setupTextBlockTextRect(text.rectTransform, getTextBlockTextWidth(), 20f);
             return block;
+        }
+
+        // 获取或创建标签模板，运行时复制模板生成动态标签
+        private GameObject getOrCreateTagTemplate()
+        {
+            RectTransform tagRoot = getOrCreateRect("Tag_Template", _tagRoot);
+            Image image = tagRoot.GetComponent<Image>();
+            if (image == null)
+                image = tagRoot.gameObject.AddComponent<Image>();
+
+            image.color = new Color(0.67f, 0.43f, 0.26f, 0.85f);
+            image.raycastTarget = false;
+            setLayout(tagRoot.gameObject, -1f, 28f, -1f, 28f);
+
+            TextMeshProUGUI text = getOrCreateText("Txt_Label", tagRoot, 15f, new Color(1f, 0.89f, 0.68f, 1f), TextAlignmentOptions.Center);
+            text.text = string.Empty;
+            text.enableWordWrapping = false;
+            setPadding(text.rectTransform, 10f, 2f);
+            tagRoot.gameObject.SetActive(false);
+            return tagRoot.gameObject;
+        }
+
+        // 确保策划字段在预制体内有固定行
+        private void ensureFixedFieldRows()
+        {
+            _fixedFieldRows.Clear();
+            addFixedFieldRow(ItemTooltipData.FIELD_BASIC_SCORE, "Field_BasicScore", "基础分值");
+            addFixedFieldRow(ItemTooltipData.FIELD_STATE, "Field_State", "状态");
+            addFixedFieldRow(ItemTooltipData.FIELD_COOK_PROGRESS, "Field_CookProgress", "熟度");
+            addFixedFieldRow(ItemTooltipData.FIELD_CAN_PROCESS, "Field_CanProcess", "是否可加工");
+            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_METHOD, "Field_ProcessMethod", "加工方式");
+            addFixedFieldRow(ItemTooltipData.FIELD_TRIGGER_CONDITION, "Field_TriggerCondition", "触发条件");
+            addFixedFieldRow(ItemTooltipData.FIELD_EFFECT, "Field_Effect", "效果");
+            addFixedFieldRow(ItemTooltipData.FIELD_MULTIPLIER, "Field_Multiplier", "倍率");
+            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_RESULT, "Field_ProcessResult", "加工结果");
+        }
+
+        // 注册固定字段行
+        private void addFixedFieldRow(string fieldKey, string rowName, string fallbackLabel)
+        {
+            Transform existingRow = _rowRoot.Find(rowName);
+            GameObject row = existingRow != null ? existingRow.gameObject : createFieldRow(rowName, fallbackLabel, string.Empty);
+            TextMeshProUGUI labelText = row.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI valueText = row.transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
+            if (labelText == null || valueText == null)
+            {
+                row = createFieldRow(rowName, fallbackLabel, string.Empty);
+                labelText = row.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+                valueText = row.transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (existingRow == null)
+                row.SetActive(true);
+
+            _fixedFieldRows[fieldKey] = new TooltipFieldRow(row, labelText, valueText);
         }
 
         // 绑定标签
@@ -305,17 +355,42 @@ namespace Module.Item
         // 绑定字段行
         private void bindFields(IReadOnlyList<ItemTooltipFieldData> fields)
         {
+            hideFixedFieldRows();
+
             for (int i = 0; fields != null && i < fields.Count; i++)
             {
                 ItemTooltipFieldData field = fields[i];
                 if (field == null || string.IsNullOrWhiteSpace(field.Value)) continue;
 
-                GameObject row = createFieldRow($"FieldRow_{_fieldRows.Count}", field.Label, field.Value);
+                if (!string.IsNullOrEmpty(field.Key) && _fixedFieldRows.TryGetValue(field.Key, out TooltipFieldRow fixedRow))
+                {
+                    fixedRow.Bind(field.Label, field.Value);
+                    continue;
+                }
+
+                GameObject row = createFieldRow($"FieldRow_{_dynamicFieldRows.Count}", field.Label, field.Value);
                 row.SetActive(true);
-                _fieldRows.Add(row);
+                _dynamicFieldRows.Add(row);
             }
 
-            _rowRoot.gameObject.SetActive(_fieldRows.Count > 0);
+            _rowRoot.gameObject.SetActive(hasVisibleFixedRow() || _dynamicFieldRows.Count > 0);
+        }
+
+        // 隐藏固定字段行，等待本次绑定重新填值
+        private void hideFixedFieldRows()
+        {
+            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
+                row.SetVisible(false);
+        }
+
+        // 判断是否存在已显示的固定字段行
+        private bool hasVisibleFixedRow()
+        {
+            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
+                if (row.Root != null && row.Root.activeSelf)
+                    return true;
+
+            return false;
         }
 
         // 绑定可选文本块
@@ -330,7 +405,13 @@ namespace Module.Item
         // 创建标签文本
         private TextMeshProUGUI createTagText(string tag)
         {
-            RectTransform tagRoot = getOrCreateRect($"Tag_{_tagTexts.Count}", _tagRoot);
+            GameObject tagObj = _tagTemplate != null
+                ? Instantiate(_tagTemplate, _tagRoot, false)
+                : getOrCreateRect($"Tag_{_tagTexts.Count}", _tagRoot).gameObject;
+            tagObj.name = $"Tag_{_tagTexts.Count}";
+            tagObj.SetActive(true);
+
+            RectTransform tagRoot = tagObj.GetComponent<RectTransform>();
             Image image = tagRoot.GetComponent<Image>();
             if (image == null)
                 image = tagRoot.gameObject.AddComponent<Image>();
@@ -369,15 +450,43 @@ namespace Module.Item
         {
             for (int i = 0; i < _tagTexts.Count; i++)
                 if (_tagTexts[i] != null)
-                    destroyDynamicObject(_tagTexts[i].transform.parent.gameObject);
+                    destroyDynamicObject(_tagTexts[i].transform.parent != null ? _tagTexts[i].transform.parent.gameObject : _tagTexts[i].gameObject);
 
             _tagTexts.Clear();
 
-            for (int i = 0; i < _fieldRows.Count; i++)
-                if (_fieldRows[i] != null)
-                    destroyDynamicObject(_fieldRows[i]);
+            for (int i = 0; i < _dynamicFieldRows.Count; i++)
+                if (_dynamicFieldRows[i] != null)
+                    destroyDynamicObject(_dynamicFieldRows[i]);
 
-            _fieldRows.Clear();
+            _dynamicFieldRows.Clear();
+            clearPreviewTags();
+            clearPreviewDynamicRows();
+        }
+
+        // 清理预制体中用于预览的标签节点
+        private void clearPreviewTags()
+        {
+            if (_tagRoot == null) return;
+
+            for (int i = _tagRoot.childCount - 1; i >= 0; i--)
+            {
+                Transform child = _tagRoot.GetChild(i);
+                if (child.name.StartsWith("Tag_") && child.name != "Tag_Template")
+                    destroyDynamicObject(child.gameObject);
+            }
+        }
+
+        // 清理预制体中可能残留的动态字段行
+        private void clearPreviewDynamicRows()
+        {
+            if (_rowRoot == null) return;
+
+            for (int i = _rowRoot.childCount - 1; i >= 0; i--)
+            {
+                Transform child = _rowRoot.GetChild(i);
+                if (child.name.StartsWith("FieldRow_") && child.name != "FieldRow_Template")
+                    destroyDynamicObject(child.gameObject);
+            }
         }
 
         // 根据动态内容刷新高度
@@ -394,26 +503,32 @@ namespace Module.Item
         {
             refreshFieldRowSizes();
             refreshTextBlockSize(_descBlock, _txtDesc);
-            refreshTextBlockSize(_processBlock, _txtProcess);
-            refreshTextBlockSize(_effectBlock, _txtEffect);
         }
 
         // 刷新字段行高度，避免多行字段压住下一行
         private void refreshFieldRowSizes()
         {
-            for (int i = 0; i < _fieldRows.Count; i++)
-            {
-                if (_fieldRows[i] == null) continue;
+            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
+                refreshFieldRowSize(row.Root, row.LabelText, row.ValueText);
 
-                TextMeshProUGUI labelText = _fieldRows[i].transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
-                TextMeshProUGUI valueText = _fieldRows[i].transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
-                float labelHeight = getPreferredTextHeight(labelText, RowLabelWidth);
-                float valueHeight = getPreferredTextHeight(valueText, getFieldValueWidth());
-                float rowHeight = Mathf.Ceil(Mathf.Max(24f, labelHeight, valueHeight));
-                setLayout(_fieldRows[i], getContentWidth(), rowHeight, getContentWidth(), rowHeight);
-                setLayout(labelText.gameObject, RowLabelWidth, rowHeight, RowLabelWidth, rowHeight);
-                setPreferredFlexibleLayout(valueText.gameObject, getFieldValueWidth(), rowHeight, getFieldValueWidth(), rowHeight);
-            }
+            for (int i = 0; i < _dynamicFieldRows.Count; i++)
+                if (_dynamicFieldRows[i] != null)
+                    refreshFieldRowSize(_dynamicFieldRows[i],
+                        _dynamicFieldRows[i].transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>(),
+                        _dynamicFieldRows[i].transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>());
+        }
+
+        // 刷新单个字段行高度
+        private void refreshFieldRowSize(GameObject row, TextMeshProUGUI labelText, TextMeshProUGUI valueText)
+        {
+            if (row == null || !row.activeSelf || labelText == null || valueText == null) return;
+
+            float labelHeight = getPreferredTextHeight(labelText, RowLabelWidth);
+            float valueHeight = getPreferredTextHeight(valueText, getFieldValueWidth());
+            float rowHeight = Mathf.Ceil(Mathf.Max(24f, labelHeight, valueHeight));
+            setLayout(row, getContentWidth(), rowHeight, getContentWidth(), rowHeight);
+            setLayout(labelText.gameObject, RowLabelWidth, rowHeight, RowLabelWidth, rowHeight);
+            setPreferredFlexibleLayout(valueText.gameObject, getFieldValueWidth(), rowHeight, getFieldValueWidth(), rowHeight);
         }
 
         // 刷新大段文本块高度
@@ -709,6 +824,40 @@ namespace Module.Item
                 return null;
 
             return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
+        }
+
+        // 固定字段行引用
+        private class TooltipFieldRow
+        {
+            public readonly GameObject Root;
+            public readonly TextMeshProUGUI LabelText;
+            public readonly TextMeshProUGUI ValueText;
+
+            public TooltipFieldRow(GameObject root, TextMeshProUGUI labelText, TextMeshProUGUI valueText)
+            {
+                Root = root;
+                LabelText = labelText;
+                ValueText = valueText;
+            }
+
+            // 更新字段行文本
+            public void Bind(string label, string value)
+            {
+                if (LabelText != null)
+                    LabelText.text = label;
+
+                if (ValueText != null)
+                    ValueText.text = value;
+
+                SetVisible(true);
+            }
+
+            // 设置字段行显示状态
+            public void SetVisible(bool isVisible)
+            {
+                if (Root != null)
+                    Root.SetActive(isVisible);
+            }
         }
     }
 

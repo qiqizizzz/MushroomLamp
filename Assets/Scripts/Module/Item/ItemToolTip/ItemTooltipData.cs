@@ -16,6 +16,17 @@ namespace Module.Item
     // 道具详情浮层展示数据，负责从材料运行时数据提取字段
     public class ItemTooltipData
     {
+        public const string FIELD_BASIC_SCORE = "BasicScore";
+        public const string FIELD_STATE = "State";
+        public const string FIELD_COOK_PROGRESS = "CookProgress";
+        public const string FIELD_CAN_PROCESS = "CanProcess";
+        public const string FIELD_PROCESS_METHOD = "ProcessMethod";
+        public const string FIELD_TRIGGER_CONDITION = "TriggerCondition";
+        public const string FIELD_EFFECT = "Effect";
+        public const string FIELD_MULTIPLIER = "Multiplier";
+        public const string FIELD_PROCESS_RESULT = "ProcessResult";
+        private const string EMPTY_TEXT = "无";
+
         public string Name;
         public string Subtitle;
         public string PriceText;
@@ -43,8 +54,8 @@ namespace Module.Item
 
             addTags(data, material, config);
             addBasicFields(data, material, config);
-            data.ProcessText = buildProcessText(config);
-            data.EffectText = buildEffectText(config);
+            data.ProcessText = string.Empty;
+            data.EffectText = string.Empty;
             return data;
         }
 
@@ -54,6 +65,14 @@ namespace Module.Item
             if (string.IsNullOrWhiteSpace(value)) return;
 
             Fields.Add(new ItemTooltipFieldData(label, value));
+        }
+
+        // 添加带固定字段标识的字段
+        public void AddField(string key, string label, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return;
+
+            Fields.Add(new ItemTooltipFieldData(key, label, value));
         }
 
         // 构建副标题
@@ -91,52 +110,52 @@ namespace Module.Item
         {
             if (material != null)
             {
-                string valueText = config == null
-                    ? material.CurrentValue.ToString()
-                    : $"{material.CurrentValue} / 基础 {config.baseValue}";
-                data.AddField("数值", valueText);
-                data.AddField("状态", material.IsProcessed ? "已研磨" : string.IsNullOrWhiteSpace(config?.initialState) ? "原始材料" : config.initialState);
-                data.AddField("熟度", material.CookProgressText);
+                data.AddField(FIELD_BASIC_SCORE, "基础分值", (config?.baseValue ?? material.CurrentValue).ToString());
+                data.AddField(FIELD_STATE, "状态", material.IsProcessed ? "已研磨" : string.IsNullOrWhiteSpace(config?.initialState) ? "原始材料" : config.initialState);
+                data.AddField(FIELD_COOK_PROGRESS, "熟度", material.CookProgressText);
             }
 
             if (config == null) return;
 
-            data.AddField("加工", config.canProcess ? "可加工" : "不可加工");
-            if (!string.IsNullOrWhiteSpace(config.triggerTiming))
-                data.AddField("触发", config.triggerTiming);
+            data.AddField(FIELD_CAN_PROCESS, "是否可加工", config.canProcess ? "可加工" : "不可加工");
+            data.AddField(FIELD_PROCESS_METHOD, "加工方式", formatOptionalText(config.processMethods));
+            data.AddField(FIELD_TRIGGER_CONDITION, "触发条件", formatOptionalText(config.triggerCondition));
+            data.AddField(FIELD_EFFECT, "效果", buildEffectSummary(config));
+            data.AddField(FIELD_MULTIPLIER, "倍率", formatOptionalText(config.multiplierParam));
+            data.AddField(FIELD_PROCESS_RESULT, "加工结果", formatOptionalText(config.processResult));
         }
 
-        // 构建加工信息文本
-        private static string buildProcessText(MaterialJsonData config)
+        // 构建效果变量展示文本
+        private static string buildEffectSummary(MaterialJsonData config)
         {
-            if (config == null || (!config.canProcess && string.IsNullOrWhiteSpace(config.processMethods) && string.IsNullOrWhiteSpace(config.processResult)))
-                return string.Empty;
+            string effectType = formatOptionalText(config.effectType);
+            string effectTarget = formatOptionalText(config.effectTarget);
+            string effectParam = formatOptionalText(config.effectParam);
 
-            List<string> lines = new List<string>();
-            if (!string.IsNullOrWhiteSpace(config.processMethods))
-                lines.Add($"加工方式：{config.processMethods}");
-            if (!string.IsNullOrWhiteSpace(config.processResult))
-                lines.Add($"加工结果：{config.processResult}");
-            return string.Join("\n", lines);
+            if (effectType == EMPTY_TEXT && effectTarget == EMPTY_TEXT && effectParam == EMPTY_TEXT)
+                return EMPTY_TEXT;
+
+            if (effectParam != EMPTY_TEXT && effectTarget != EMPTY_TEXT)
+            {
+                if (effectType == "加分" || effectType == "减分")
+                    return $"{effectTarget}分数 {effectParam}";
+
+                return $"{effectTarget} {effectParam}";
+            }
+
+            if (effectType != EMPTY_TEXT && effectTarget != EMPTY_TEXT)
+                return $"{effectTarget} / {effectType}";
+
+            if (effectParam != EMPTY_TEXT)
+                return effectParam;
+
+            return effectType;
         }
 
-        // 构建效果信息文本
-        private static string buildEffectText(MaterialJsonData config)
+        // 统一把空值显示为无
+        private static string formatOptionalText(string value)
         {
-            if (config == null) return string.Empty;
-
-            List<string> lines = new List<string>();
-            if (!string.IsNullOrWhiteSpace(config.triggerCondition))
-                lines.Add($"条件：{config.triggerCondition}");
-            if (!string.IsNullOrWhiteSpace(config.effectType))
-                lines.Add($"效果：{config.effectType}");
-            if (!string.IsNullOrWhiteSpace(config.effectTarget))
-                lines.Add($"目标：{config.effectTarget}");
-            if (!string.IsNullOrWhiteSpace(config.effectParam))
-                lines.Add($"参数：{config.effectParam}");
-            if (!string.IsNullOrWhiteSpace(config.multiplierParam))
-                lines.Add($"倍率：{config.multiplierParam}");
-            return string.Join("\n", lines);
+            return string.IsNullOrWhiteSpace(value) ? EMPTY_TEXT : value;
         }
     }
 }
