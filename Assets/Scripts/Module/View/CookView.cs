@@ -65,6 +65,7 @@ namespace Module.View
 
         private CookModel _cookModel;
         private ItemTooltip _itemTooltip;
+        private object _itemTooltipOwner;
         private RectTransform _tooltipCanvasRect;
         private readonly CookSlotItem[] _slotItems = new CookSlotItem[9];
 
@@ -227,9 +228,16 @@ namespace Module.View
         // 按屏幕坐标显示材料详情浮层
         public void ShowItemTooltip(CookMaterialData materialData, Vector2 screenPosition)
         {
+            ShowItemTooltip(null, materialData, screenPosition);
+        }
+
+        // 按屏幕坐标显示材料详情浮层，并记录当前悬停来源（避免切换卡牌时被其它 item 误关）
+        public void ShowItemTooltip(object owner, CookMaterialData materialData, Vector2 screenPosition)
+        {
             if (materialData == null) return;
             if (!ensureItemTooltip()) return;
 
+            _itemTooltipOwner = owner;
             _itemTooltip.transform.SetAsLastSibling();
             _itemTooltip.Bind(materialData);
             MoveItemTooltip(screenPosition);
@@ -251,9 +259,13 @@ namespace Module.View
             _itemTooltip.SetScreenPosition(screenPosition, _tooltipCanvasRect, S_TooltipOffset);
         }
 
-        // 隐藏材料详情浮层
-        public void HideItemTooltip()
+        // 隐藏材料详情浮层；传入 owner 时仅当仍是该来源才关闭
+        public void HideItemTooltip(object owner = null)
         {
+            if (owner != null && _itemTooltipOwner != owner)
+                return;
+
+            _itemTooltipOwner = null;
             if (_itemTooltip != null)
                 _itemTooltip.Hide();
         }

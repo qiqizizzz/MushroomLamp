@@ -17,7 +17,6 @@ namespace Module.View
 {
     // 烹饪材料 UI 项，负责展示材料并处理拖拽输入
     public class CookMaterialItem : BaseItem,
-        IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private const float CardWidth = 160f;
@@ -39,7 +38,6 @@ namespace Module.View
         private float _displayWidth = CardWidth;
         private float _displayHeight = CardHeight;
 
-        private bool _isHovering;
         private bool _isDragging;
         private bool _isPointerInside;
         private bool _interactable = true;   // 动画期间锁住拖拽
@@ -58,7 +56,11 @@ namespace Module.View
             _interactable = value;
             if (!value)
             {
-                _isHovering = false;
+                if (_isPointerInside)
+                {
+                    _isPointerInside = false;
+                    _view?.HideItemTooltip(this);
+                }
                 _targetScale = 1f;
                 setOutline(false);
             }
@@ -112,34 +114,7 @@ namespace Module.View
             applyDisplaySize(_displayWidth, _displayHeight);
         }
 
-        // 鼠标移入：放大 + 显示描边
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (_isDragging || !_interactable) return;
-            _isHovering = true;
-            _targetScale = HoverScale;
-            setOutline(true);
-            if (_view != null && _materialData != null)
-                _view.ShowItemTooltip(_materialData, eventData);
-            // 注意：不能用 SetAsLastSibling 置顶——会触发 HorizontalLayoutGroup 重排导致连锁闪烁
-        }
-
-        // 鼠标移动时同步移动详情浮层
-        public void OnPointerMove(PointerEventData eventData)
-        {
-            if (!_isDragging)
-                _view?.MoveItemTooltip(eventData);
-        }
-
-        // 鼠标移出：还原
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            _targetScale = 1f;
-            setOutline(false);
-            _view?.HideItemTooltip();
-        }
-
-        // 每帧平滑过渡缩放（差值变大，不跳变）
+        // 每帧检测悬停（使用未放大的逻辑尺寸，避免 HoverScale 导致邻牌切换失效）
         protected override void OnUpdate()
         {
             if (_rectTransform == null) return;
@@ -158,7 +133,7 @@ namespace Module.View
             if (_materialData == null || _view == null || !_interactable) return;
 
             KillFlyTween();
-            _view.HideItemTooltip();
+            _view.HideItemTooltip(this);
             _isPointerInside = false;
             _isDragging = true;
             _targetScale = 1f;
@@ -282,7 +257,7 @@ namespace Module.View
         protected override void OnDestroy()
         {
             KillFlyTween();
-            _view?.HideItemTooltip();
+            _view?.HideItemTooltip(this);
             if (_outlineMaterial != null)
             {
                 Destroy(_outlineMaterial);
@@ -297,11 +272,14 @@ namespace Module.View
             if (_view == null || _materialData == null || _isDragging || !isActiveAndEnabled)
                 return;
 
+            if (!_interactable)
+            {
+                clearPointerHoverState();
+                return;
+            }
+
             Vector2 screenPosition = Input.mousePosition;
-            bool isInside = RectTransformUtility.RectangleContainsScreenPoint(
-                _rectTransform,
-                screenPosition,
-                resolveHoverCamera());
+            bool isInside = isPointerOverCard(screenPosition);
 
             if (isInside)
             {
@@ -310,7 +288,7 @@ namespace Module.View
                     _isPointerInside = true;
                     _targetScale = HoverScale;
                     setOutline(true);
-                    _view.ShowItemTooltip(_materialData, screenPosition);
+                    _view.ShowItemTooltip(this, _materialData, screenPosition);
                     return;
                 }
 
@@ -320,10 +298,39 @@ namespace Module.View
 
             if (!_isPointerInside) return;
 
+            clearPointerHoverState();
+        }
+
+        private void clearPointerHoverState()
+        {
+            if (!_isPointerInside) return;
+
             _isPointerInside = false;
             _targetScale = 1f;
             setOutline(false);
-            _view.HideItemTooltip();
+            _view?.HideItemTooltip(this);
+        }
+
+        // 使用卡牌逻辑尺寸做命中检测，不受 HoverScale 放大影响
+        private bool isPointerOverCard(Vector2 screenPosition)
+        {
+            Camera camera = resolveHoverCamera();
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    _rectTransform,
+                    screenPosition,
+                    camera,
+                    out Vector2 localPoint))
+                return false;
+
+            Vector3 scale = _rectTransform.localScale;
+            if (Mathf.Abs(scale.x) > 0.001f)
+                localPoint.x /= scale.x;
+            if (Mathf.Abs(scale.y) > 0.001f)
+                localPoint.y /= scale.y;
+
+            Vector2 halfSize = new Vector2(_displayWidth * 0.5f, _displayHeight * 0.5f);
+            return localPoint.x >= -halfSize.x && localPoint.x <= halfSize.x
+                && localPoint.y >= -halfSize.y && localPoint.y <= halfSize.y;
         }
 
         // 获取当前 UI 检测需要的相机
