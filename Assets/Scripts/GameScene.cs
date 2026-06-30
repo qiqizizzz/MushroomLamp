@@ -18,6 +18,7 @@ using Module.Confirm;
 using Module.Select;
 using Module.Settings;
 using Module.Shop;
+using Module.Recycle;
 using Module.Store;
 using Module.Blackjack;
 using Module.StageSettle;
@@ -98,6 +99,7 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.SelectBox, new SelectBoxController());
         GameApp.ControllerManager.Register(ControllerType.Cook, new CookController());
         GameApp.ControllerManager.Register(ControllerType.Shop, new ShopController());
+        GameApp.ControllerManager.Register(ControllerType.Recycle, new RecycleController());
         GameApp.ControllerManager.Register(ControllerType.Store, new StoreController());
         GameApp.ControllerManager.Register(ControllerType.Blackjack, new BlackjackController());
         GameApp.ControllerManager.Register(ControllerType.Almanac, new AlmanacController());

@@ -65,7 +65,11 @@ namespace Module.Shop
             RefreshView();
         }
 
-        private void OnRecycle(object[] args) { }
+        // 打开回收界面
+        private void OnRecycle(object[] args)
+        {
+            ApplyControllerFunc(ControllerType.Recycle, EventDefines.OpenRecycleView);
+        }
 
         // 继续：推进到下一小局；若已是最后小局则进入最终结算
         private void OnContinue(object[] args)
