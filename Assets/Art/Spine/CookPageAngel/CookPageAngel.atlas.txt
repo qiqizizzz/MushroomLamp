@@ -1,0 +1,104 @@
+
+CookPageAngel.png
+size: 227,593
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+belt
+  rotate: true
+  xy: 2, 66
+  size: 126, 129
+  orig: 128, 131
+  offset: 1, 2
+  index: -1
+body
+  rotate: false
+  xy: 2, 257
+  size: 174, 150
+  orig: 174, 152
+  offset: 0, 1
+  index: -1
+close
+  rotate: false
+  xy: 133, 86
+  size: 82, 20
+  orig: 82, 20
+  offset: 0, 0
+  index: -1
+foot
+  rotate: false
+  xy: 70, 27
+  size: 40, 37
+  orig: 41, 42
+  offset: 0, 1
+  index: -1
+left ear
+  rotate: true
+  xy: 2, 2
+  size: 62, 66
+  orig: 63, 67
+  offset: 1, 1
+  index: -1
+left foot
+  rotate: false
+  xy: 178, 252
+  size: 42, 39
+  orig: 44, 39
+  offset: 1, 0
+  index: -1
+mouth
+  rotate: true
+  xy: 171, 187
+  size: 63, 53
+  orig: 66, 53
+  offset: 3, 0
+  index: -1
+open
+  rotate: true
+  xy: 133, 108
+  size: 84, 33
+  orig: 86, 35
+  offset: 1, 1
+  index: -1
+particle
+  rotate: true
+  xy: 2, 194
+  size: 61, 167
+  orig: 63, 168
+  offset: 1, 1
+  index: -1
+right ear
+  rotate: true
+  xy: 178, 343
+  size: 64, 47
+  orig: 65, 50
+  offset: 0, 1
+  index: -1
+right foot
+  rotate: false
+  xy: 178, 293
+  size: 45, 48
+  orig: 47, 49
+  offset: 1, 1
+  index: -1
+sack
+  rotate: false
+  xy: 2, 409
+  size: 220, 182
+  orig: 220, 184
+  offset: 0, 1
+  index: -1
+tail
+  rotate: false
+  xy: 168, 112
+  size: 49, 73
+  orig: 50, 74
+  offset: 0, 0
+  index: -1
+wing
+  rotate: true
+  xy: 133, 16
+  size: 68, 80
+  orig: 70, 83
+  offset: 1, 1
+  index: -1
