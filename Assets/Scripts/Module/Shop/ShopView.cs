@@ -1,3 +1,11 @@
+/*
+* ┌──────────────────────────────────┐
+* │  描    述: 商店界面视图，负责展示货架、金币与回收状态
+* │  类    名: ShopView.cs
+* │  创    建: By qiqizizzz
+* └──────────────────────────────────┘
+*/
+
 using System.Collections.Generic;
 using Common;
 using MVC.View;
@@ -17,6 +25,8 @@ namespace Module.Shop
         private Button _btnRecycle;
         private Button _btnContinue;
         private Button _btnStore;
+        private TextMeshProUGUI _txtRecycleButton;
+        private Color _recycleButtonNormalColor;
 
         private readonly List<Transform> _cardSlots = new();
         private readonly List<Transform> _itemSlots = new();
@@ -31,6 +41,12 @@ namespace Module.Shop
             _btnRecycle = Find<Button>("Bottom/Btn_Recycle");
             _btnContinue = Find<Button>("Bottom/Btn_Continue");
             _btnStore = findOptional<Button>("Bottom/Btn_Store");
+            if (_btnRecycle != null)
+            {
+                _txtRecycleButton = _btnRecycle.GetComponentInChildren<TextMeshProUGUI>(true);
+                Image recycleImage = _btnRecycle.GetComponent<Image>();
+                _recycleButtonNormalColor = recycleImage != null ? recycleImage.color : Color.white;
+            }
 
             bindButtons();
             collectSlots();
@@ -42,10 +58,25 @@ namespace Module.Shop
             if (_txtGold != null) _txtGold.text = $"金币 {model.Gold}";
             if (_txtTitle != null) _txtTitle.text = "黑猫夜市";
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
-            if (_txtInfo != null) _txtInfo.text = "本轮补给\n上回合回味 42\n下轮目标 55\n剩余回合 3/9\n\n当前金币 26\n\n下轮幸运牌生效\n普通火候｜草本加成";
+            if (_txtInfo != null) _txtInfo.text = $"本轮补给\n上回合回味 42\n下轮目标 55\n剩余回合 3/9\n\n当前金币 {model.Gold}\n回收机会：{(model.CanRecycle ? "可用" : "已使用")}\n\n下轮幸运牌生效\n普通火候｜草本加成";
 
+            refreshRecycleState(model.CanRecycle);
             refreshSlots(_cardSlots, model.CardSlots, true);
             refreshSlots(_itemSlots, model.ItemSlots, false);
+        }
+
+        // 刷新回收按钮的状态表现
+        private void refreshRecycleState(bool canRecycle)
+        {
+            if (_txtRecycleButton != null)
+                _txtRecycleButton.text = canRecycle ? "回收" : "已回收";
+
+            if (_btnRecycle == null) return;
+
+            _btnRecycle.interactable = true;
+            Image recycleImage = _btnRecycle.GetComponent<Image>();
+            if (recycleImage != null)
+                recycleImage.color = canRecycle ? _recycleButtonNormalColor : new Color(0.55f, 0.55f, 0.55f, 0.9f);
         }
 
         private void bindButtons()

@@ -71,6 +71,7 @@ namespace Module.Recycle
 
             PlayerDataManager.Instance.AddMoney(gold);
             GameApp.ViewManager.Close((int)ViewType.RecycleView);
+            ApplyControllerFunc(ControllerType.Shop, "Shop.RecycleDone");
         }
 
         private void refreshView()

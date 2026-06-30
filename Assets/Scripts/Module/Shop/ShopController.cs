@@ -1,3 +1,11 @@
+/*
+* ┌──────────────────────────────────┐
+* │  描    述: 商店控制器，负责购买、刷新、回收入口与小局推进
+* │  类    名: ShopController.cs
+* │  创    建: By qiqizizzz
+* └──────────────────────────────────┘
+*/
+
 using Common.Defines;
 using Module.Confirm;
 using Module.Level;
@@ -10,6 +18,8 @@ namespace Module.Shop
 {
     public class ShopController : BaseController
     {
+        private const string ShopRecycleDone = "Shop.RecycleDone";
+
         private ShopModel _shopModel;
 
         public ShopController()
@@ -33,12 +43,14 @@ namespace Module.Shop
             RegisterFunc("OpenShopView", OnOpenShopView);
             RegisterFunc("Shop.Refresh",  OnRefresh);
             RegisterFunc("Shop.Recycle",  OnRecycle);
+            RegisterFunc(ShopRecycleDone, OnRecycleDone);
             RegisterFunc("Shop.Continue", OnContinue);
             RegisterFunc("Shop.BuyItem",  OnBuyItem);
         }
 
         private void OnOpenShopView(object[] args)
         {
+            _shopModel.ResetRecycleState();
             _shopModel.Refresh();
             GameApp.ViewManager.Open((int)ViewType.ShopView, args);
             RefreshView();
@@ -68,7 +80,26 @@ namespace Module.Shop
         // 打开回收界面
         private void OnRecycle(object[] args)
         {
+            if (!_shopModel.CanRecycle)
+            {
+                ConfirmController.Show(new ConfirmModel
+                {
+                    mode = ConfirmModel.Mode.ConfirmOnly,
+                    title = "无法回收",
+                    message = "本次商店已经回收过一次了。\n继续前进后，下次进入商店会刷新回收机会。",
+                    confirmText = "知道了"
+                });
+                return;
+            }
+
             ApplyControllerFunc(ControllerType.Recycle, EventDefines.OpenRecycleView);
+        }
+
+        // 标记本次商店已完成回收
+        private void OnRecycleDone(object[] args)
+        {
+            _shopModel.MarkRecycled();
+            RefreshView();
         }
 
         // 继续：推进到下一小局；若已是最后小局则进入最终结算
