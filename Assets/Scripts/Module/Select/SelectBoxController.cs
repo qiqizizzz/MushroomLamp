@@ -106,35 +106,11 @@ namespace Module.Select
                 $"boxIndex={model.SelectedBoxIndex}/{model.BoxCount}");
 
             // 初始化关卡流程（定位第一小局），后续商店推进沿用 LevelFlow
-            var materials = collectMaterials(detail);
+            var materials = SelectBoxMaterialHelper.CollectMaterials(detail);
             LevelFlow.Instance.Begin(entry?.id, entry?.displayName, model.Difficulty, materials);
 
             GameApp.ViewManager.Close(ViewType.SelectBoxView);
             ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, LevelFlow.Instance.BuildStartData());
-        }
-
-        // 从箱子详情提取材料种子列表
-        private static System.Collections.Generic.List<CookMaterialSeedData> collectMaterials(SelectBoxDetailJsonConfig detail)
-        {
-            var result = new System.Collections.Generic.List<CookMaterialSeedData>();
-            SelectMaterialLineData[] lines = detail?.ToRuntimeLines();
-            if (lines == null) return result;
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                SelectMaterialLineData line = lines[i];
-                if (line == null || (string.IsNullOrWhiteSpace(line.materialId) && string.IsNullOrWhiteSpace(line.label))) continue;
-
-                result.Add(new CookMaterialSeedData
-                {
-                    MaterialId = line.materialId,
-                    MaterialName = line.label,
-                    Count = line.count,
-                    Icon = line.icon
-                });
-            }
-
-            return result;
         }
 
         private SelectBoxModel ensureModel()

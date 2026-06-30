@@ -68,6 +68,7 @@ namespace Module.Settings
         private void onClose(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.SettingsView);
+            ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView);
         }
 
         private void onSetSfxOn(object[] args)

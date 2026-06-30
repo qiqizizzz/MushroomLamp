@@ -45,7 +45,7 @@ namespace Module.Summary
 
         private void onViewAlmanac(object[] args)
         {
-            ApplyControllerFunc(ControllerType.Almanac, EventDefines.OpenAlmanacView);
+            ApplyControllerFunc(ControllerType.Almanac, EventDefines.OpenAlmanacView, ViewType.SummaryView);
         }
 
         private void onBackMenu(object[] args)

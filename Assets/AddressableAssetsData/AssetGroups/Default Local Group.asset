@@ -17,6 +17,21 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 5adb6627149c7334b94573b6f1cbd12e
   m_SerializeEntries:
+  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
+    m_Address: Art/ShopView/材料箱样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
+    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7c4e2f1a3567890abcdef1234567890
+    m_Address: ShopCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 138820ec0949b43448312a5660813cf2
     m_Address: Art/BG_img/bg_magic_kitchen
     m_ReadOnly: 0

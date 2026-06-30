@@ -74,6 +74,7 @@ namespace Module.View
         private RectTransform _imgAngel;          // 天使口袋（发牌起点）
         private RectTransform _imgDevil;          // 恶魔口袋（出牌终点）
         private SkeletonGraphic _angelSpine;      // 天使 Spine 展示（Img_Angel）
+        private SkeletonGraphic _devilSpine;      // 恶魔 Spine 展示（Img_Devil）
         private readonly List<CookMaterialItem> _handPool = new();   // 复用，不销毁
         private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
         private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
@@ -87,6 +88,8 @@ namespace Module.View
         [SerializeField] private float _dealEnterDelay = 0.3f; // 每次发牌飞行动画开始前的等待（秒），CookView 预制体 Inspector 可调
         private const string AngelIdleAnim = "Idle";
         private const string AngelLaunchAnim = "launch";
+        private const string DevilIdleAnim = "idie";
+        private const string DevilRecycleAnim = "recycle";
 
         public bool IsHandAnimating => _isHandAnimating;
         public System.Action OnDiscardAnimationDone;
@@ -168,6 +171,9 @@ namespace Module.View
 
             Transform angelVisual = findDeep(transform, "Img_Angel");
             _angelSpine = angelVisual != null ? angelVisual.GetComponent<SkeletonGraphic>() : null;
+
+            Transform devilVisual = findDeep(transform, "Img_Devil");
+            _devilSpine = devilVisual != null ? devilVisual.GetComponent<SkeletonGraphic>() : null;
         }
 
         // 打开界面时关闭遗留弹窗
@@ -177,6 +183,7 @@ namespace Module.View
             hidePauseDialog();
             _lastHandIds.Clear();   // 重置，确保 Open 后首次 refreshHand 把全部牌视为新牌
             playAngelIdleAnimation();
+            playDevilIdleAnimation();
             Common.QLog.Info("[CookView] Open() lastHandIds cleared, dealEnterDelay=" + _dealEnterDelay + " angelReady=" + (_imgAngel != null));
         }
 
@@ -875,7 +882,7 @@ namespace Module.View
                 float delay = enterDelay + order * DealStagger;
                 lastEnd = Mathf.Max(lastEnd, delay + DealDuration);
 
-                Sequence seq = DOTween.Sequence().SetDelay(delay)
+                DG.Tweening.Sequence seq = DOTween.Sequence().SetDelay(delay)
                     .Append(rt.DOAnchorPos(target, DealDuration).SetEase(Ease.OutCubic));
                 if (item.Group != null)
                     seq.Join(item.Group.DOFade(1f, DealDuration));
@@ -918,6 +925,33 @@ namespace Module.View
             state.SetAnimation(0, AngelIdleAnim, true);
         }
 
+        private void playDevilRecycleAnimation()
+        {
+            if (_devilSpine == null) return;
+
+            Spine.AnimationState state = _devilSpine.AnimationState;
+            if (state == null) return;
+
+            Spine.TrackEntry entry = state.SetAnimation(0, DevilRecycleAnim, false);
+            entry.Complete += onDevilRecycleComplete;
+        }
+
+        private void onDevilRecycleComplete(Spine.TrackEntry trackEntry)
+        {
+            trackEntry.Complete -= onDevilRecycleComplete;
+            playDevilIdleAnimation();
+        }
+
+        private void playDevilIdleAnimation()
+        {
+            if (_devilSpine == null) return;
+
+            Spine.AnimationState state = _devilSpine.AnimationState;
+            if (state == null) return;
+
+            state.SetAnimation(0, DevilIdleAnim, true);
+        }
+
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
         private float playDiscardAnimationIfNeeded(CookModel cookModel)
         {
@@ -929,6 +963,7 @@ namespace Module.View
             }
 
             setHandInteractable(false);
+            playDevilRecycleAnimation();
             Vector2 devilPos = worldToHandContent(_imgDevil.position);
 
             // 作废的牌对应池中当前显示这些 id 的 item
@@ -947,7 +982,7 @@ namespace Module.View
                 CookMaterialItem captured = item;
                 _discardingItems.Add(captured);
                 // 位移与 scale 同步同时长：每张卡刚好飞到恶魔口袋时 scale=0（只用 scale，不改透明度）
-                Sequence seq = DOTween.Sequence().SetDelay(delay)
+                DG.Tweening.Sequence seq = DOTween.Sequence().SetDelay(delay)
                     .Append(rt.DOAnchorPos(devilPos, DiscardDuration).SetEase(Ease.InCubic))
                     .Join(rt.DOScale(0f, DiscardDuration).SetEase(Ease.InCubic));
                 seq.OnComplete(() =>

@@ -1,7 +1,11 @@
+using Common;
 using Common.Defines;
 using Module.Confirm;
+using Module.Cook;
 using Module.Level;
 using Module.Player;
+using Module.Select;
+using Module.Store;
 using MVC;
 using MVC.Controller;
 using MVC.View;
@@ -65,25 +69,21 @@ namespace Module.Shop
             RefreshView();
         }
 
-        // 打开回收界面
         private void OnRecycle(object[] args)
         {
             ApplyControllerFunc(ControllerType.Recycle, EventDefines.OpenRecycleView);
         }
 
-        // 继续：推进到下一小局；若已是最后小局则进入最终结算
         private void OnContinue(object[] args)
         {
             GameApp.ViewManager.Close((int)ViewType.ShopView);
 
             if (LevelFlow.Instance.AdvanceStage())
             {
-                // 还有下一小局 → 用新小局参数重开 Cook
                 ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, LevelFlow.Instance.BuildStartData());
             }
             else
             {
-                // 已是最后小局 → 进入最终结算
                 ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
             }
         }
@@ -108,20 +108,65 @@ namespace Module.Shop
             {
                 mode = ConfirmModel.Mode.ConfirmCancel,
                 title = "确认购买",
-                message = $"购买「{slotData.name}」\n花费 {slotData.price} 金币，剩余 {_shopModel.Gold - slotData.price} 金币。",
+                message = buildBuyMessage(slotData),
                 confirmText = "购买",
                 cancelText = "取消",
                 onConfirm = () =>
                 {
-                    if (PlayerDataManager.Instance.SpendMoney(slotData.price))
-                    {
-                        if (slotData.isCard)
-                            PlayerDataManager.Instance.AddCard(slotData.id);
-                        slotData.isPurchased = true;
-                    }
+                    if (!PlayerDataManager.Instance.SpendMoney(slotData.price)) return;
+
+                    slotData.isPurchased = true;
                     RefreshView();
+
+                    if (slotData.isBox)
+                    {
+                        applyPurchasedBox(slotData);
+                        openStoreAfterBoxPurchase(slotData);
+                    }
+                    else if (slotData.isCard)
+                    {
+                        PlayerDataManager.Instance.AddCard(slotData.id);
+                    }
                 }
             });
+        }
+
+        private static string buildBuyMessage(ShopSlotData slotData)
+        {
+            int remain = PlayerDataManager.Instance.Money - slotData.price;
+            if (slotData.isBox)
+            {
+                return $"购买「{slotData.name}」材料箱\n" +
+                       $"花费 {slotData.price} 金币，剩余 {remain} 金币。\n" +
+                       "购买后将进入选卡界面，从三张卡牌中选择一张加入牌组。";
+            }
+
+            return $"购买「{slotData.name}」\n花费 {slotData.price} 金币，剩余 {remain} 金币。";
+        }
+
+        private static void applyPurchasedBox(ShopSlotData slotData)
+        {
+            SelectBoxCatalogEntry entry = ShopCatalog.GetBoxEntry(slotData.id);
+            if (entry == null)
+            {
+                QLog.Warning($"[{nameof(ShopController)}] 未找到材料箱配置：{slotData.id}");
+                return;
+            }
+
+            SelectBoxDetailJsonConfig detail = ShopCatalog.LoadBoxDetail(entry);
+            var materials = SelectBoxMaterialHelper.CollectMaterials(detail);
+            LevelFlow.Instance.SwitchBox(entry.id, entry.displayName, materials);
+        }
+
+        private void openStoreAfterBoxPurchase(ShopSlotData slotData)
+        {
+            var context = new StoreOpenContext
+            {
+                boxId = slotData.id,
+                boxName = slotData.name,
+                cardsIncludedInBoxPrice = true
+            };
+            ApplyControllerFunc(ControllerType.Store, EventDefines.OpenStoreView, context);
         }
 
         private void RefreshView()
@@ -132,4 +177,3 @@ namespace Module.Shop
         }
     }
 }
-

@@ -61,6 +61,7 @@ namespace Module.Recycle
         private void returnToShop(object[] args)
         {
             GameApp.ViewManager.Close((int)ViewType.RecycleView);
+            ApplyControllerFunc(ControllerType.Shop, "OpenShopView");
         }
 
         // 卖出当前选中的材料并关闭回收界面
@@ -71,6 +72,7 @@ namespace Module.Recycle
 
             PlayerDataManager.Instance.AddMoney(gold);
             GameApp.ViewManager.Close((int)ViewType.RecycleView);
+            ApplyControllerFunc(ControllerType.Shop, "OpenShopView");
         }
 
         private void refreshView()

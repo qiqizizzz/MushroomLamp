@@ -7,6 +7,7 @@
 */
 
 using System.Collections.Generic;
+using System.Collections;
 using Common;
 using Module.Cook;
 using Module.Select;
@@ -65,6 +66,22 @@ namespace Module.Level
             LevelEntryJsonData level = findLevel(boxId);
             StageCount = level != null ? LevelConfigLoader.GetStageCount(level, difficulty) : 0;
             refreshCurrentStageConfig();
+        }
+
+        // 商店购买材料箱后，替换当前大局绑定的箱子与材料池（小局进度不变）
+        public void SwitchBox(string boxId, string boxName, IEnumerable<CookMaterialSeedData> materials)
+        {
+            if (string.IsNullOrWhiteSpace(boxId)) return;
+
+            BoxId = boxId;
+            if (!string.IsNullOrWhiteSpace(boxName))
+                BoxName = boxName;
+
+            _materials.Clear();
+            if (materials != null)
+                _materials.AddRange(materials);
+
+            QLog.Info($"[{nameof(LevelFlow)}] 切换材料箱：{BoxId} / {BoxName}，材料种类={_materials.Count}");
         }
 
         // 推进到下一小局；返回 false 表示已是最后小局（无下一个）

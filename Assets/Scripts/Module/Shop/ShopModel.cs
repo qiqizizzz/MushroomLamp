@@ -13,6 +13,7 @@ namespace Module.Shop
         public string iconPath;
         public string description;
         public int price;
+        public bool isBox;
         public bool isCard;
         public bool isPurchased;
     }
@@ -21,14 +22,15 @@ namespace Module.Shop
     {
         // 金币直接读玩家单例，不再随机
         public int Gold => PlayerDataManager.Instance.Money;
-        public readonly List<ShopSlotData> CardSlots = new();
+        // 上排：材料箱；下排：道具
+        public readonly List<ShopSlotData> BoxSlots = new();
         public readonly List<ShopSlotData> ItemSlots = new();
 
         public void Refresh()
         {
-            CardSlots.Clear();
+            BoxSlots.Clear();
             ItemSlots.Clear();
-            CardSlots.AddRange(ShopCatalog.RandomCards(3));
+            BoxSlots.AddRange(ShopCatalog.RandomBoxes(3));
             ItemSlots.AddRange(ShopCatalog.RandomItems(3));
         }
     }

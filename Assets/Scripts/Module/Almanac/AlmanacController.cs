@@ -14,6 +14,8 @@ namespace Module.Almanac
 {
     public class AlmanacController : BaseController
     {
+        private ViewType _returnView = ViewType.MainMenuView;
+
         public AlmanacController()
         {
             GameApp.ViewManager.Register(ViewType.AlmanacView, new ViewInfo
@@ -43,14 +45,26 @@ namespace Module.Almanac
 
         private void openAlmanacView(object[] args)
         {
+            _returnView = resolveReturnView(args);
             GameApp.ViewManager.Open(ViewType.AlmanacView, args);
         }
 
         private void onReturn(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.AlmanacView);
-            if (GameApp.ViewManager.IsOpen((int)ViewType.SummaryView)) return;
-            ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView, args);
+
+            if (_returnView == ViewType.SummaryView)
+                GameApp.ViewManager.Open(ViewType.SummaryView);
+            else
+                ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView, args);
+        }
+
+        private static ViewType resolveReturnView(object[] args)
+        {
+            if (args != null && args.Length > 0 && args[0] is ViewType returnView)
+                return returnView;
+
+            return ViewType.MainMenuView;
         }
 
         private void onSwitchTab(object[] args)

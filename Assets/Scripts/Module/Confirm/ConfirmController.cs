@@ -22,7 +22,8 @@ namespace Module.Confirm
                 PrefabName = AddressDefines.UI_ConfirmView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
-                Sorting_Order = 100
+                Sorting_Order = 100,
+                IsOverlay = true
             });
 
             InitModuleEvent();

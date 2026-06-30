@@ -1,0 +1,8 @@
+{
+  "defaultBoxIconPath": "Art/ShopView/材料箱样本",
+  "entries": [
+    { "boxId": "herb",    "price": 8,  "description": "草本材料箱，更换下局可用材料" },
+    { "boxId": "mineral", "price": 10, "description": "矿物材料箱，更换下局可用材料" },
+    { "boxId": "spice",   "price": 12, "description": "香料材料箱，更换下局可用材料" }
+  ]
+}
