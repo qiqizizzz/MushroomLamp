@@ -57,7 +57,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4503832399992356370
 RectTransform:
   m_ObjectHideFlags: 0
@@ -253,11 +253,11 @@ MonoBehaviour:
   timeScale: 1
   freeze: 0
   layoutScaleMode: 0
-  referenceSize: {x: 1, y: 1}
+  referenceSize: {x: 400, y: 400}
   pivotOffset: {x: 0, y: 0}
   referenceScale: 1
   layoutScale: 1
-  rectTransformSize: {x: 0, y: 0}
+  rectTransformSize: {x: 400, y: 400}
   editReferenceRect: 0
   updateWhenInvisible: 3
   allowMultipleCanvasRenderers: 0
@@ -300,7 +300,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3073503202718350962
 RectTransform:
   m_ObjectHideFlags: 0
@@ -482,7 +482,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 138820ec0949b43448312a5660813cf2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: be1fb4f2b28337641ac1c1811590cd44, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -696,7 +696,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5594564855162097612
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1029,6 +1029,10 @@ PrefabInstance:
       value: "\u9000\u51FA"
       objectReference: {fileID: 0}
     - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
+    - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -1179,6 +1183,10 @@ PrefabInstance:
       value: "\u56FE\u9274"
       objectReference: {fileID: 0}
     - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
+    - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -1317,6 +1325,10 @@ PrefabInstance:
       value: "\u5F00\u59CB"
       objectReference: {fileID: 0}
     - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
+    - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -1453,6 +1465,10 @@ PrefabInstance:
     - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
       propertyPath: m_text
       value: "\u8BBE\u7F6E"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
       objectReference: {fileID: 0}
     - target: {fileID: 8731735383346612274, guid: f63fd4259b272064282eed2763ba63a0, type: 3}
       propertyPath: m_TextStyleHashCode

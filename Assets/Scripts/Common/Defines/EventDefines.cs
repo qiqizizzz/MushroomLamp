@@ -75,6 +75,11 @@ namespace Common.Defines
         public const string StoreBuy = "StoreBuy";
         public const string StoreSetBagCount = "StoreSetBagCount";
 
+        // 回收界面
+        public const string OpenRecycleView = "OpenRecycleView";
+        public const string RecycleReturn = "RecycleReturn";
+        public const string RecycleSellSelected = "RecycleSellSelected";
+
         // 设置
         public const string OpenSettingsView = "OpenSettingsView";
         public const string SettingsClose = "SettingsClose";

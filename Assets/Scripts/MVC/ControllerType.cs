@@ -21,6 +21,7 @@ namespace MVC
         Settings = 8,
         StageSettle = 9,
         Store = 10,
-        Blackjack = 11
+        Blackjack = 11,
+        Recycle = 12
     }
 }
