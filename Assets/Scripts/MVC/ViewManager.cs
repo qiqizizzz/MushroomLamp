@@ -255,7 +255,9 @@ namespace MVC
                 return null;
             }
 
-            IBaseView view = uiObj.AddComponent(viewType) as IBaseView;
+            IBaseView view = uiObj.GetComponent(viewType) as IBaseView;
+            if (view == null)
+                view = uiObj.AddComponent(viewType) as IBaseView;
             if (view == null)
             {
                 QLog.Error($"[{nameof(ViewManager)}] 脚本未实现 IBaseView：{typeName}");

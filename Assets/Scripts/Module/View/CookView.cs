@@ -13,6 +13,7 @@ using Module.Cook;
 using Common.Defines;
 using MVC.View;
 using Module.Item;
+using Spine.Unity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -72,20 +73,20 @@ namespace Module.View
         // ── 手牌对象池 + 发牌/出牌飞行动画 ──
         private RectTransform _imgAngel;          // 天使口袋（发牌起点）
         private RectTransform _imgDevil;          // 恶魔口袋（出牌终点）
+        private SkeletonGraphic _angelSpine;      // 天使 Spine 展示（Img_Angel）
         private readonly List<CookMaterialItem> _handPool = new();   // 复用，不销毁
         private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
         private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
         private bool _isHandAnimating;            // 发牌/出牌动画期间锁操作
         private bool _dealAnimating;              // 发牌动画进行中（与弃牌兜底解锁区分）
         private GameObject _imgBlock;             // ActionBar 上方的透明遮挡，卡牌飞行时挡住按钮点击
-        private bool _firstDealPending = true;    // 面板打开后的首次发牌待播（只有它等 DealEnterDelay）
         private const float DealStagger = 0.07f;  // 依次发牌的间隔
         private const float DealDuration = 0.45f;  // 发牌飞行时长（飞久一点）
         private const float DiscardStagger = 0.06f;
         private const float DiscardDuration = 0.5f;   // 出牌飞行时长（飞久一点，飞到才淡出）
-        // 面板打开后 → 首次发牌之间的等待时长（只第一次生效，给布局/Canvas 稳定时间）
-        // 后续回合发牌不再等待。可在此调整
-        private const float DealEnterDelay = 0.3f;
+        [SerializeField] private float _dealEnterDelay = 0.3f; // 每次发牌飞行动画开始前的等待（秒），CookView 预制体 Inspector 可调
+        private const string AngelIdleAnim = "Idle";
+        private const string AngelLaunchAnim = "launch";
 
         public bool IsHandAnimating => _isHandAnimating;
         public System.Action OnDiscardAnimationDone;
@@ -164,6 +165,9 @@ namespace Module.View
             // 兜底：没配锚点时退回用天使/恶魔图片节点
             if (_imgAngel == null) _imgAngel = findDeep(transform, "Img_Angel") as RectTransform;
             if (_imgDevil == null) _imgDevil = findDeep(transform, "Img_Devil") as RectTransform;
+
+            Transform angelVisual = findDeep(transform, "Img_Angel");
+            _angelSpine = angelVisual != null ? angelVisual.GetComponent<SkeletonGraphic>() : null;
         }
 
         // 打开界面时关闭遗留弹窗
@@ -171,9 +175,9 @@ namespace Module.View
         {
             GameApp.SoundManager?.PlayInGameBGM();
             hidePauseDialog();
-            _firstDealPending = true;
             _lastHandIds.Clear();   // 重置，确保 Open 后首次 refreshHand 把全部牌视为新牌
-            Common.QLog.Info("[CookView] Open() called, firstDealPending=true, lastHandIds cleared, angelReady=" + (_imgAngel != null));
+            playAngelIdleAnimation();
+            Common.QLog.Info("[CookView] Open() lastHandIds cleared, dealEnterDelay=" + _dealEnterDelay + " angelReady=" + (_imgAngel != null));
         }
 
         // 关闭界面时恢复普通背景音乐轮播
@@ -751,7 +755,7 @@ namespace Module.View
             clearDragItems();
             if (_handContent == null) return;
 
-            Common.QLog.Info("[CookView] refreshHand: handCount=" + cookModel.HandMaterials.Count + " lastHandIds=" + _lastHandIds.Count + " firstDealPending=" + _firstDealPending + " angelReady=" + (_imgAngel != null));
+            Common.QLog.Info("[CookView] refreshHand: handCount=" + cookModel.HandMaterials.Count + " lastHandIds=" + _lastHandIds.Count + " dealEnterDelay=" + _dealEnterDelay + " angelReady=" + (_imgAngel != null));
 
             // 1) 先处理"出牌作废"动画：放牌后剩余手牌飞向恶魔口袋（数据已清，此处只做表现）
             float discardEndTime = playDiscardAnimationIfNeeded(cookModel);
@@ -780,10 +784,8 @@ namespace Module.View
                     item.gameObject.SetActive(true);
                     item.Bind(mat, this);
                     layoutHandCard(item, i, count);
-                    // 将要播发牌动画的新牌先设 scale=0（看不见），避免"摆好位置的一帧"闪现，
-                    // 随后由 playDealAnimation 从天使口袋飞入放大到 1
-                    if (_imgAngel != null && newIds.Contains(mat.RuntimeId))
-                        item.Rect.localScale = Vector3.zero;
+                    if (_imgAngel != null && newIds.Contains(mat.RuntimeId) && item.Group != null)
+                        item.Group.alpha = 0f;
                 }
                 else
                 {
@@ -843,18 +845,17 @@ namespace Module.View
             if (item.Group != null) { item.Group.alpha = 1f; item.Group.blocksRaycasts = true; }
         }
 
-        // 发牌动画：新发的牌从天使口袋依次飞入各自的目标格位
-        // 起飞态（隐藏在天使位置）立刻设置，等待 DealEnterDelay 后再依次起飞——
-        // 给界面打开后布局/Canvas 稳定的时间，避免第一次瞬间播完看不见
+        // 发牌动画：天使 launch 立即播放；卡牌飞行动画开始前等待 _dealEnterDelay
         private void playDealAnimation(System.Collections.Generic.IReadOnlyList<CookMaterialData> hand, HashSet<int> newIds)
         {
             setHandInteractable(false);
             _dealAnimating = true;
             Vector2 angelPos = worldToHandContent(_imgAngel.position);
 
-            float enterDelay = _firstDealPending ? DealEnterDelay : 0f;
-            _firstDealPending = false;
+            float enterDelay = Mathf.Max(0f, _dealEnterDelay);
             Common.QLog.Info("[CookView] playDealAnimation: enterDelay=" + enterDelay + " newIds=" + newIds.Count + " angelPos=" + worldToHandContent(_imgAngel.position));
+
+            playAngelLaunchAnimation();
 
             int order = 0;
             float lastEnd = 0f;
@@ -866,19 +867,18 @@ namespace Module.View
                 RectTransform rt = item.Rect;
                 Vector2 target = rt.anchoredPosition;
 
-                // 起点：天使口袋；scale=0（看不见，立刻设置，等待期间隐藏在天使处）
+                // 起点：天使口袋；透明隐藏，飞入时渐显
                 rt.anchoredPosition = angelPos;
-                rt.localScale = Vector3.zero;
-                if (item.Group != null) item.Group.alpha = 1f;
+                if (item.Group != null) item.Group.alpha = 0f;
 
-                // 首次发牌等待 enterDelay 后，第 order 张再依次起飞
+                // 等待 enterDelay 后，第 order 张再依次起飞
                 float delay = enterDelay + order * DealStagger;
                 lastEnd = Mathf.Max(lastEnd, delay + DealDuration);
 
-                // 位移与 scale 同步：飞到格位时 scale 刚好回到 1（只用 scale 表现，不改透明度）
                 Sequence seq = DOTween.Sequence().SetDelay(delay)
-                    .Append(rt.DOAnchorPos(target, DealDuration).SetEase(Ease.OutCubic))
-                    .Join(rt.DOScale(1f, DealDuration).SetEase(Ease.OutBack));
+                    .Append(rt.DOAnchorPos(target, DealDuration).SetEase(Ease.OutCubic));
+                if (item.Group != null)
+                    seq.Join(item.Group.DOFade(1f, DealDuration));
                 item.SetFlyTween(seq);
                 order++;
             }
@@ -889,6 +889,33 @@ namespace Module.View
                 _dealAnimating = false;
                 setHandInteractable(true);
             });
+        }
+
+        private void playAngelLaunchAnimation()
+        {
+            if (_angelSpine == null) return;
+
+            Spine.AnimationState state = _angelSpine.AnimationState;
+            if (state == null) return;
+
+            Spine.TrackEntry entry = state.SetAnimation(0, AngelLaunchAnim, false);
+            entry.Complete += onAngelLaunchComplete;
+        }
+
+        private void onAngelLaunchComplete(Spine.TrackEntry trackEntry)
+        {
+            trackEntry.Complete -= onAngelLaunchComplete;
+            playAngelIdleAnimation();
+        }
+
+        private void playAngelIdleAnimation()
+        {
+            if (_angelSpine == null) return;
+
+            Spine.AnimationState state = _angelSpine.AnimationState;
+            if (state == null) return;
+
+            state.SetAnimation(0, AngelIdleAnim, true);
         }
 
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
