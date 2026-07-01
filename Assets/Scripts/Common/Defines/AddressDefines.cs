@@ -41,6 +41,7 @@ namespace Common.Defines
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
         public const string Art_ShopContinueHover = "Art/ShopView/IMG_9173";
         public const string Art_SelectBoxStartHover = "Art/SelectBoxView/IMG_9171";
+        public const string Art_SelectBoxReturnHover = "Art/SelectBoxView/IMG_9177";
         public const string Art_MainMenuStartHover = "Art/MainMenuView/开始游戏_点击";
         public const string Art_MainMenuSettingsHover = "Art/MainMenuView/设置_点击";
         public const string Art_MainMenuExitHover = "Art/MainMenuView/退出_点击";

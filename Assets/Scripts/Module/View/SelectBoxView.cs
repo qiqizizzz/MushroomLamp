@@ -83,6 +83,7 @@ namespace Module.View
             
             bindButtons();
             setupStartHover();
+            setupReturnHover();
             collectEmptySlots();
             initBoxIcons();
         }
@@ -96,6 +97,17 @@ namespace Module.View
                 hover = _btnStart.gameObject.AddComponent<UIButtonHoverItem>();
 
             hover.Setup(_btnStart, AddressDefines.Art_SelectBoxStartHover);
+        }
+
+        private void setupReturnHover()
+        {
+            if (_btnReturn == null) return;
+
+            UIButtonHoverItem hover = _btnReturn.GetComponent<UIButtonHoverItem>();
+            if (hover == null)
+                hover = _btnReturn.gameObject.AddComponent<UIButtonHoverItem>();
+
+            hover.Setup(_btnReturn, AddressDefines.Art_SelectBoxReturnHover);
         }
 
         public override void Open(params object[] args)
