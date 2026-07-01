@@ -42,6 +42,21 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 18cbbeac9260cb448b6f9fdbd0c067c8
+    m_Address: Art/MainMenuView/开始游戏_点击
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 523a99d99c6b4874a85f9d419f5721f5
+    m_Address: Art/MainMenuView/设置_点击
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5ffe36ca0388024699172f86ced6b7e
+    m_Address: Art/MainMenuView/退出_点击
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
     m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
     m_ReadOnly: 0
