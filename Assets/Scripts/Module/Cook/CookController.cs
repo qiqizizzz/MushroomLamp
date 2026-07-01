@@ -30,8 +30,7 @@ namespace Module.Cook
             {
                 PrefabName = AddressDefines.UI_CookView,
                 parentTf = GameApp.ViewManager.canvasTf,
-                controller = this,
-                Sorting_Order = 10
+                controller = this
             });
 
             InitModuleEvent();
