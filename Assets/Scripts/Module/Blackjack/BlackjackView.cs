@@ -3,13 +3,11 @@
 * │  描    述: 21 点玩法视图
 * │           左上魔盒 / 左下恶魔 / 右下天使 / 顶部三道具(抽牌)
 * │           中间大牌 + 下方四小牌 / 左右气泡 / 底部文本
-* │           缺美术资源处用白膜占位
 * │  类    名: BlackjackView.cs
 * └──────────────────────────────────┘
 */
 
 using System.Collections.Generic;
-using Common;
 using Common.Defines;
 using MVC.View;
 using TMPro;
@@ -49,8 +47,6 @@ namespace Module.Blackjack
 
             if (_txtBottom != null) _fontTemplate = _txtBottom.font;
             else if (_bubbleLeft != null) _fontTemplate = _bubbleLeft.font;
-
-            tryLoadArt();
         }
 
         public override void InitData()
@@ -153,36 +149,7 @@ namespace Module.Blackjack
                 slot.point.gameObject.SetActive(true);
         }
 
-        // ---------------- 美术（可选，缺失则保留白膜）----------------
-
-        private void tryLoadArt()
-        {
-            trySetImage("Box", "Art/CookView/魔盒");
-            trySetImage("Devil", "Art/CookView/小恶魔");
-            trySetImage("Angel", "Art/CookView/小天使");
-        }
-
-        private void trySetImage(string node, string artPath)
-        {
-            Image img = findImage(node);
-            if (img == null) return;
-
-            // 可选美术：静默加载，失败保留白膜、不打错误日志
-            Sprite sprite = ArtAssetLoader.LoadSprite(artPath, logOnFail: false);
-            if (sprite != null)
-            {
-                img.sprite = sprite;
-                img.color = Color.white;
-            }
-        }
-
         // ---------------- 查找工具 ----------------
-
-        private Image findImage(string path)
-        {
-            Transform t = transform.Find(path);
-            return t != null ? t.GetComponent<Image>() : null;
-        }
 
         private TextMeshProUGUI findText(string path)
         {

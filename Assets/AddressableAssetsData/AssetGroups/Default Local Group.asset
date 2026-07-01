@@ -187,6 +187,301 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2692d2ac8943de247b0517b22952ce22
+    m_Address: Art/BG_img/bg_SelectView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be1fb4f2b28337641ac1c1811590cd44
+    m_Address: Art/BG_img/bg_mainmenu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f32ce367e15f40b98634592e94dd60e6
+    m_Address: Art/BlackjackView/对话框
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd984bacee094f89a3387702235723a7
+    m_Address: Art/BlackjackView/小天使
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee777d7b88254e478521ad8bd277b348
+    m_Address: Art/BlackjackView/小恶魔
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cc046238fd24fda815aabdeed4d7753
+    m_Address: Art/BlackjackView/扑克牌
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: adcc6ea3ebac46c6b0f25b02ac32cdb3
+    m_Address: Art/BlackjackView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 910e66dcbad249c69b7d8e5800c6f1aa
+    m_Address: Art/BlackjackView/魔盒
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 041955b8ed99e3e4ea215b6621aff6a2
+    m_Address: Art/CookView/小天使
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd802ae8e3046824a8c3a45ba8655608
+    m_Address: Art/CookView/小恶魔
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ed8e68cdf851ff4aaf1e4c3fa215551
+    m_Address: Art/CookView/托盘
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26e68737be0e5fe4fb6865eb9741a168
+    m_Address: Art/CookView/放置
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08da418fcf1d4ff4c812794c12e19ef6
+    m_Address: Art/CookView/研磨棒
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff1545c01310c7642b5649ceddda4c9e
+    m_Address: Art/CookView/研磨碗
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b588101771c9c14787457ffeff29846
+    m_Address: Art/CookView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f95436171a8b014a958981fd65eb251
+    m_Address: Art/CookView/计分器
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59d5b15ad81b44749a45742c0d2340a9
+    m_Address: Art/CookView/道具样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 890d89df3dfa1484c96f16ce38674b23
+    m_Address: Art/CookView/锅
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c7ffc9ee61ece94daf9f1c243f3b008
+    m_Address: Art/CookView/锅架子
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7af057d348aa4374fa079e01cc46fd40
+    m_Address: Art/CookView/锅烟雾
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51d2429cbec4d344aaf3cca6c96675b3
+    m_Address: Art/CookView/预览
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d64cdbe8906f2b84481e2ac4e0255e45
+    m_Address: Art/CookView/魔法阵
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c660f8702ec5b341869d6db66fae60e
+    m_Address: Art/CookView/魔法阵（空白）
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: edada0ee324563540841bfd90be34590
+    m_Address: Art/CookView/魔盒
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6dd418255208d4a408ee3393cd548921
+    m_Address: Art/MainMenuView/图鉴_未解锁
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5800117594255e94180fecf94c8a415c
+    m_Address: Art/MainMenuView/开始游戏_默认
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48a8ce10cc5fad94baa3753300e3cf00
+    m_Address: Art/MainMenuView/设置_默认
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aad8859a62badf344a064ce62ba88f8f
+    m_Address: Art/MainMenuView/退出_默认
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 06392d292acdd9e4aa71c122f2aace28
+    m_Address: Art/SelectBoxView/右滑动
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0db6f33abb364a2449048afa23b6f7e4
+    m_Address: Art/SelectBoxView/困难选择界面
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c881a5531908b294bb9bbab9cb140247
+    m_Address: Art/SelectBoxView/小天使
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a02b0679523b574458327e83c3e3ca35
+    m_Address: Art/SelectBoxView/左滑动
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bff334a3bb6bd6844a0a0ba9011bd742
+    m_Address: Art/SelectBoxView/材料箱图标（植物组）
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da05969d2fbeb16488eed684e67614ce
+    m_Address: Art/SelectBoxView/材料箱（植物组）
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9883d83410cec83418df30aadf690d08
+    m_Address: Art/SelectBoxView/材料说明界面
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6644c1adf1978942ba2d1bb754f580f
+    m_Address: Art/SelectBoxView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6374ef9ad6b8f5546904143bc0dbbc87
+    m_Address: Art/SelectBoxView/返回
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6eb389ca9fc818d4f896abe5f1f0cb09
+    m_Address: Art/ShopView/乌鸦
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a54e75d9607e799478ec856f5edb4ca5
+    m_Address: Art/ShopView/告示牌
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cdab1bbcb922c484fb887bf72a6f81c1
+    m_Address: Art/ShopView/回收桶
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af9f381f021006245ac435a5892d5a75
+    m_Address: Art/ShopView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e202cefd89085f4487acd384902e42d
+    m_Address: Art/ShopView/道具样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ae622f1604e2404cb22e03784289fad
+    m_Address: Art/ShopView/预览
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64d93a6f6d524f14ba78116b3a53b692
+    m_Address: Art/Spine/01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 69d0ad7005d2d6c4dbc7923d777ae878
+    m_Address: Art/Spine/AngelPuppy/Angel Puppy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8e7d6c5b4a39281706f5e4d3c2b1a09
+    m_Address: Art/Spine/CookPageAngel/CookPageAngel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c7e8f9a0b1d234567890abcd12345678
+    m_Address: Art/Spine/CookPageDevil/CookPageDevil
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7b1ce7a1b0a6e11419159cca0aaa1c84
+    m_Address: Art/Spine/DevilPuppy/Devilish puppy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 883e506add4955741b565df676bb88a6
+    m_Address: Art/StoreView/分数显示ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30a0a598d8765fe4d8ba6563e5bc5909
+    m_Address: Art/StoreView/小天使
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: adb593bf4f07d504699f6a308c3bff23
+    m_Address: Art/StoreView/材料介绍ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67ca62478c9a3b846b2ab7c0b6dac195
+    m_Address: Art/StoreView/材料箱
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 86cc1dbdc6145be49a6a8b8aaf676d9a
+    m_Address: Art/StoreView/背包
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62eaff77f5e369c42ae774d69f828dff
+    m_Address: Art/StoreView/背包内道具样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 04adf33bb83889c47a3a4e4510048740
+    m_Address: Art/StoreView/背包展开ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2f8dba699806b942bf0cebd33e379ce
+    m_Address: Art/StoreView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 37d7b96d0d1357e499b494b9955f1b94
+    m_Address: Art/StoreView/返回
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 71d0005710ab45040a12afa42c6d824d
+    m_Address: Art/StoreView/道具样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9670fa87c35e70b44bf7bb4fdd0646be
+    m_Address: Art/StoreView/钱币显示ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 3486431c0b0f71549adccf8a6955c090, type: 2}
   m_SchemaSet:
