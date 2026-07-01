@@ -372,6 +372,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b11059d15fff6e841aaa8aa73c57afc4
+    m_Address: Art/SelectBoxView/材料箱（动物组）
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3e4571bfa77f31e47bbb504804732588
+    m_Address: Art/SelectBoxView/材料箱图标（动物组）
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9883d83410cec83418df30aadf690d08
     m_Address: Art/SelectBoxView/材料说明界面
     m_ReadOnly: 0
@@ -534,6 +544,36 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2898968468b6402790d36a1b2b446054
     m_Address: Art/RecycleView/返回
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd624e28f2b92c74b9d9a59607adaa8f
+    m_Address: Art/SelectBoxView/1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ae1e18bf3d11ad447be66ab52ad4a52d
+    m_Address: Art/SelectBoxView/2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d6d3f36c4842c2b4aace2beb3f30dbdb
+    m_Address: Art/SelectBoxView/3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a965b610e30c8f54baab19e4775d932e
+    m_Address: Art/SelectBoxView/4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3afabd35c035a6f4bb0c2dd2c956c782
+    m_Address: Art/SelectBoxView/5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5541095182bb65c4fa1be606d0fc796b
+    m_Address: Art/SelectBoxView/6
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

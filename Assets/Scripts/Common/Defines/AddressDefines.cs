@@ -43,6 +43,12 @@ namespace Common.Defines
         public const string Art_ShopContinueHover = "Art/ShopView/IMG_9173";
         public const string Art_SelectBoxStartHover = "Art/SelectBoxView/IMG_9171";
         public const string Art_SelectBoxReturnHover = "Art/SelectBoxView/IMG_9177";
+        public const string Art_SelectBoxDifficultyEasy = "Art/SelectBoxView/5";
+        public const string Art_SelectBoxDifficultyEasyHover = "Art/SelectBoxView/6";
+        public const string Art_SelectBoxDifficultyNormal = "Art/SelectBoxView/3";
+        public const string Art_SelectBoxDifficultyNormalHover = "Art/SelectBoxView/4";
+        public const string Art_SelectBoxDifficultyHard = "Art/SelectBoxView/1";
+        public const string Art_SelectBoxDifficultyHardHover = "Art/SelectBoxView/2";
         public const string Art_MainMenuStartHover = "Art/MainMenuView/开始游戏_点击";
         public const string Art_MainMenuSettingsHover = "Art/MainMenuView/设置_点击";
         public const string Art_MainMenuExitHover = "Art/MainMenuView/退出_点击";

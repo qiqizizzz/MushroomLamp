@@ -23,6 +23,7 @@ namespace Common.UI
         private float _height = 200f;
         private bool _interactable = true;
         private bool _isPointerInside;
+        private bool _selectedVisual;
 
         public void Setup(Button button, string hoverSpriteAddress = null, float hoverScaleMultiplier = DefaultHoverScaleMultiplier)
         {
@@ -52,9 +53,18 @@ namespace Common.UI
 
             _isPointerInside = false;
             _targetScale = _baseScale;
-            applyVisual(false);
+            applyVisual(shouldUseHoverVisual());
             if (_rectTransform != null)
                 _rectTransform.localScale = Vector3.one * _baseScale;
+        }
+
+        // 选中态沿用 hover 图，并保持最大 scale
+        public void SetSelectedVisual(bool selected)
+        {
+            _selectedVisual = selected;
+            applyVisual(shouldUseHoverVisual());
+            if (!_isPointerInside)
+                _targetScale = getRestScale();
         }
 
         protected override void OnAwake()
@@ -90,7 +100,7 @@ namespace Common.UI
         {
             if (!_interactable)
             {
-                applyVisual(false);
+                applyVisual(shouldUseHoverVisual());
                 return;
             }
 
@@ -100,7 +110,7 @@ namespace Common.UI
                 if (!_isPointerInside)
                 {
                     _isPointerInside = true;
-                    applyVisual(true);
+                    applyVisual(shouldUseHoverVisual());
                 }
 
                 _targetScale = _baseScale * _hoverScaleMultiplier;
@@ -110,15 +120,22 @@ namespace Common.UI
             if (!_isPointerInside) return;
 
             _isPointerInside = false;
-            applyVisual(false);
-            _targetScale = _baseScale;
+            applyVisual(shouldUseHoverVisual());
+            _targetScale = getRestScale();
         }
 
-        private void applyVisual(bool hovered)
+        private float getRestScale()
+        {
+            return _selectedVisual ? _baseScale * _hoverScaleMultiplier : _baseScale;
+        }
+
+        private bool shouldUseHoverVisual() => _selectedVisual || _isPointerInside;
+
+        private void applyVisual(bool useHoverVisual)
         {
             if (_image == null) return;
 
-            if (hovered && _hoverSprite != null)
+            if (useHoverVisual && _hoverSprite != null)
                 _image.sprite = _hoverSprite;
             else if (_normalSprite != null)
                 _image.sprite = _normalSprite;
