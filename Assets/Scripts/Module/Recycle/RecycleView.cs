@@ -42,10 +42,10 @@ namespace Module.Recycle
         public override void InitUI()
         {
             _btnBack = Find<Button>("Btn_Back");
-            _btnConfirm = Find<Button>("Center/RecycleBox/Btn_Confirm");
-            _txtGold = Find<TextMeshProUGUI>("TopGold/Txt_GoldValue");
-            _txtTip = Find<TextMeshProUGUI>("Bottom/Txt_Tip");
-            _txtSelected = Find<TextMeshProUGUI>("Center/RecycleBox/Txt_Selected");
+            _btnConfirm = Find<Button>("Center/Btn_Confirm");
+            _txtGold = findOptional<TextMeshProUGUI>("TopGold/Txt_GoldValue");
+            _txtTip = findOptional<TextMeshProUGUI>("Bottom/Txt_Tip");
+            _txtSelected = Find<TextMeshProUGUI>("Center/Txt_Selected");
             _offerRoot = Find<Transform>("Center/OfferRoot");
             _inventoryRoot = Find<Transform>("Right/ScrollView/Viewport/Content");
 
@@ -256,6 +256,15 @@ namespace Module.Recycle
             if (text == null) return;
             UIFontHelper.ApplyChineseFont(text, _fontTemplate);
         }
+
+        private static T findOptional<T>(Transform root, string path) where T : Component
+        {
+            if (root == null || string.IsNullOrEmpty(path)) return null;
+            Transform target = root.Find(path);
+            return target != null ? target.GetComponent<T>() : null;
+        }
+
+        private T findOptional<T>(string path) where T : Component => findOptional<T>(transform, path);
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
         {
