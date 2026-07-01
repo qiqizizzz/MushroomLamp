@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using Common;
 using Common.Defines;
+using Common.UI;
 using DG.Tweening;
 using Module.Select;
 using MVC.View;
@@ -81,8 +82,20 @@ namespace Module.View
             _btnReturn = Find<Button>("Left/Btn_Return");
             
             bindButtons();
+            setupStartHover();
             collectEmptySlots();
             initBoxIcons();
+        }
+
+        private void setupStartHover()
+        {
+            if (_btnStart == null) return;
+
+            UIButtonHoverItem hover = _btnStart.GetComponent<UIButtonHoverItem>();
+            if (hover == null)
+                hover = _btnStart.gameObject.AddComponent<UIButtonHoverItem>();
+
+            hover.Setup(_btnStart, AddressDefines.Art_SelectBoxStartHover);
         }
 
         public override void Open(params object[] args)

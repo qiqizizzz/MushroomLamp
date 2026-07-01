@@ -79,11 +79,11 @@ namespace Module.Shop
         {
             if (_btnContinue == null) return;
 
-            ShopContinueHoverItem hover = _btnContinue.GetComponent<ShopContinueHoverItem>();
+            UIButtonHoverItem hover = _btnContinue.GetComponent<UIButtonHoverItem>();
             if (hover == null)
-                hover = _btnContinue.gameObject.AddComponent<ShopContinueHoverItem>();
+                hover = _btnContinue.gameObject.AddComponent<UIButtonHoverItem>();
 
-            hover.Setup(_btnContinue);
+            hover.Setup(_btnContinue, AddressDefines.Art_ShopContinueHover);
         }
 
         private void resolveUIFont()
