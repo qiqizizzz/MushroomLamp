@@ -22,13 +22,13 @@ namespace Module.View
     public class SelectBoxView : BaseView
     {
         private const float LineHeight = 72f;
-        private const float SelectedDifficultyScale = 1.08f;
         private const float BOX_SWITCH_DURATION = 1.5f;
 
         private Transform _lineContent;
         private TextMeshProUGUI _txtTitle;
         private TextMeshProUGUI _txtBoxName;
         private Image _imgBackground;
+        private Image _imgCenterBox;
 
         private Button _btnEasy;
         private Button _btnNormal;
@@ -38,6 +38,9 @@ namespace Module.View
         private Button _btnRight;
 
         private Button _btnReturn;
+        private UIButtonHoverItem _easyHover;
+        private UIButtonHoverItem _normalHover;
+        private UIButtonHoverItem _hardHover;
         private Sequence _boxSwitchSequence;
         private int _lastBoxIndex = -1;
         private bool _isBoxIconReady;
@@ -70,6 +73,7 @@ namespace Module.View
             _txtTitle = Find<TextMeshProUGUI>("Left/Txt_Title");
             _txtBoxName = Find<TextMeshProUGUI>("Left/Txt_Info");
             _imgBackground = Find<Image>("Img_Background");
+            _imgCenterBox = Find<Image>("Img_CenterBox");
             _lineContent = Find<Transform>("Left/ScrollView/Viewport/Content");
 
             _btnEasy = Find<Button>("Right/ButtonGroup/Btn_Easy");
@@ -84,8 +88,50 @@ namespace Module.View
             bindButtons();
             setupStartHover();
             setupReturnHover();
+            setupDifficultyHovers();
             collectEmptySlots();
             initBoxIcons();
+        }
+
+        private void setupDifficultyHovers()
+        {
+            _easyHover = setupButtonHover(_btnEasy, AddressDefines.Art_SelectBoxDifficultyEasyHover);
+            _normalHover = setupButtonHover(_btnNormal, AddressDefines.Art_SelectBoxDifficultyNormalHover);
+            _hardHover = setupButtonHover(_btnHard, AddressDefines.Art_SelectBoxDifficultyHardHover);
+            applyDifficultyButtonSprite(_btnEasy, AddressDefines.Art_SelectBoxDifficultyEasy);
+            applyDifficultyButtonSprite(_btnNormal, AddressDefines.Art_SelectBoxDifficultyNormal);
+            applyDifficultyButtonSprite(_btnHard, AddressDefines.Art_SelectBoxDifficultyHard);
+        }
+
+        private static UIButtonHoverItem setupButtonHover(Button button, string hoverSpriteAddress)
+        {
+            if (button == null) return null;
+
+            UIButtonHoverItem hover = button.GetComponent<UIButtonHoverItem>();
+            if (hover == null)
+                hover = button.gameObject.AddComponent<UIButtonHoverItem>();
+
+            hover.Setup(button, hoverSpriteAddress);
+            return hover;
+        }
+
+        private static void applyDifficultyButtonSprite(Button button, string spriteAddress)
+        {
+            if (button == null || string.IsNullOrEmpty(spriteAddress)) return;
+
+            Image image = button.targetGraphic as Image ?? button.GetComponent<Image>();
+            if (image == null) return;
+
+            Sprite sprite = ArtAssetLoader.LoadSprite(spriteAddress, logOnFail: false);
+            if (sprite == null) return;
+
+            image.sprite = sprite;
+            image.preserveAspect = true;
+            image.type = Image.Type.Simple;
+
+            TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null)
+                label.gameObject.SetActive(false);
         }
 
         private void setupStartHover()
@@ -138,6 +184,7 @@ namespace Module.View
 
             refreshBackground(detail.backgroundPath);
             refreshHeader(entry, detail);
+            refreshCenterBox(entry);
             refreshLines(detail.ToRuntimeLines());
             refreshDifficultyButtons(model.Difficulty);
             refreshBoxIcons(model);
@@ -184,11 +231,27 @@ namespace Module.View
                 _txtTitle.text = string.IsNullOrEmpty(detail.summaryTitle) ? "简介" : detail.summaryTitle;
         }
 
+        private void refreshCenterBox(SelectBoxCatalogEntry entry)
+        {
+            if (_imgCenterBox == null || entry == null) return;
+            if (string.IsNullOrEmpty(entry.centerBoxPath)) return;
+
+            Sprite sprite = ArtAssetLoader.LoadSprite(entry.centerBoxPath);
+            if (sprite == null)
+            {
+                QLog.Warning($"[{nameof(SelectBoxView)}] 中心材料箱图加载失败：{entry.centerBoxPath}");
+                return;
+            }
+
+            _imgCenterBox.sprite = sprite;
+            _imgCenterBox.preserveAspect = true;
+        }
+
         private void refreshDifficultyButtons(SelectDifficulty difficulty)
         {
-            setDifficultySelected(_btnEasy, difficulty == SelectDifficulty.Easy);
-            setDifficultySelected(_btnNormal, difficulty == SelectDifficulty.Normal);
-            setDifficultySelected(_btnHard, difficulty == SelectDifficulty.Hard);
+            setDifficultySelected(_easyHover, difficulty == SelectDifficulty.Easy);
+            setDifficultySelected(_normalHover, difficulty == SelectDifficulty.Normal);
+            setDifficultySelected(_hardHover, difficulty == SelectDifficulty.Hard);
         }
 
         // 根据选中的药箱索引播放底部药箱切换动画
@@ -216,12 +279,10 @@ namespace Module.View
                 playBoxSwitchToLeft();
         }
 
-        private static void setDifficultySelected(Button button, bool selected)
+        private static void setDifficultySelected(UIButtonHoverItem hover, bool selected)
         {
-            if (button == null) return;
-            button.transform.localScale = selected
-                ? Vector3.one * SelectedDifficultyScale
-                : Vector3.one;
+            if (hover == null) return;
+            hover.SetSelectedVisual(selected);
         }
 
         // 判断本次药箱切换方向，1 表示向右切，-1 表示向左切

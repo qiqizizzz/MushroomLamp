@@ -18,6 +18,10 @@ namespace Module.Select
         public string displayName;
         // 相对 Assets/Config/ 的路径（不含 .json）
         public string configFile;
+        // 中心大图，相对 Assets/，如 Art/SelectBoxView/材料箱（植物组）
+        public string centerBoxPath;
+        // 底部轮播小图标，相对 Assets/
+        public string boxIconPath;
     }
 
     [Serializable]

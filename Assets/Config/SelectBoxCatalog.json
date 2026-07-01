@@ -4,17 +4,23 @@
     {
       "id": "herb",
       "displayName": "草本药箱",
-      "configFile": "Boxes/SelectBox_herb"
+      "configFile": "Boxes/SelectBox_herb",
+      "centerBoxPath": "Art/SelectBoxView/材料箱（植物组）",
+      "boxIconPath": "Art/SelectBoxView/材料箱图标（植物组）"
     },
     {
       "id": "mineral",
       "displayName": "矿物药箱",
-      "configFile": "Boxes/SelectBox_mineral"
+      "configFile": "Boxes/SelectBox_mineral",
+      "centerBoxPath": "Art/SelectBoxView/材料箱（动物组）",
+      "boxIconPath": "Art/SelectBoxView/材料箱图标（动物组）"
     },
     {
       "id": "spice",
       "displayName": "香料药箱",
-      "configFile": "Boxes/SelectBox_spice"
+      "configFile": "Boxes/SelectBox_spice",
+      "centerBoxPath": "Art/SelectBoxView/材料箱（植物组）",
+      "boxIconPath": "Art/SelectBoxView/材料箱图标（植物组）"
     }
   ]
 }
