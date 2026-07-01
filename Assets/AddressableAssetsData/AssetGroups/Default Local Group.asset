@@ -497,6 +497,46 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59b94ee5eeed4307b1619d06dc9c5140
+    m_Address: Art/RecycleView/回收桶
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca931041386c43f5b72bfb5e5acd69ee
+    m_Address: Art/RecycleView/小恶魔
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16572148e42c47fa9448425714db67ed
+    m_Address: Art/RecycleView/材料介绍ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 383683da7a9d42d8a16d79b0815dc676
+    m_Address: Art/RecycleView/背包
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25af57485fc7488fa6009c33dbb161b5
+    m_Address: Art/RecycleView/背包内道具样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d836596a1d584254b52a64cf56882eff
+    m_Address: Art/RecycleView/背包展开ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dd0ae803d924abfa5ba6fbcebd015fd
+    m_Address: Art/RecycleView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2898968468b6402790d36a1b2b446054
+    m_Address: Art/RecycleView/返回
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 3486431c0b0f71549adccf8a6955c090, type: 2}
   m_SchemaSet:
