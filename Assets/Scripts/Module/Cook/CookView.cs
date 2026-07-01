@@ -14,6 +14,7 @@ using Common.Defines;
 using MVC.View;
 using Module.Item;
 using Module.View;
+using MVC;
 using Spine.Unity;
 using TMPro;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace Module.Cook
 
         private TextMeshProUGUI _txtMagicBox;
         private Image _imgPotBody;
-        private Button _btnPause;
+        private Button _btnSetting;
         private Button _btnUndo;
         private Button _btnClear;
         private Button _btnSkip;
@@ -135,7 +136,7 @@ namespace Module.Cook
             _btnSubmitTray = Find<Button>("Center/Pot/Btn_SubmitTray");
             _txtMagicBox = Find<TextMeshProUGUI>("Right/MagicBox/Txt_Info");
 
-            _btnPause = Find<Button>("Top/Btn_Pause");
+            _btnSetting = Find<Button>("Top/Btn_Setting");
             _btnUndo = Find<Button>("Bottom/ActionBar/Btn_Undo");
             _btnClear = Find<Button>("Bottom/ActionBar/Btn_Clear");
             _btnSkip = Find<Button>("Bottom/ActionBar/Btn_Skip");
@@ -430,7 +431,7 @@ namespace Module.Cook
 
         private void bindButtons()
         {
-            bindButton(_btnPause, showPauseDialog);
+            bindButton(_btnSetting, () => ApplyControllerFunc(ControllerType.Settings,EventDefines.OpenSettingsView));
             bindButton(_btnUndo, () => ApplyFunc(EventDefines.CookUndoMaterial));
             bindButton(_btnClear, () => ApplyFunc(EventDefines.CookClearMaterials));
             bindButton(_btnSkip, () => ApplyFunc(EventDefines.CookSkipTurn));

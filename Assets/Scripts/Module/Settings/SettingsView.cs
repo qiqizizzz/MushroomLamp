@@ -6,6 +6,7 @@
 */
 
 using Common.Defines;
+using MVC;
 using MVC.View;
 using TMPro;
 using UnityEngine.UI;
@@ -19,6 +20,7 @@ namespace Module.Settings
         private Toggle _toggleBgm;
         private Slider _sliderBgm;
         private Button _btnClose;
+        private Button _btnHome;
 
         // 抑制初始化赋值时触发回调
         private bool _suppress;
@@ -30,6 +32,7 @@ namespace Module.Settings
             _toggleBgm = Find<Toggle>("Panel/Row_Bgm/Toggle_Bgm");
             _sliderBgm = Find<Slider>("Panel/Row_Bgm/Slider_Bgm");
             _btnClose = Find<Button>("Panel/Btn_Close");
+            _btnHome = Find<Button>("Panel/Btn_home");
         }
 
         public override void InitData()
@@ -46,6 +49,13 @@ namespace Module.Settings
                 _sliderBgm.onValueChanged.AddListener(v => { if (!_suppress) ApplyFunc(EventDefines.SettingsSetBgmVolume, v); });
             if (_btnClose != null)
                 _btnClose.onClick.AddListener(() => ApplyFunc(EventDefines.SettingsClose));
+            if(_btnHome != null)
+                _btnHome.onClick.AddListener(() =>
+                {
+                    ApplyFunc(EventDefines.SettingsClose);
+                    ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView);
+                });
+            
         }
 
         public override void Open(params object[] args)
