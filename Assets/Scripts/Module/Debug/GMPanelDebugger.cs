@@ -1,6 +1,7 @@
 using System.Linq;
 using Common.Defines;
 using Module.Player;
+using Module.Store;
 using MVC;
 using UnityEngine;
 
@@ -63,7 +64,15 @@ namespace Module.Debug
                 else if (viewType == ViewType.StoreView)
                 {
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
-                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Store, EventDefines.OpenStoreView);
+                    {
+                        var gmContext = new StoreOpenContext
+                        {
+                            boxId = "herb",
+                            boxName = "草本药箱",
+                            cardsIncludedInBoxPrice = true
+                        };
+                        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Store, EventDefines.OpenStoreView, gmContext);
+                    }
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("背包数量", GUILayout.Width(60f));

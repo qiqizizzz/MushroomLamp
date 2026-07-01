@@ -21,6 +21,7 @@ namespace Module.Shop
         public string iconPath;
         public string description;
         public int price;
+        public bool isBox;
         public bool isCard;
         public bool isPurchased;
     }
@@ -32,15 +33,16 @@ namespace Module.Shop
         public bool HasRecycled { get; private set; }
         public bool CanRecycle => !HasRecycled;
 
-        public readonly List<ShopSlotData> CardSlots = new();
+        // 上排：材料箱；下排：道具
+        public readonly List<ShopSlotData> BoxSlots = new();
         public readonly List<ShopSlotData> ItemSlots = new();
 
         // 刷新商店货架
         public void Refresh()
         {
-            CardSlots.Clear();
+            BoxSlots.Clear();
             ItemSlots.Clear();
-            CardSlots.AddRange(ShopCatalog.RandomCards(3));
+            BoxSlots.AddRange(ShopCatalog.RandomBoxes(3));
             ItemSlots.AddRange(ShopCatalog.RandomItems(3));
         }
 

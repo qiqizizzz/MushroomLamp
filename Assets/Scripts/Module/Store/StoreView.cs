@@ -112,7 +112,8 @@ namespace Module.Store
                 StoreBuySlotData slot = model.BuySlots[i];
 
                 if (card.name != null) card.name.text = slot.name;
-                if (card.price != null) card.price.text = slot.price.ToString();
+                if (card.price != null)
+                    card.price.text = slot.price <= 0 && model.CardsIncludedInBoxPrice ? "免费" : slot.price.ToString();
 
                 if (card.icon != null)
                 {
@@ -124,7 +125,9 @@ namespace Module.Store
                 if (card.button != null)
                 {
                     card.button.onClick.RemoveAllListeners();
-                    card.button.interactable = !slot.isPurchased;
+                    bool canPick = !slot.isPurchased
+                        && !(model.CardsIncludedInBoxPrice && model.HasBoxPickCompleted());
+                    card.button.interactable = canPick;
                     StoreBuySlotData captured = slot;
                     card.button.onClick.AddListener(() => ApplyFunc(EventDefines.StoreBuy, captured));
                 }
@@ -268,12 +271,21 @@ namespace Module.Store
         private static string buildInfoText(StoreModel model)
         {
             int bagKinds = model.BagEntries?.Count ?? 0;
-            return "商店信息\n" +
+            string boxLine = string.IsNullOrEmpty(model.CurrentBoxName)
+                ? "材料箱：—"
+                : $"材料箱：{model.CurrentBoxName}";
+
+            string pickHint = model.CardsIncludedInBoxPrice
+                ? "三选一：点击一张卡牌加入牌组（选完自动返回夜市）"
+                : "点击中间卡牌购买";
+
+            return "选卡界面\n" +
                    "————————\n" +
+                   $"{boxLine}\n" +
                    $"当前金币：{model.Gold}\n" +
-                   $"在售卡牌：{model.BuySlots.Count}\n" +
+                   $"可选卡牌：{model.BuySlots.Count}\n" +
                    $"背包种类：{bagKinds}\n\n" +
-                   "点击中间卡牌购买\n滑动下方查看背包";
+                   pickHint + "\n滑动下方查看背包";
         }
 
         // ---------------- 小工具 ----------------

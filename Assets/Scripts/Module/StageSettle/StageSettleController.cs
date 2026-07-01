@@ -24,7 +24,8 @@ namespace Module.StageSettle
                 PrefabName = AddressDefines.UI_StageSettleView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
-                Sorting_Order = 50   // 覆盖在 CookView(10) 之上
+                Sorting_Order = 50,
+                IsOverlay = true
             });
 
             InitModuleEvent();
@@ -55,9 +56,7 @@ namespace Module.StageSettle
         private void onToShop(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.StageSettleView);
-            GameApp.ViewManager.Close(ViewType.CookView);
 
-            // 未达标 或 最后小局 → 最终结算；否则 → 商店
             if (_currentData != null && _currentData.GoToFinalSummary)
                 ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
             else

@@ -24,6 +24,8 @@ namespace MVC
         public Transform parentTf;
         public BaseController controller;
         public int Sorting_Order;
+        // 叠加层（如 Confirm、小局结算）：打开时不关闭其它面板
+        public bool IsOverlay;
     }
 
     public class ViewManager
@@ -176,7 +178,7 @@ namespace MVC
             _viewStack.Clear();
         }
 
-        // 打开视图
+        // 打开视图（非叠加层会先关闭其它已开面板，避免多层 Canvas 叠在一起）
         public void Open(int key, params object[] args)
         {
             if (!_viewInfos.TryGetValue(key, out ViewInfo viewInfo))
@@ -191,6 +193,9 @@ namespace MVC
 
             if (view == null) return;
             if (_opens.ContainsKey(key)) return;
+
+            if (!viewInfo.IsOverlay)
+                closeNonOverlayViewsExcept(key);
 
             _opens.Add(key, view);
             _viewStack.Push(key);
@@ -214,6 +219,22 @@ namespace MVC
         public void Open(ViewType viewType, params object[] args)
         {
             Open((int)viewType, args);
+        }
+
+        // 关闭除 keepKey 与叠加层以外的所有已开面板
+        private void closeNonOverlayViewsExcept(int keepKey)
+        {
+            List<int> openKeys = _opens.Keys.ToList();
+            for (int i = 0; i < openKeys.Count; i++)
+            {
+                int openKey = openKeys[i];
+                if (openKey == keepKey) continue;
+
+                if (_viewInfos.TryGetValue(openKey, out ViewInfo info) && info.IsOverlay)
+                    continue;
+
+                Close(openKey);
+            }
         }
 
         // 返回上一个视图

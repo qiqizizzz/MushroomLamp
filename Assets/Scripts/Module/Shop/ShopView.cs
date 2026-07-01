@@ -8,6 +8,8 @@
 
 using System.Collections.Generic;
 using Common;
+using Common.Defines;
+using Common.UI;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -28,13 +30,17 @@ namespace Module.Shop
         private TextMeshProUGUI _txtRecycleButton;
         private Color _recycleButtonNormalColor;
 
-        private readonly List<Transform> _cardSlots = new();
+        private readonly List<Transform> _boxSlots = new();
         private readonly List<Transform> _itemSlots = new();
+
+        // 预制体设计参考图（Img_Background 下），运行时隐藏并复用 sprite
+        private Sprite _boxSprite;
+        private TMP_FontAsset _fontTemplate;
 
         public override void InitUI()
         {
             _txtGold = Find<TextMeshProUGUI>("TopGold/Txt_GoldValue");
-            _txtTitle = Find<TextMeshProUGUI>("Top/Txt_Title");
+            _txtTitle = Find<Transform>("Top")?.GetComponentInChildren<TextMeshProUGUI>();
             _txtSubtitle = Find<TextMeshProUGUI>("Subtitle/Txt_Subtitle");
             _txtInfo = Find<TextMeshProUGUI>("Right/Txt_Info");
             _btnRefresh = Find<Button>("Bottom/Btn_RefreshShelf");
@@ -48,8 +54,32 @@ namespace Module.Shop
                 _recycleButtonNormalColor = recycleImage != null ? recycleImage.color : Color.white;
             }
 
+            resolveUIFont();
+
+            Image materialSample = findOptional<Image>("Img_Background/Img_MaterialSample");
+            if (materialSample != null)
+            {
+                _boxSprite = materialSample.sprite;
+                materialSample.gameObject.SetActive(false);
+            }
+
+            if (_boxSprite == null)
+                _boxSprite = ArtAssetLoader.LoadSprite(AddressDefines.Art_ShopMaterialBoxSample, logOnFail: false);
+
+            Image itemSample = findOptional<Image>("Img_Background/Img_ItemSample");
+            if (itemSample != null)
+                itemSample.gameObject.SetActive(false);
+
             bindButtons();
             collectSlots();
+        }
+
+        private void resolveUIFont()
+        {
+            if (_txtGold?.font != null) _fontTemplate = _txtGold.font;
+            else if (_txtSubtitle?.font != null) _fontTemplate = _txtSubtitle.font;
+            else if (_txtInfo?.font != null) _fontTemplate = _txtInfo.font;
+            else _fontTemplate = UIFontHelper.SourceHanSans;
         }
 
         public void Refresh(ShopModel model)
@@ -58,11 +88,19 @@ namespace Module.Shop
             if (_txtGold != null) _txtGold.text = $"金币 {model.Gold}";
             if (_txtTitle != null) _txtTitle.text = "黑猫夜市";
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
-            if (_txtInfo != null) _txtInfo.text = $"本轮补给\n上回合回味 42\n下轮目标 55\n剩余回合 3/9\n\n当前金币 {model.Gold}\n回收机会：{(model.CanRecycle ? "可用" : "已使用")}\n\n下轮幸运牌生效\n普通火候｜草本加成";
+            if (_txtInfo != null)
+            {
+                _txtInfo.text = "本轮补给\n" +
+                                "上排：购买材料箱，进入选卡界面挑选卡牌\n" +
+                                "下排：购买恢复类道具\n\n" +
+                                $"当前金币：{model.Gold}\n" +
+                                $"回收机会：{(model.CanRecycle ? "可用" : "已使用")}\n\n" +
+                                "购箱后可免费选卡加入牌组";
+            }
 
             refreshRecycleState(model.CanRecycle);
-            refreshSlots(_cardSlots, model.CardSlots, true);
-            refreshSlots(_itemSlots, model.ItemSlots, false);
+            refreshBoxSlots(model.BoxSlots);
+            refreshItemSlots(model.ItemSlots);
         }
 
         // 刷新回收按钮的状态表现
@@ -84,10 +122,11 @@ namespace Module.Shop
             bind(_btnRefresh, () => ApplyFunc("Shop.Refresh"));
             bind(_btnRecycle, () => ApplyFunc("Shop.Recycle"));
             bind(_btnContinue, () => ApplyFunc("Shop.Continue"));
-            bind(_btnStore, () => ApplyControllerFunc(MVC.ControllerType.Store, Common.Defines.EventDefines.OpenStoreView));
+
+            if (_btnStore != null)
+                _btnStore.gameObject.SetActive(false);
         }
 
-        // 可选节点查找：缺失时返回 null，不打印错误日志
         private T findOptional<T>(string path) where T : Component
         {
             Transform t = transform.Find(path);
@@ -103,7 +142,7 @@ namespace Module.Shop
 
         private void collectSlots()
         {
-            _cardSlots.Clear();
+            _boxSlots.Clear();
             _itemSlots.Clear();
             var middle = Find<Transform>("Middle");
             if (middle == null) return;
@@ -112,29 +151,128 @@ namespace Module.Shop
             {
                 foreach (Transform slot in group)
                 {
-                    if (group.name.Contains("Card")) _cardSlots.Add(slot);
-                    else _itemSlots.Add(slot);
+                    if (group.name.Contains("Card") || group.name.Contains("Box"))
+                        _boxSlots.Add(slot);
+                    else
+                        _itemSlots.Add(slot);
                 }
             }
         }
 
-        private void refreshSlots(List<Transform> slots, IReadOnlyList<ShopSlotData> data, bool isCard)
+        private void refreshBoxSlots(IReadOnlyList<ShopSlotData> data)
         {
-            int showCount = Mathf.Min(slots.Count, data?.Count ?? 0);
-            for (int i = 0; i < slots.Count; i++)
+            string iconPath = ShopCatalog.DefaultBoxIconPathValue;
+            int showCount = Mathf.Min(_boxSlots.Count, data?.Count ?? 0);
+
+            for (int i = 0; i < _boxSlots.Count; i++)
             {
-                Transform slot = slots[i];
-                for (int c = slot.childCount - 1; c >= 0; c--) Destroy(slot.GetChild(c).gameObject);
+                Transform slot = _boxSlots[i];
+                clearChildren(slot);
                 if (i >= showCount) continue;
 
-                string prefabPath = isCard ? "UI/Shop/ShopCardSlot" : "UI/Shop/ShopPropSlot";
-                GameObject obj = ResManager.Instantiate(prefabPath, slot);
+                buildBoxSlot(slot, data[i], iconPath);
+            }
+        }
+
+        private void refreshItemSlots(IReadOnlyList<ShopSlotData> data)
+        {
+            int showCount = Mathf.Min(_itemSlots.Count, data?.Count ?? 0);
+            for (int i = 0; i < _itemSlots.Count; i++)
+            {
+                Transform slot = _itemSlots[i];
+                clearChildren(slot);
+                if (i >= showCount) continue;
+
+                GameObject obj = ResManager.Instantiate("UI/Shop/ShopPropSlot", slot);
                 if (obj == null) continue;
 
                 var binder = obj.GetComponent<ShopSlotBinder>();
                 if (binder != null)
                     binder.Bind(data[i], onBuySlot);
             }
+        }
+
+        private void buildBoxSlot(Transform slot, ShopSlotData data, string iconPath)
+        {
+            GameObject root = new GameObject("ShopBoxSlot", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(ShopBoxSlotBinder));
+            RectTransform rootRt = root.GetComponent<RectTransform>();
+            rootRt.SetParent(slot, false);
+            stretchFill(rootRt);
+
+            Image rootBg = root.GetComponent<Image>();
+            rootBg.color = new Color(1f, 1f, 1f, 0f);
+            rootBg.raycastTarget = true;
+
+            Button button = root.GetComponent<Button>();
+            button.targetGraphic = rootBg;
+            button.transition = Selectable.Transition.ColorTint;
+
+            ShopHoverScaleItem hover = root.AddComponent<ShopHoverScaleItem>();
+
+            RectTransform iconRt = createChildRect(rootRt, "Img_Icon", new Vector2(0.5f, 0.58f), new Vector2(200f, 200f));
+            Image icon = iconRt.gameObject.AddComponent<Image>();
+            applyBoxSprite(icon);
+            icon.raycastTarget = false;
+
+            TextMeshProUGUI nameText = createChildText(rootRt, "Txt_Name", new Vector2(0.5f, 0.22f), new Vector2(220f, 44f), 32);
+            TextMeshProUGUI priceText = createChildText(rootRt, "Txt_Price", new Vector2(0.5f, 0.06f), new Vector2(120f, 40f), 30);
+
+            hover.SetHitSize(rootRt.rect.width > 1f ? rootRt.rect.width : 200f,
+                rootRt.rect.height > 1f ? rootRt.rect.height : 240f);
+
+            var binder = root.GetComponent<ShopBoxSlotBinder>();
+            binder.Bind(data, iconPath, _boxSprite, _fontTemplate, onBuySlot);
+        }
+
+        private void applyBoxSprite(Image target)
+        {
+            if (target == null) return;
+
+            target.sprite = _boxSprite;
+            target.preserveAspect = true;
+            target.enabled = _boxSprite != null;
+            if (_boxSprite == null)
+                target.color = new Color(0.92f, 0.88f, 0.82f, 1f);
+        }
+
+        private TextMeshProUGUI createChildText(RectTransform parent, string name, Vector2 anchorY, Vector2 size, float fontSize)
+        {
+            RectTransform rt = createChildRect(parent, name, anchorY, size);
+            TextMeshProUGUI txt = rt.gameObject.AddComponent<TextMeshProUGUI>();
+            UIFontHelper.ApplyChineseFont(txt, _fontTemplate);
+            txt.fontSize = fontSize;
+            txt.alignment = TextAlignmentOptions.Center;
+            txt.color = new Color(0.2f, 0.15f, 0.1f, 1f);
+            txt.raycastTarget = false;
+            return txt;
+        }
+
+        private static RectTransform createChildRect(RectTransform parent, string name, Vector2 anchorY, Vector2 size)
+        {
+            GameObject go = new GameObject(name, typeof(RectTransform));
+            RectTransform rt = go.GetComponent<RectTransform>();
+            rt.SetParent(parent, false);
+            rt.anchorMin = new Vector2(0.5f, anchorY.y);
+            rt.anchorMax = new Vector2(0.5f, anchorY.y);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = size;
+            rt.anchoredPosition = Vector2.zero;
+            return rt;
+        }
+
+        private static void stretchFill(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
+        }
+
+        private static void clearChildren(Transform slot)
+        {
+            for (int c = slot.childCount - 1; c >= 0; c--)
+                Destroy(slot.GetChild(c).gameObject);
         }
 
         private void onBuySlot(ShopSlotData slotData) => ApplyFunc("Shop.BuyItem", slotData);
