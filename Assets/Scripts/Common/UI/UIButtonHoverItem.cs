@@ -58,11 +58,13 @@ namespace Common.UI
                 _rectTransform.localScale = Vector3.one * _baseScale;
         }
 
-        // 选中态沿用 hover 图，但不强制放大（放大仍由鼠标悬停触发）
+        // 选中态沿用 hover 图，并保持最大 scale
         public void SetSelectedVisual(bool selected)
         {
             _selectedVisual = selected;
             applyVisual(shouldUseHoverVisual());
+            if (!_isPointerInside)
+                _targetScale = getRestScale();
         }
 
         protected override void OnAwake()
@@ -119,7 +121,12 @@ namespace Common.UI
 
             _isPointerInside = false;
             applyVisual(shouldUseHoverVisual());
-            _targetScale = _baseScale;
+            _targetScale = getRestScale();
+        }
+
+        private float getRestScale()
+        {
+            return _selectedVisual ? _baseScale * _hoverScaleMultiplier : _baseScale;
         }
 
         private bool shouldUseHoverVisual() => _selectedVisual || _isPointerInside;
