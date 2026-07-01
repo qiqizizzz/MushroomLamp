@@ -13,13 +13,14 @@ using Module.Cook;
 using Common.Defines;
 using MVC.View;
 using Module.Item;
+using Module.View;
 using Spine.Unity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Module.View
+namespace Module.Cook
 {
     // 烹饪核心玩法界面，负责刷新一阶段玩法状态与转发操作事件
     public class CookView : BaseView
