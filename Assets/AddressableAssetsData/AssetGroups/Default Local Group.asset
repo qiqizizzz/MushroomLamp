@@ -17,21 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 5adb6627149c7334b94573b6f1cbd12e
   m_SerializeEntries:
-  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
-    m_Address: Art/ShopView/材料箱样本
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
-    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b7c4e2f1a3567890abcdef1234567890
-    m_Address: ShopCatalog
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 138820ec0949b43448312a5660813cf2
     m_Address: Art/BG_img/bg_magic_kitchen
     m_ReadOnly: 0
@@ -44,6 +29,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1b17189176ac28d46bd20d6f8e8d10c2
     m_Address: Levels/LevelCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
+    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -64,6 +54,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 46b1fada95257c9459b5c35df9f1440f
     m_Address: Levels/Stages/Stage_herb_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 557b20f8471ef1c43afb285aa89d2ff0
+    m_Address: Sound/SoundCatalog
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -97,6 +92,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
+    m_Address: "Art/ShopView/\u6750\u6599\u7BB1\u6837\u672C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1b2c3d4e5f6789012345678abcdef01
     m_Address: Art/Other/placeholder
     m_ReadOnly: 0
@@ -114,6 +114,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ae418352e96c56041a735676e2e25f05
     m_Address: Levels/Stages/Stage_mineral_easy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7c4e2f1a3567890abcdef1234567890
+    m_Address: ShopCatalog
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -34,6 +34,7 @@ namespace Sound
         private bool _wasBgmPlayingBeforePause;
         private float _bgmVolume;
         private float _effectVolume;
+        private float _currentBgmVolumeScale = 1f;
         private int _lastPlaylistIndex = -1;
 
         public bool IsStop
@@ -58,7 +59,7 @@ namespace Sound
             {
                 _bgmVolume = Mathf.Clamp01(value);
                 if (_bgmSource != null)
-                    _bgmSource.volume = _bgmVolume;
+                    _bgmSource.volume = _bgmVolume * _currentBgmVolumeScale;
             }
         }
 
@@ -81,7 +82,8 @@ namespace Sound
         public SoundManager()
         {
             _clips = new Dictionary<string, AudioClip>();
-            _bgmPlaylist = S_DefaultBgmPlaylist;
+            SoundConfigLoader.LoadCatalog();
+            _bgmPlaylist = SoundConfigLoader.GetBgmPlaylist(S_DefaultBgmPlaylist);
             _audioRootTf = getOrCreateAudioRoot();
             _bgmSource = getOrCreateBgmSource();
 
@@ -132,7 +134,7 @@ namespace Sound
         public void PlayInGameBGM()
         {
             _isPlaylistMode = false;
-            playBgm(IN_GAME_BGM, true);
+            playBgm(SoundConfigLoader.GetGameplayBgm(IN_GAME_BGM), true);
         }
 
         // 随机播放普通界面背景音乐
@@ -148,9 +150,13 @@ namespace Sound
         private bool playBgm(string res, bool isLoop)
         {
             if (IsStop) return false;
+            if (!SoundConfigLoader.TryResolveClip(res, out SoundClipResolveData clipData)) return false;
 
-            AudioClip clip = loadClip(res);
+            AudioClip clip = loadClip(clipData.Path);
             if (clip == null) return false;
+
+            _currentBgmVolumeScale = clipData.VolumeScale;
+            _bgmSource.volume = BgmVolume * _currentBgmVolumeScale;
 
             if (_bgmSource.clip == clip && _bgmSource.isPlaying)
             {
@@ -164,12 +170,19 @@ namespace Sound
             return true;
         }
 
+        // 播放音效，资源路径或音频 id 对应 Resources/Sounds
+        public void PlayEffect(string name)
+        {
+            PlayEffect(name, Vector3.zero);
+        }
+
         // 播放音效，资源路径对应 Resources/Sounds
         public void PlayEffect(string name, Vector3 pos)
         {
             if (!EffectEnabled) return;
+            if (!SoundConfigLoader.TryResolveClip(name, out SoundClipResolveData clipData)) return;
 
-            AudioClip clip = loadClip(name);
+            AudioClip clip = loadClip(clipData.Path);
             if (clip == null) return;
 
             GameObject effectObj = new GameObject($"Effect_{name}");
@@ -178,9 +191,15 @@ namespace Sound
 
             AudioSource effectSource = effectObj.AddComponent<AudioSource>();
             effectSource.clip = clip;
-            effectSource.volume = EffectVolume;
+            effectSource.volume = EffectVolume * clipData.VolumeScale;
             effectSource.Play();
             Object.Destroy(effectObj, clip.length);
+        }
+
+        // 重新加载声音配置
+        public void ReloadConfig()
+        {
+            SoundConfigLoader.Reload();
         }
 
         // 获取或创建音频根节点

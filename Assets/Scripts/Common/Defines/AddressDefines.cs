@@ -35,6 +35,7 @@ namespace Common.Defines
         public const string Config_CardParamCatalog = "CardParamCatalog";
         public const string Config_ItemParamCatalog = "ItemParamCatalog";
         public const string Config_ShopCatalog = "ShopCatalog";
+        public const string Config_SoundCatalog = "Sound/SoundCatalog";
 
         // Art 与字体（Addressables address，相对 Assets/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
