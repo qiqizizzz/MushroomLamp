@@ -23,6 +23,7 @@ namespace Common.Defines
         public const string UI_ShopPropSlot = "UI/Shop/ShopPropSlot";
         public const string UI_StoreView = "UI/View/StoreView";
         public const string UI_StoreBagItem = "UI/Store/StoreBagItem";
+        public const string UI_StoreBuyItem = "UI/Store/StoreBuyItem";
         public const string UI_BlackjackView = "UI/View/BlackjackView";
         public const string UI_ConfirmView = "UI/View/ConfirmView";
         public const string UI_SummaryView = "UI/View/SummaryView";
@@ -39,6 +40,12 @@ namespace Common.Defines
 
         // Art 与字体（Addressables address，相对 Assets/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
+        public const string Art_ShopContinueHover = "Art/ShopView/IMG_9173";
+        public const string Art_SelectBoxStartHover = "Art/SelectBoxView/IMG_9171";
+        public const string Art_SelectBoxReturnHover = "Art/SelectBoxView/IMG_9177";
+        public const string Art_MainMenuStartHover = "Art/MainMenuView/开始游戏_点击";
+        public const string Art_MainMenuSettingsHover = "Art/MainMenuView/设置_点击";
+        public const string Art_MainMenuExitHover = "Art/MainMenuView/退出_点击";
         public const string Font_SourceHanSansSdf = "Fonts/siyuan/SourceHanSansSC-Normal SDF";
     }
 }

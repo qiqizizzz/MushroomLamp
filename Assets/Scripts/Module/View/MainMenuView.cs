@@ -7,6 +7,7 @@
  */
 
 using Common.Defines;
+using Common.UI;
 using MVC;
 using MVC.View;
 using UnityEngine.UI;
@@ -26,6 +27,26 @@ namespace Module.View
             _btnSettings = Find<Button>("ButtonGroup/Btn_Settings");
             _btnGallery = Find<Button>("ButtonGroup/Btn_Gallery");
             _btnExit = Find<Button>("ButtonGroup/Btn_Exit");
+
+            setupButtonHovers();
+        }
+
+        private void setupButtonHovers()
+        {
+            setupButtonHover(_btnStart, AddressDefines.Art_MainMenuStartHover);
+            setupButtonHover(_btnSettings, AddressDefines.Art_MainMenuSettingsHover);
+            setupButtonHover(_btnExit, AddressDefines.Art_MainMenuExitHover);
+        }
+
+        private static void setupButtonHover(Button button, string hoverSpriteAddress)
+        {
+            if (button == null) return;
+
+            UIButtonHoverItem hover = button.GetComponent<UIButtonHoverItem>();
+            if (hover == null)
+                hover = button.gameObject.AddComponent<UIButtonHoverItem>();
+
+            hover.Setup(button, hoverSpriteAddress);
         }
 
         public override void InitData()

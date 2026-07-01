@@ -22,7 +22,8 @@ namespace Module.Settings
                 PrefabName = AddressDefines.UI_SettingsView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
-                Sorting_Order = 90
+                Sorting_Order = 90,
+                IsOverlay = true
             });
 
             InitModuleEvent();
@@ -68,7 +69,6 @@ namespace Module.Settings
         private void onClose(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.SettingsView);
-            ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView);
         }
 
         private void onSetSfxOn(object[] args)
