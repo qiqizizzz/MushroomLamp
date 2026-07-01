@@ -26,7 +26,11 @@ namespace MVC.View
 
         public bool IsInit() => _isInit;
 
-        public bool IsShow() => _canvas.enabled;
+        public bool IsShow()
+        {
+            ensureCanvas();
+            return _canvas != null && _canvas.enabled;
+        }
         
         private void Awake()
         {
@@ -116,8 +120,16 @@ namespace MVC.View
 
         public void SetVisible(bool isVisible)
         {
+            ensureCanvas();
             if (_canvas != null)
                 _canvas.enabled = isVisible;
+        }
+
+        // 确保复用预制体已有 View 组件时能拿到 ViewManager 后补的 Canvas
+        private void ensureCanvas()
+        {
+            if (_canvas == null)
+                _canvas = gameObject.GetComponent<Canvas>();
         }
 
         public GameObject Find(string res, Transform parent = null)
