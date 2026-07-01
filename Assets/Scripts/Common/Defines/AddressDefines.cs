@@ -39,6 +39,7 @@ namespace Common.Defines
 
         // Art 与字体（Addressables address，相对 Assets/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
+        public const string Art_ShopContinueHover = "Art/ShopView/IMG_9172";
         public const string Font_SourceHanSansSdf = "Fonts/siyuan/SourceHanSansSC-Normal SDF";
     }
 }

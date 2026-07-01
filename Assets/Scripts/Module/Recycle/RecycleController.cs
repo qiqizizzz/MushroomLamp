@@ -29,7 +29,8 @@ namespace Module.Recycle
                 PrefabName = AddressDefines.UI_RecycleView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
-                Sorting_Order = 30
+                Sorting_Order = 30,
+                IsOverlay = true
             });
 
             InitModuleEvent();

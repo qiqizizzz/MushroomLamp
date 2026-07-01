@@ -22,6 +22,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 633f5b55cf74e634b8fa378548d44825
+    m_Address: Art/ShopView/IMG_9172
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
     m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
     m_ReadOnly: 0

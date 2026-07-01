@@ -71,7 +71,19 @@ namespace Module.Shop
                 itemSample.gameObject.SetActive(false);
 
             bindButtons();
+            setupContinueHover();
             collectSlots();
+        }
+
+        private void setupContinueHover()
+        {
+            if (_btnContinue == null) return;
+
+            ShopContinueHoverItem hover = _btnContinue.GetComponent<ShopContinueHoverItem>();
+            if (hover == null)
+                hover = _btnContinue.gameObject.AddComponent<ShopContinueHoverItem>();
+
+            hover.Setup(_btnContinue);
         }
 
         private void resolveUIFont()
