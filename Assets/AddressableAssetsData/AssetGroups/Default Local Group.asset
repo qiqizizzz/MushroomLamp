@@ -112,6 +112,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 557b20f8471ef1c43afb285aa89d2ff0
+    m_Address: Sound/SoundCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5bfc99dd302073049915d36d2ff1ac04
     m_Address: Art/Card_img/potato
     m_ReadOnly: 0

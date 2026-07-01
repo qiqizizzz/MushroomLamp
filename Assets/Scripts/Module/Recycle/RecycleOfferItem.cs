@@ -11,13 +11,20 @@ using Common;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Module.Recycle
 {
     // 回收材料格子，负责展示材料、选中状态与卖出动画
-    public class RecycleOfferItem : MonoBehaviour
+    public class RecycleOfferItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
+        private const float HOVER_SCALE = 1.12f;
+        private const float SELECTED_SCALE = 1.08f;
+        private const float SCALE_DURATION = 0.12f;
+        private const float OUTLINE_WIDTH = 3f;
+
+        private RectTransform _rectTransform;
         private Image _imgIcon;
         private Image _imgSelected;
         private TextMeshProUGUI _txtName;
@@ -27,6 +34,10 @@ namespace Module.Recycle
         private RecycleOfferData _data;
         private Action<RecycleOfferData, RecycleOfferItem> _onClick;
         private Tween _scaleTween;
+        private UnityEngine.Material _outlineMaterial;
+        private bool _isSelected;
+        private bool _isPointerInside;
+        private bool _isPlayingSold;
 
         public RecycleOfferData Data => _data;
 
@@ -38,10 +49,18 @@ namespace Module.Recycle
             _data = data;
             _onClick = onClick;
             _canvasGroup.alpha = 1f;
+            _canvasGroup.blocksRaycasts = true;
             transform.localScale = Vector3.one;
+            _isPointerInside = false;
+            _isPlayingSold = false;
 
-            if (_txtName != null) _txtName.text = data != null ? data.name : string.Empty;
-            if (_txtPrice != null) _txtPrice.text = data != null ? data.price.ToString() : "0";
+            if (_txtName != null)
+            {
+                _txtName.text = data != null ? data.name : string.Empty;
+                _txtName.gameObject.SetActive(false);
+            }
+            if (_txtPrice != null)
+                _txtPrice.text = data != null ? $"+{data.price}" : "+0";
 
             if (_imgIcon != null)
             {
@@ -49,7 +68,8 @@ namespace Module.Recycle
                     ? null
                     : ArtAssetLoader.LoadSprite(data.iconPath, false);
                 _imgIcon.sprite = sprite;
-                _imgIcon.enabled = true;
+                _imgIcon.enabled = sprite != null;
+                _imgIcon.preserveAspect = true;
             }
 
             if (_button != null)
@@ -66,11 +86,14 @@ namespace Module.Recycle
         public void SetSelected(bool selected)
         {
             ensureReferences();
+            if (_isPlayingSold) return;
+
+            _isSelected = selected;
             if (_imgSelected != null)
                 _imgSelected.enabled = selected;
 
-            _scaleTween?.Kill();
-            _scaleTween = transform.DOScale(selected ? 1.08f : 1f, 0.12f).SetEase(Ease.OutBack);
+            setOutline(selected || _isPointerInside);
+            tweenToCurrentScale();
         }
 
         // 播放卖出后的缩小淡出效果
@@ -78,12 +101,35 @@ namespace Module.Recycle
         {
             ensureReferences();
             if (_button != null) _button.interactable = false;
+            if (_canvasGroup != null) _canvasGroup.blocksRaycasts = false;
 
+            _isPlayingSold = true;
             _scaleTween?.Kill();
             Sequence sequence = DOTween.Sequence();
             sequence.Join(transform.DOScale(0f, 0.28f).SetEase(Ease.InBack));
             sequence.Join(_canvasGroup.DOFade(0f, 0.24f));
             sequence.OnComplete(() => onComplete?.Invoke());
+            _scaleTween = sequence;
+        }
+
+        // 鼠标进入时放大材料图标
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_data == null || _isPlayingSold) return;
+
+            _isPointerInside = true;
+            setOutline(true);
+            tweenToCurrentScale();
+        }
+
+        // 鼠标离开时恢复材料图标
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (_isPlayingSold) return;
+
+            _isPointerInside = false;
+            setOutline(_isSelected);
+            tweenToCurrentScale();
         }
 
         private void handleClick()
@@ -94,6 +140,7 @@ namespace Module.Recycle
 
         private void ensureReferences()
         {
+            if (_rectTransform == null) _rectTransform = GetComponent<RectTransform>();
             if (_button == null) _button = GetComponent<Button>();
             if (_canvasGroup == null)
             {
@@ -106,11 +153,18 @@ namespace Module.Recycle
                 Transform icon = transform.Find("Img_Icon");
                 if (icon != null) _imgIcon = icon.GetComponent<Image>();
             }
+            if (_imgIcon != null)
+            {
+                _imgIcon.raycastTarget = false;
+                _imgIcon.preserveAspect = true;
+            }
             if (_imgSelected == null)
             {
                 Transform selected = transform.Find("Img_Selected");
                 if (selected != null) _imgSelected = selected.GetComponent<Image>();
             }
+            if (_imgSelected != null)
+                _imgSelected.raycastTarget = false;
             if (_txtName == null)
             {
                 Transform name = transform.Find("Txt_Name");
@@ -121,6 +175,49 @@ namespace Module.Recycle
                 Transform price = transform.Find("Txt_Price");
                 if (price != null) _txtPrice = price.GetComponent<TextMeshProUGUI>();
             }
+        }
+
+        private void OnDestroy()
+        {
+            _scaleTween?.Kill();
+            if (_outlineMaterial != null)
+            {
+                Destroy(_outlineMaterial);
+                _outlineMaterial = null;
+            }
+        }
+
+        // 根据选中和悬停状态刷新缩放
+        private void tweenToCurrentScale()
+        {
+            float targetScale = _isPointerInside ? HOVER_SCALE : (_isSelected ? SELECTED_SCALE : 1f);
+            _scaleTween?.Kill();
+            _scaleTween = transform.DOScale(targetScale, SCALE_DURATION).SetEase(Ease.OutBack);
+        }
+
+        // 切换材料图标描边
+        private void setOutline(bool enabled)
+        {
+            if (_imgIcon == null) return;
+
+            if (!enabled)
+            {
+                _imgIcon.material = null;
+                return;
+            }
+
+            if (_outlineMaterial == null)
+            {
+                Shader shader = Shader.Find("UI/Outline");
+                if (shader == null) return;
+
+                _outlineMaterial = new UnityEngine.Material(shader);
+                _outlineMaterial.SetColor("_OutlineColor", Color.white);
+                _outlineMaterial.SetFloat("_OutlineWidth", OUTLINE_WIDTH);
+            }
+
+            _outlineMaterial.SetFloat("_OutlineEnabled", 1f);
+            _imgIcon.material = _outlineMaterial;
         }
     }
 }

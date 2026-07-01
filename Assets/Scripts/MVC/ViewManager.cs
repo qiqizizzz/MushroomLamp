@@ -12,6 +12,7 @@ using System.Linq;
 using Common;
 using MVC.Controller;
 using MVC.View;
+using Sound;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -212,6 +213,7 @@ namespace MVC
                 view.Open(args);
             }
 
+            UISoundAutoBinder.Bind(view);
             viewInfo.controller?.OpenView(view);
         }
 

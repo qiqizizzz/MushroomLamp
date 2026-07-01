@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using Common;
 using Common.Defines;
+using Common.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,9 @@ namespace Module.Recycle
     // 回收界面视图，负责展示候选材料、右侧清单与确认交互
     public class RecycleView : BaseView
     {
+        private const float OFFER_CARD_WIDTH = 160f;
+        private const float OFFER_CARD_HEIGHT = 220f;
+
         private Button _btnBack;
         private Button _btnConfirm;
         private TextMeshProUGUI _txtGold;
@@ -47,6 +51,14 @@ namespace Module.Recycle
 
             if (_txtTip != null) _fontTemplate = _txtTip.font;
             else if (_txtGold != null) _fontTemplate = _txtGold.font;
+
+            TMP_FontAsset chineseFont = UIFontHelper.SourceHanSans;
+            if (chineseFont != null)
+                _fontTemplate = chineseFont;
+
+            applyChineseFont(_txtGold);
+            applyChineseFont(_txtTip);
+            applyChineseFont(_txtSelected);
         }
 
         public override void InitData()
@@ -137,28 +149,43 @@ namespace Module.Recycle
         {
             _selectedData = null;
             _selectedItem = null;
+            for (int i = 0; i < _offerItems.Count; i++)
+                if (_offerItems[i] != null)
+                    _offerItems[i].SetSelected(false);
+
             if (_txtSelected != null) _txtSelected.text = "未选择";
             if (_btnConfirm != null) _btnConfirm.interactable = false;
         }
 
+        // 创建候选材料格子，使用与烹饪手牌接近的图标式表现
         private RecycleOfferItem createOfferItem(Transform parent, int index)
         {
             GameObject root = new GameObject($"Offer_{index + 1}", typeof(RectTransform), typeof(Image), typeof(Button), typeof(CanvasGroup), typeof(RecycleOfferItem));
             RectTransform rt = root.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.sizeDelta = new Vector2(180f, 220f);
+            rt.sizeDelta = new Vector2(OFFER_CARD_WIDTH, OFFER_CARD_HEIGHT);
+
+            LayoutElement layoutElement = root.AddComponent<LayoutElement>();
+            layoutElement.preferredWidth = OFFER_CARD_WIDTH;
+            layoutElement.preferredHeight = OFFER_CARD_HEIGHT;
+            layoutElement.flexibleWidth = 0f;
+            layoutElement.flexibleHeight = 0f;
 
             Image bg = root.GetComponent<Image>();
-            bg.color = new Color(1f, 0.96f, 0.86f, 0.94f);
+            bg.color = new Color(1f, 1f, 1f, 0f);
 
-            createImage(rt, "Img_Selected", new Color(1f, 0.78f, 0.2f, 0.5f), new Vector2(0f, 0f), new Vector2(1f, 1f), true);
-            createImage(rt, "Img_Icon", new Color(1f, 1f, 1f, 1f), new Vector2(0.08f, 0.22f), new Vector2(0.92f, 0.95f), false);
-            createText(rt, "Txt_Name", new Vector2(0.04f, 0.1f), new Vector2(0.96f, 0.22f), 24f, "材料", TextAlignmentOptions.Center);
-            createText(rt, "Txt_Price", new Vector2(0.04f, 0.0f), new Vector2(0.96f, 0.11f), 28f, "0", TextAlignmentOptions.Center);
+            createImage(rt, "Img_Selected", new Color(1f, 0.86f, 0.24f, 0.24f), new Vector2(0f, 0.16f), Vector2.one, true);
+            Image icon = createImage(rt, "Img_Icon", Color.white, new Vector2(0f, 0.16f), Vector2.one, false);
+            icon.preserveAspect = true;
+
+            createImage(rt, "Img_PriceBadge", new Color(0.14f, 0.09f, 0.06f, 0.72f), new Vector2(0.16f, 0f), new Vector2(0.84f, 0.16f), false);
+            TextMeshProUGUI priceText = createText(rt, "Txt_Price", new Vector2(0.16f, 0f), new Vector2(0.84f, 0.16f), 24f, "+0", TextAlignmentOptions.Center);
+            priceText.color = new Color(1f, 0.92f, 0.56f, 1f);
 
             return root.GetComponent<RecycleOfferItem>();
         }
 
+        // 创建右侧背包和卡组清单行
         private void createInventoryRow(Transform parent, RecycleInventoryEntryData data)
         {
             GameObject root = new GameObject($"Entry_{data.id}", typeof(RectTransform), typeof(Image));
@@ -174,6 +201,7 @@ namespace Module.Recycle
             {
                 Sprite sprite = string.IsNullOrEmpty(data.iconPath) ? null : ArtAssetLoader.LoadSprite(data.iconPath, false);
                 icon.sprite = sprite;
+                icon.preserveAspect = true;
                 icon.enabled = true;
             }
 
@@ -211,12 +239,22 @@ namespace Module.Recycle
 
             TextMeshProUGUI tmp = go.GetComponent<TextMeshProUGUI>();
             if (_fontTemplate != null) tmp.font = _fontTemplate;
+            applyChineseFont(tmp);
             tmp.text = text;
             tmp.fontSize = fontSize;
             tmp.color = new Color(0.18f, 0.12f, 0.08f, 1f);
             tmp.alignment = alignment;
             tmp.raycastTarget = false;
+            tmp.enableWordWrapping = false;
+            tmp.overflowMode = TextOverflowModes.Ellipsis;
             return tmp;
+        }
+
+        // 应用项目中文字体，避免运行时创建的 TMP 文本出现方块字
+        private void applyChineseFont(TextMeshProUGUI text)
+        {
+            if (text == null) return;
+            UIFontHelper.ApplyChineseFont(text, _fontTemplate);
         }
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)

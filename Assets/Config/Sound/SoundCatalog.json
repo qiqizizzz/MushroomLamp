@@ -1,0 +1,62 @@
+{
+  "defaults": {
+    "buttonClick": "ui_click",
+    "buttonHover": "ui_hover",
+    "gameplayBgm": "bgm_ingame",
+    "bgmPlaylist": [
+      "bgm_alchemical_clockwork",
+      "bgm_cinder_crucible",
+      "bgm_murmur_vatcall"
+    ]
+  },
+  "clips": [
+    {
+      "id": "bgm_alchemical_clockwork",
+      "path": "BGM/Alchemical Clockwork",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_cinder_crucible",
+      "path": "BGM/Cinder Crucible",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_murmur_vatcall",
+      "path": "BGM/Murmur Vatcall",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_ingame",
+      "path": "BGM/ingame",
+      "volume": 1.0
+    },
+    {
+      "id": "ui_click",
+      "path": "",
+      "volume": 1.0
+    },
+    {
+      "id": "ui_hover",
+      "path": "",
+      "volume": 1.0
+    }
+  ],
+  "viewBindings": [
+    {
+      "view": "MainMenuView",
+      "bgm": "",
+      "buttonClick": "ui_click",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": []
+    },
+    {
+      "view": "CookView",
+      "bgm": "bgm_ingame",
+      "buttonClick": "",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": []
+    }
+  ]
+}
