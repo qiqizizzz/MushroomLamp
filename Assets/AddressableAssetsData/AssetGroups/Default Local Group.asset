@@ -17,6 +17,66 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 5adb6627149c7334b94573b6f1cbd12e
   m_SerializeEntries:
+  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
+    m_Address: Art/ShopView/材料箱样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 633f5b55cf74e634b8fa378548d44825
+    m_Address: Art/ShopView/IMG_9172
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1defe2d95bfff96468f88af3cc1f0f09
+    m_Address: Art/SelectBoxView/IMG_9170
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dc8f32c7033d1a4098aa1e02d21ad43
+    m_Address: Art/ShopView/IMG_9173
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36f72817d068ea44db82aa7886879b94
+    m_Address: Art/SelectBoxView/IMG_9171
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2678f104d7680c439a06d6edc9a77ec
+    m_Address: Art/SelectBoxView/IMG_9176
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b77e2572ea429c9428bb0834286efe1a
+    m_Address: Art/SelectBoxView/IMG_9177
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 18cbbeac9260cb448b6f9fdbd0c067c8
+    m_Address: Art/MainMenuView/开始游戏_点击
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 523a99d99c6b4874a85f9d419f5721f5
+    m_Address: Art/MainMenuView/设置_点击
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5ffe36ca0388024699172f86ced6b7e
+    m_Address: Art/MainMenuView/退出_点击
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
+    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7c4e2f1a3567890abcdef1234567890
+    m_Address: ShopCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 138820ec0949b43448312a5660813cf2
     m_Address: Art/BG_img/bg_magic_kitchen
     m_ReadOnly: 0
@@ -29,11 +89,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1b17189176ac28d46bd20d6f8e8d10c2
     m_Address: Levels/LevelCatalog
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
-    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -92,11 +147,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
-    m_Address: "Art/ShopView/\u6750\u6599\u7BB1\u6837\u672C"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1b2c3d4e5f6789012345678abcdef01
     m_Address: Art/Other/placeholder
     m_ReadOnly: 0
@@ -114,11 +164,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ae418352e96c56041a735676e2e25f05
     m_Address: Levels/Stages/Stage_mineral_easy
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b7c4e2f1a3567890abcdef1234567890
-    m_Address: ShopCatalog
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -154,51 +199,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f4e4cfbbede447746b0beac2ffa665ef
     m_Address: Art/BG_img/bg_selectView
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 633f5b55cf74e634b8fa378548d44825
-    m_Address: Art/ShopView/IMG_9172
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1defe2d95bfff96468f88af3cc1f0f09
-    m_Address: Art/SelectBoxView/IMG_9170
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7dc8f32c7033d1a4098aa1e02d21ad43
-    m_Address: Art/ShopView/IMG_9173
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 36f72817d068ea44db82aa7886879b94
-    m_Address: Art/SelectBoxView/IMG_9171
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c2678f104d7680c439a06d6edc9a77ec
-    m_Address: Art/SelectBoxView/IMG_9176
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b77e2572ea429c9428bb0834286efe1a
-    m_Address: Art/SelectBoxView/IMG_9177
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 18cbbeac9260cb448b6f9fdbd0c067c8
-    m_Address: Art/MainMenuView/开始游戏_点击
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 523a99d99c6b4874a85f9d419f5721f5
-    m_Address: Art/MainMenuView/设置_点击
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f5ffe36ca0388024699172f86ced6b7e
-    m_Address: Art/MainMenuView/退出_点击
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -494,6 +494,46 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9670fa87c35e70b44bf7bb4fdd0646be
     m_Address: Art/StoreView/钱币显示ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59b94ee5eeed4307b1619d06dc9c5140
+    m_Address: Art/RecycleView/回收桶
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca931041386c43f5b72bfb5e5acd69ee
+    m_Address: Art/RecycleView/小恶魔
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16572148e42c47fa9448425714db67ed
+    m_Address: Art/RecycleView/材料介绍ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 383683da7a9d42d8a16d79b0815dc676
+    m_Address: Art/RecycleView/背包
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25af57485fc7488fa6009c33dbb161b5
+    m_Address: Art/RecycleView/背包内道具样本
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d836596a1d584254b52a64cf56882eff
+    m_Address: Art/RecycleView/背包展开ui
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dd0ae803d924abfa5ba6fbcebd015fd
+    m_Address: Art/RecycleView/背景
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2898968468b6402790d36a1b2b446054
+    m_Address: Art/RecycleView/返回
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

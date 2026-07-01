@@ -30,6 +30,7 @@ namespace Module.Recycle
         private TextMeshProUGUI _txtSelected;
         private Transform _offerRoot;
         private Transform _inventoryRoot;
+        private ScrollRect _inventoryScroll;
         private TMP_FontAsset _fontTemplate;
 
         private RecycleModel _model;
@@ -42,12 +43,13 @@ namespace Module.Recycle
         public override void InitUI()
         {
             _btnBack = Find<Button>("Btn_Back");
-            _btnConfirm = Find<Button>("Center/RecycleBox/Btn_Confirm");
-            _txtGold = Find<TextMeshProUGUI>("TopGold/Txt_GoldValue");
-            _txtTip = Find<TextMeshProUGUI>("Bottom/Txt_Tip");
-            _txtSelected = Find<TextMeshProUGUI>("Center/RecycleBox/Txt_Selected");
+            _btnConfirm = findFirst<Button>("Center/RecycleBox/Btn_Confirm", "Center/Btn_Confirm");
+            _txtGold = findFirst<TextMeshProUGUI>("TopGold/Txt_GoldValue");
+            _txtTip = findFirst<TextMeshProUGUI>("Bottom/Txt_Tip");
+            _txtSelected = findFirst<TextMeshProUGUI>("Center/RecycleBox/Txt_Selected", "Center/Txt_Selected");
             _offerRoot = Find<Transform>("Center/OfferRoot");
             _inventoryRoot = Find<Transform>("Right/ScrollView/Viewport/Content");
+            _inventoryScroll = findOptional<ScrollRect>("Right/ScrollView");
 
             if (_txtTip != null) _fontTemplate = _txtTip.font;
             else if (_txtGold != null) _fontTemplate = _txtGold.font;
@@ -111,6 +113,11 @@ namespace Module.Recycle
 
             for (int i = 0; i < entries.Count; i++)
                 createInventoryRow(_inventoryRoot, entries[i]);
+
+            if (_inventoryRoot is RectTransform contentRt)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(contentRt);
+            if (_inventoryScroll != null)
+                _inventoryScroll.verticalNormalizedPosition = 1f;
         }
 
         // 选中材料候选
@@ -255,6 +262,29 @@ namespace Module.Recycle
         {
             if (text == null) return;
             UIFontHelper.ApplyChineseFont(text, _fontTemplate);
+        }
+
+        private static T findOptional<T>(Transform root, string path) where T : Component
+        {
+            if (root == null || string.IsNullOrEmpty(path)) return null;
+            Transform target = root.Find(path);
+            return target != null ? target.GetComponent<T>() : null;
+        }
+
+        private T findOptional<T>(string path) where T : Component => findOptional<T>(transform, path);
+
+        private T findFirst<T>(params string[] paths) where T : Component
+        {
+            if (paths == null || paths.Length == 0) return null;
+
+            for (int i = 0; i < paths.Length; i++)
+            {
+                T found = findOptional<T>(paths[i]);
+                if (found != null) return found;
+            }
+
+            QLog.Error($"[{nameof(RecycleView)}] 节点未找到：{string.Join(" 或 ", paths)}");
+            return null;
         }
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
