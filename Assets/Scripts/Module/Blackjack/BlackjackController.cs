@@ -28,7 +28,8 @@ namespace Module.Blackjack
                 PrefabName = AddressDefines.UI_BlackjackView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
-                Sorting_Order = 20
+                Sorting_Order = 20,
+                IsOverlay = true
             });
 
             InitModuleEvent();

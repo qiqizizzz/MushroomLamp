@@ -1,5 +1,6 @@
 using Common;
 using MVC.View;
+using Spine.Unity;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +14,9 @@ namespace Common.UI
 
         private Image _image;
         private RectTransform _rectTransform;
+        private RectTransform _scaleTarget;
+        private SkeletonGraphic _spineGraphic;
+        private float _spineNormalTimeScale = 1f;
         private Sprite _normalSprite;
         private Sprite _hoverSprite;
         private float _baseScale = 1f;
@@ -41,9 +45,41 @@ namespace Common.UI
             }
 
             button.transition = Selectable.Transition.None;
+            _scaleTarget = _rectTransform;
             captureBaseScale();
             updateHitSize();
             applyVisual(false);
+        }
+
+        // Spine 魔盒按钮：悬停放大/暂停 + 点击打开 Blackjack
+        public void SetupSpineButton(Button button, SkeletonGraphic spine, float hoverScaleMultiplier = DefaultHoverScaleMultiplier)
+        {
+            if (button == null) return;
+
+            if (spine != null)
+            {
+                spine.raycastTarget = true;
+                button.targetGraphic = spine;
+            }
+
+            button.transition = Selectable.Transition.None;
+            SetupSpineHover(button.transform as RectTransform, spine, hoverScaleMultiplier);
+        }
+
+        // Spine 展示悬停：放大目标 Rect，并在悬停时暂停动画
+        public void SetupSpineHover(RectTransform target, SkeletonGraphic spine, float hoverScaleMultiplier = DefaultHoverScaleMultiplier)
+        {
+            if (target == null) return;
+
+            _rectTransform = target;
+            _scaleTarget = target;
+            _spineGraphic = spine;
+            _hoverScaleMultiplier = hoverScaleMultiplier > 0f ? hoverScaleMultiplier : DefaultHoverScaleMultiplier;
+            if (_spineGraphic != null)
+                _spineNormalTimeScale = _spineGraphic.timeScale;
+
+            captureBaseScale();
+            updateHitSize();
         }
 
         public void SetInteractable(bool value)
@@ -53,9 +89,9 @@ namespace Common.UI
 
             _isPointerInside = false;
             _targetScale = _baseScale;
+            setSpinePaused(false);
             applyVisual(shouldUseHoverVisual());
-            if (_rectTransform != null)
-                _rectTransform.localScale = Vector3.one * _baseScale;
+            applyScaleImmediate(_baseScale);
         }
 
         // 选中态沿用 hover 图，并保持最大 scale
@@ -84,16 +120,17 @@ namespace Common.UI
 
         protected override void OnUpdate()
         {
-            if (_rectTransform == null) return;
+            RectTransform scaleRt = _scaleTarget != null ? _scaleTarget : _rectTransform;
+            if (scaleRt == null) return;
 
             updatePointerHover();
 
-            Vector3 current = _rectTransform.localScale;
+            Vector3 current = scaleRt.localScale;
             Vector3 target = Vector3.one * _targetScale;
             if ((current - target).sqrMagnitude > 0.0001f)
-                _rectTransform.localScale = Vector3.Lerp(current, target, Time.deltaTime * _scaleLerpSpeed);
+                scaleRt.localScale = Vector3.Lerp(current, target, Time.deltaTime * _scaleLerpSpeed);
             else
-                _rectTransform.localScale = target;
+                scaleRt.localScale = target;
         }
 
         private void updatePointerHover()
@@ -111,6 +148,7 @@ namespace Common.UI
                 {
                     _isPointerInside = true;
                     applyVisual(shouldUseHoverVisual());
+                    setSpinePaused(true);
                 }
 
                 _targetScale = _baseScale * _hoverScaleMultiplier;
@@ -121,6 +159,7 @@ namespace Common.UI
 
             _isPointerInside = false;
             applyVisual(shouldUseHoverVisual());
+            setSpinePaused(false);
             _targetScale = getRestScale();
         }
 
@@ -169,10 +208,24 @@ namespace Common.UI
 
         private void captureBaseScale()
         {
-            if (_rectTransform == null) return;
-            float s = _rectTransform.localScale.x;
+            RectTransform scaleRt = _scaleTarget != null ? _scaleTarget : _rectTransform;
+            if (scaleRt == null) return;
+            float s = scaleRt.localScale.x;
             if (s > 0.001f) _baseScale = s;
             _targetScale = _baseScale;
+        }
+
+        private void applyScaleImmediate(float scale)
+        {
+            RectTransform scaleRt = _scaleTarget != null ? _scaleTarget : _rectTransform;
+            if (scaleRt != null)
+                scaleRt.localScale = Vector3.one * scale;
+        }
+
+        private void setSpinePaused(bool paused)
+        {
+            if (_spineGraphic == null) return;
+            _spineGraphic.timeScale = paused ? 0f : _spineNormalTimeScale;
         }
 
         private void updateHitSize()

@@ -479,7 +479,7 @@ namespace Module.Cook
             return true;
         }
 
-        // 触碰魔盒并获得一次风险收益
+        // 触碰魔盒：校验通过后标记本回合已使用，由控制器打开 BlackjackView
         public bool TouchMagicBox()
         {
             if (!IsRunActive)
@@ -495,28 +495,8 @@ namespace Module.Cook
             }
 
             IsMagicBoxUsed = true;
-            LastMagicBoxEffect = (CookMagicBoxEffectType)_random.Next(1, 4);
-
-            switch (LastMagicBoxEffect)
-            {
-                case CookMagicBoxEffectType.AddScore:
-                    _magicBoxBonus += 4f;
-                    _devilRisk += 2f;
-                    LastTip = "魔盒赐予火候 +4，但恶魔风险 +2";
-                    break;
-                case CookMagicBoxEffectType.ExpandTarget:
-                    LevelFlow.Instance.ExpandTarget(3);
-                    _devilRisk += 1f;
-                    LastTip = "魔盒扩大安全上限 +3，但恶魔风险 +1";
-                    break;
-                case CookMagicBoxEffectType.CopyMaterial:
-                    copyFirstHandMaterial();
-                    _devilRisk += 2f;
-                    LastTip = "魔盒复制了一份手牌材料，但恶魔风险 +2";
-                    break;
-            }
-
-            refreshPreviewValue();
+            LastMagicBoxEffect = CookMagicBoxEffectType.None;
+            LastTip = "魔盒已开启";
             refreshMagicBoxStatusText();
             return true;
         }

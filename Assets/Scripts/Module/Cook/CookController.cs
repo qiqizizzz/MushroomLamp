@@ -194,11 +194,17 @@ namespace Module.Cook
             refreshCookView();
         }
 
-        // 触碰魔盒
+        // 触碰魔盒：打开 21 点玩法界面
         private void touchMagicBox(object[] args)
         {
-            GetCookModel().TouchMagicBox();
+            if (!GetCookModel().TouchMagicBox())
+            {
+                refreshCookView();
+                return;
+            }
+
             refreshCookView();
+            ApplyControllerFunc(ControllerType.Blackjack, EventDefines.OpenBlackjackView);
         }
 
         // 撤回最近一次放置

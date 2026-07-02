@@ -1,7 +1,7 @@
 /*
 * ┌──────────────────────────────────┐
 * │  描    述: 21 点玩法视图
-* │           左上魔盒 / 左下恶魔 / 右下天使 / 顶部三道具(抽牌)
+* │           左上魔盒(返回) / 左下恶魔 / 右下天使 / 顶部三道具(抽牌)
 * │           中间大牌 + 下方四小牌 / 左右气泡 / 底部文本
 * │  类    名: BlackjackView.cs
 * └──────────────────────────────────┘
@@ -20,6 +20,8 @@ namespace Module.Blackjack
     {
         private readonly List<Button> _itemButtons = new();
         private readonly List<CardSlot> _smallCards = new();
+
+        private Button _btnBox;
 
         private CardSlot _bigCard;
         private TextMeshProUGUI _txtBottom;
@@ -40,6 +42,7 @@ namespace Module.Blackjack
         {
             collectItemButtons();
             collectCards();
+            collectBoxButton();
 
             _txtBottom = findText("BottomText/Txt_Bottom");
             _bubbleLeft = findText("BubbleLeft/Txt_Bubble");
@@ -53,6 +56,7 @@ namespace Module.Blackjack
         {
             base.InitData();
             bindItemButtons();
+            bindBoxButton();
         }
 
         public void Refresh(BlackjackModel model)
@@ -112,6 +116,32 @@ namespace Module.Blackjack
                 btn.onClick.RemoveAllListeners();
                 btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackDraw));
             }
+        }
+
+        // 左上魔盒：返回 CookView
+        private void collectBoxButton()
+        {
+            Transform boxTf = Find<Transform>("Box");
+            if (boxTf == null) return;
+
+            _btnBox = boxTf.GetComponent<Button>();
+            if (_btnBox == null)
+                _btnBox = boxTf.gameObject.AddComponent<Button>();
+
+            Image image = boxTf.GetComponent<Image>();
+            if (image != null)
+            {
+                _btnBox.targetGraphic = image;
+                _btnBox.transition = Selectable.Transition.None;
+            }
+        }
+
+        private void bindBoxButton()
+        {
+            if (_btnBox == null) return;
+
+            _btnBox.onClick.RemoveAllListeners();
+            _btnBox.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackReturn));
         }
 
         // ---------------- 卡牌 ----------------

@@ -7,6 +7,7 @@
 */
 
 using Common;
+using Common.UI;
 using System.Collections.Generic;
 using DG.Tweening;
 using Module.Cook;
@@ -56,6 +57,7 @@ namespace Module.Cook
         private Button _btnSkip;
         private Button _btnSettle;
         private Button _btnMagicBox;
+        private UIButtonHoverItem _magicBoxHover;
         private GameObject _pauseDialogRoot;
         private Button _btnPauseConfirm;
         private Button _btnPauseCancel;
@@ -141,7 +143,6 @@ namespace Module.Cook
             _btnClear = Find<Button>("Bottom/ActionBar/Btn_Clear");
             _btnSkip = Find<Button>("Bottom/ActionBar/Btn_Skip");
             _btnSettle = Find<Button>("Bottom/ActionBar/Btn_Settle");
-            _btnMagicBox = Find<Button>("Right/MagicBox/Btn_Touch");
 
             Image imgBlock = Find<Image>("Bottom/Img_Block");
             if (imgBlock != null)
@@ -150,6 +151,7 @@ namespace Module.Cook
                 _imgBlock.SetActive(false);   // 默认不挡，只有卡牌飞行时才激活
             }
 
+            initMagicBoxButton();
             bindButtons();
             setupButtonText(_btnSettle, "结束本回合");
             hidePreviewText();
@@ -176,6 +178,28 @@ namespace Module.Cook
 
             Transform devilVisual = findDeep(transform, "Img_Devil");
             _devilSpine = devilVisual != null ? devilVisual.GetComponent<SkeletonGraphic>() : null;
+        }
+
+        // 魔盒 Spine 即按钮：悬停放大暂停 + 点击打开 Blackjack
+        private void initMagicBoxButton()
+        {
+            Transform magicBoxTf = findDeep(transform, "Img_MagicBox");
+            if (magicBoxTf == null) return;
+
+            SkeletonGraphic spine = magicBoxTf.GetComponent<SkeletonGraphic>();
+            _btnMagicBox = magicBoxTf.GetComponent<Button>();
+            if (_btnMagicBox == null)
+                _btnMagicBox = magicBoxTf.gameObject.AddComponent<Button>();
+
+            _magicBoxHover = magicBoxTf.GetComponent<UIButtonHoverItem>();
+            if (_magicBoxHover == null)
+                _magicBoxHover = magicBoxTf.gameObject.AddComponent<UIButtonHoverItem>();
+
+            _magicBoxHover.SetupSpineButton(_btnMagicBox, spine, 1.15f);
+
+            Button legacyBtn = Find<Button>("Right/MagicBox/Btn_Touch");
+            if (legacyBtn != null)
+                legacyBtn.gameObject.SetActive(false);
         }
 
         // 打开界面时关闭遗留弹窗
@@ -1085,6 +1109,9 @@ namespace Module.Cook
 
             if (_btnMagicBox != null)
                 _btnMagicBox.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
+
+            if (_magicBoxHover != null)
+                _magicBoxHover.SetInteractable(cookModel.IsRunActive && !cookModel.IsMagicBoxUsed);
         }
 
         private void clearHand()
