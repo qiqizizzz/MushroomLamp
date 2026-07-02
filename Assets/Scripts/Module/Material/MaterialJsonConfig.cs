@@ -15,7 +15,7 @@ namespace Module.Material
         public MaterialJsonData[] materials;
     }
 
-    // 单条材料卡牌配置。效果相关字段（触发条件/效果参数等）当前仅做数据承载，逻辑后续再实现
+    // 单条材料卡牌配置。效果字段由 MaterialBatchEffectCalculator 在投锅结算时解析
     [Serializable]
     public class MaterialJsonData
     {
