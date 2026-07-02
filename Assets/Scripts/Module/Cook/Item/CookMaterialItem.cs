@@ -103,6 +103,7 @@ namespace Module.View
             {
                 _imgIcon.sprite = materialData?.Icon;
                 _imgIcon.enabled = materialData?.Icon != null;
+                _imgIcon.preserveAspect = true;
             }
         }
 
@@ -222,6 +223,8 @@ namespace Module.View
             _imgBackground = getOrCreateImage("Img_Background", transform, new Color(0f, 0f, 0f, 0f));
             _imgBackground.raycastTarget = true;   // 仍负责接收悬停/点击
             _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white);
+            _imgIcon.preserveAspect = true;
+            _imgIcon.raycastTarget = false;
 
             setupChildRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             // 无文本，图标铺满整张卡

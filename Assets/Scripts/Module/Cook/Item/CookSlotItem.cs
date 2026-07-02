@@ -6,6 +6,7 @@
 * └──────────────────────────────────┘
 */
 
+using Common;
 using Module.Cook;
 using MVC.View;
 using TMPro;
@@ -20,9 +21,16 @@ namespace Module.View
         IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        private const string SLOT_CENTER_SPRITE = "Art/CookView/大圆";
+        private const string SLOT_EDGE_SPRITE = "Art/CookView/小圆";
+        private const string SLOT_CORNER_SPRITE = "Art/CookView/方框";
+
+        private static Sprite S_CenterBackground;
+        private static Sprite S_EdgeBackground;
+        private static Sprite S_CornerBackground;
+
         private readonly Color _emptyColor = new Color(0.96f, 0.82f, 0.58f, 0.92f);
-        private readonly Color _highlightColor = new Color(0.99f, 0.94f, 0.42f, 1f);
-        private readonly Color _occupiedColor = new Color(0.78f, 0.55f, 0.32f, 1f);
+        private readonly Color _highlightColor = new Color(1f, 0.96f, 0.72f, 1f);
         private readonly Color _cornerColor = new Color(0.88f, 0.72f, 0.48f, 0.92f);
         private readonly Color _edgeColor = new Color(0.94f, 0.78f, 0.48f, 0.95f);
         private readonly Color _centerColor = new Color(0.98f, 0.67f, 0.36f, 1f);
@@ -57,6 +65,8 @@ namespace Module.View
         {
             _view = view;
             _slotIndex = slotIndex;
+            ensureReferences();
+            applySlotBackground(null);
             applyFont(view == null ? null : view.GetFontAsset());
         }
 
@@ -66,37 +76,39 @@ namespace Module.View
             ensureReferences();
 
             _hasMaterial = slotData != null && slotData.HasMaterial;
-            _currentEmptyColor = getEmptyColor(slotData);
             CookMaterialData material = slotData?.Material;
             _materialData = material;
 
-            if (_imgBackground != null)
-                _imgBackground.color = _hasMaterial ? _occupiedColor : _currentEmptyColor;
+            applySlotBackground(slotData);
 
             if (_imgIcon != null)
             {
                 _imgIcon.sprite = material?.Icon;
                 _imgIcon.enabled = material?.Icon != null;
+                _imgIcon.preserveAspect = true;
             }
 
             if (_txtOrder != null)
             {
-                _txtOrder.enabled = true;
+                _txtOrder.enabled = _hasMaterial;
                 _txtOrder.text = _hasMaterial ? slotData.Order.ToString() : string.Empty;
             }
 
             if (_txtEnchant != null)
+            {
+                _txtEnchant.enabled = _hasMaterial;
                 _txtEnchant.text = slotData == null ? string.Empty : $"+{slotData.EnchantText}";
+            }
 
             if (_txtName != null)
             {
-                _txtName.enabled = true;
-                _txtName.text = material?.Config?.name ?? "空槽";
+                _txtName.enabled = _hasMaterial;
+                _txtName.text = material?.Config?.name ?? string.Empty;
             }
 
             if (_txtValue != null)
             {
-                _txtValue.enabled = true;
+                _txtValue.enabled = _hasMaterial;
                 _txtValue.text = material == null ? string.Empty : $"{material.ValueText}\n{material.CookProgressText}";
             }
         }
@@ -184,19 +196,32 @@ namespace Module.View
             if (_rectTransform == null)
                 _rectTransform = gameObject.AddComponent<RectTransform>();
 
-            _imgBackground = getOrCreateImage("Img_Background", transform, _emptyColor);
+            _imgBackground = getOrCreateBackgroundImage(transform, _emptyColor);
             _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white);
             _txtOrder = getOrCreateText("Txt_Order", transform, 26, TextAlignmentOptions.Center);
             _txtEnchant = getOrCreateText("Txt_Enchant", transform, 22, TextAlignmentOptions.Center);
             _txtName = getOrCreateText("Txt_Name", transform, 18, TextAlignmentOptions.Center);
             _txtValue = getOrCreateText("Txt_Value", transform, 22, TextAlignmentOptions.Center);
 
-            setupChildRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
+            if (_imgBackground.transform != transform)
+                setupChildRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
             setupChildRect(_imgIcon.rectTransform, new Vector2(0.22f, 0.3f), new Vector2(0.78f, 0.78f));
             setupChildRect(_txtOrder.rectTransform, new Vector2(0.02f, 0.72f), new Vector2(0.28f, 0.98f));
             setupChildRect(_txtEnchant.rectTransform, new Vector2(0.34f, 0.72f), new Vector2(0.66f, 0.98f));
             setupChildRect(_txtName.rectTransform, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.3f));
             setupChildRect(_txtValue.rectTransform, new Vector2(0.72f, 0.72f), new Vector2(0.98f, 0.98f));
+
+            _imgBackground.type = Image.Type.Simple;
+            _imgBackground.preserveAspect = true;
+            _imgBackground.raycastTarget = true;
+            _imgIcon.preserveAspect = true;
+            _imgIcon.raycastTarget = false;
+            _txtOrder.raycastTarget = false;
+            _txtEnchant.raycastTarget = false;
+            _txtName.raycastTarget = false;
+            _txtValue.raycastTarget = false;
+
+            applySlotBackground(null);
         }
 
         // 创建仅包含食物图片的拖拽图标
@@ -246,13 +271,16 @@ namespace Module.View
                 _imgIcon.enabled = isVisible && _imgIcon.sprite != null;
 
             if (_txtOrder != null)
-                _txtOrder.enabled = isVisible;
+                _txtOrder.enabled = isVisible && _hasMaterial;
 
             if (_txtName != null)
-                _txtName.enabled = isVisible;
+                _txtName.enabled = isVisible && _hasMaterial;
+
+            if (_txtEnchant != null)
+                _txtEnchant.enabled = isVisible && _hasMaterial;
 
             if (_txtValue != null)
-                _txtValue.enabled = isVisible;
+                _txtValue.enabled = isVisible && _hasMaterial;
         }
 
         private void moveDragIconToPointer(PointerEventData eventData)
@@ -310,6 +338,21 @@ namespace Module.View
             return image;
         }
 
+        // 获取槽位背景图层，优先复用槽位自身 Image 以兼容预制体编辑
+        private static Image getOrCreateBackgroundImage(Transform parent, Color color)
+        {
+            Transform child = parent.Find("Img_Background");
+            if (child != null)
+                return getOrCreateImage("Img_Background", parent, color);
+
+            Image image = parent.GetComponent<Image>();
+            if (image == null)
+                image = parent.gameObject.AddComponent<Image>();
+
+            image.color = color;
+            return image;
+        }
+
         private static TextMeshProUGUI getOrCreateText(
             string childName,
             Transform parent,
@@ -362,17 +405,62 @@ namespace Module.View
             rectTransform.offsetMax = Vector2.zero;
         }
 
-        // 根据槽位类型获取空槽底色
-        private Color getEmptyColor(CookSlotData slotData)
+        // 应用当前槽位类型对应的九宫格背景
+        private void applySlotBackground(CookSlotData slotData)
         {
-            if (slotData == null)
-                return _emptyColor;
+            if (_imgBackground == null) return;
 
-            return slotData.SlotType switch
+            CookSlotType slotType = getSlotType(slotData);
+            Sprite background = getSlotBackgroundSprite(slotType);
+            _imgBackground.sprite = background;
+            _imgBackground.preserveAspect = true;
+            _imgBackground.type = Image.Type.Simple;
+
+            _currentEmptyColor = background == null ? getFallbackColor(slotType) : Color.white;
+            _imgBackground.color = _currentEmptyColor;
+        }
+
+        // 获取槽位类型，初始化数据未绑定时用索引兜底
+        private CookSlotType getSlotType(CookSlotData slotData)
+        {
+            return slotData == null ? resolveSlotTypeByIndex(_slotIndex) : slotData.SlotType;
+        }
+
+        // 根据九宫格索引解析槽位类型
+        private static CookSlotType resolveSlotTypeByIndex(int slotIndex)
+        {
+            if (slotIndex == 0)
+                return CookSlotType.Center;
+
+            if (slotIndex >= 1 && slotIndex <= 4)
+                return CookSlotType.Edge;
+
+            return CookSlotType.Corner;
+        }
+
+        // 根据槽位类型获取背景图
+        private static Sprite getSlotBackgroundSprite(CookSlotType slotType)
+        {
+            switch (slotType)
+            {
+                case CookSlotType.Center:
+                    return S_CenterBackground ??= ArtAssetLoader.LoadSprite(SLOT_CENTER_SPRITE, false);
+                case CookSlotType.Edge:
+                    return S_EdgeBackground ??= ArtAssetLoader.LoadSprite(SLOT_EDGE_SPRITE, false);
+                default:
+                    return S_CornerBackground ??= ArtAssetLoader.LoadSprite(SLOT_CORNER_SPRITE, false);
+            }
+        }
+
+        // 资源未登记时保留旧底色兜底，避免槽位不可见
+        private Color getFallbackColor(CookSlotType slotType)
+        {
+            return slotType switch
             {
                 CookSlotType.Center => _centerColor,
                 CookSlotType.Edge => _edgeColor,
-                _ => _cornerColor
+                CookSlotType.Corner => _cornerColor,
+                _ => _emptyColor
             };
         }
     }
