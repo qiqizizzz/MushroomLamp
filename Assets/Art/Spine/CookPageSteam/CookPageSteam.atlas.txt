@@ -1,0 +1,27 @@
+﻿
+CookPageSteam.png
+size: 289,82
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+w1
+  rotate: false
+  xy: 156, 12
+  size: 108, 68
+  orig: 110, 70
+  offset: 1, 1
+  index: -1
+w2
+  rotate: true
+  xy: 266, 44
+  size: 36, 21
+  orig: 38, 23
+  offset: 1, 1
+  index: -1
+w3
+  rotate: false
+  xy: 2, 2
+  size: 152, 78
+  orig: 154, 80
+  offset: 1, 1
+  index: -1
