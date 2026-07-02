@@ -1,9 +1,8 @@
 /*
 * ┌──────────────────────────────────┐
 * │  描    述: 21 点玩法视图
-* │           左上魔盒(返回) / 左下恶魔 / 右下天使 / 顶部三道具(抽牌)
-* │           中间大牌 + 下方四小牌 / 左右气泡 / 底部文本
 * │  类    名: BlackjackView.cs
+* │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
@@ -80,7 +79,7 @@ namespace Module.Blackjack
                     slot.point.text = revealed ? model.Cards[i].point.ToString() : "?";
             }
 
-            // 道具按钮：不能继续抽时禁用
+            // 顶部按钮：不能继续翻牌时禁用
             foreach (Button btn in _itemButtons)
                 if (btn != null) btn.interactable = model.CanDraw;
 
@@ -110,11 +109,13 @@ namespace Module.Blackjack
 
         private void bindItemButtons()
         {
-            foreach (Button btn in _itemButtons)
+            for (int i = 0; i < _itemButtons.Count; i++)
             {
+                int itemIndex = i;
+                Button btn = _itemButtons[i];
                 if (btn == null) continue;
                 btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackDraw));
+                btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackDraw, itemIndex));
             }
         }
 

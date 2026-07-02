@@ -57,6 +57,7 @@ namespace Module.Cook
         private Button _btnSkip;
         private Button _btnSettle;
         private Button _btnMagicBox;
+        private Button _btnMagicBoxLegacy;
         private UIButtonHoverItem _magicBoxHover;
         private GameObject _pauseDialogRoot;
         private Button _btnPauseConfirm;
@@ -197,9 +198,7 @@ namespace Module.Cook
 
             _magicBoxHover.SetupSpineButton(_btnMagicBox, spine, 1.15f);
 
-            Button legacyBtn = Find<Button>("Right/MagicBox/Btn_Touch");
-            if (legacyBtn != null)
-                legacyBtn.gameObject.SetActive(false);
+            _btnMagicBoxLegacy = Find<Button>("Right/MagicBox/Btn_Touch");
         }
 
         // 打开界面时关闭遗留弹窗
@@ -460,7 +459,18 @@ namespace Module.Cook
             bindButton(_btnClear, () => ApplyFunc(EventDefines.CookClearMaterials));
             bindButton(_btnSkip, () => ApplyFunc(EventDefines.CookSkipTurn));
             bindButton(_btnSettle, onSettleClick);
-            bindButton(_btnMagicBox, () => ApplyFunc(EventDefines.CookTouchMagicBox));
+            bindButton(_btnMagicBox, onMagicBoxClick);
+            bindButton(_btnMagicBoxLegacy, onMagicBoxClick);
+        }
+
+        // 点击魔盒后打开 21 点界面并隐藏烹饪界面
+        private void onMagicBoxClick()
+        {
+            if (_cookModel != null && (!_cookModel.IsRunActive || _cookModel.IsMagicBoxUsed))
+                return;
+
+            ApplyFunc(EventDefines.CookTouchMagicBox);
+            GameApp.ViewManager.Close(ViewType.CookView);
         }
 
         private void initSlots()
@@ -1109,6 +1119,9 @@ namespace Module.Cook
 
             if (_btnMagicBox != null)
                 _btnMagicBox.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
+
+            if (_btnMagicBoxLegacy != null)
+                _btnMagicBoxLegacy.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
 
             if (_magicBoxHover != null)
                 _magicBoxHover.SetInteractable(cookModel.IsRunActive && !cookModel.IsMagicBoxUsed);

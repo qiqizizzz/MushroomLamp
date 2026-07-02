@@ -1,9 +1,8 @@
 /*
 * ┌──────────────────────────────────┐
 * │  描    述: 21 点玩法数据模型
-* │           4 张牌，点道具翻开下一张，翻开时随机点数并累加；
-* │           累计达到/超过 21 点视为爆牌，触发结算
 * │  类    名: BlackjackModel.cs
+* │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
@@ -16,17 +15,17 @@ namespace Module.Blackjack
     [Serializable]
     public class BlackjackCardData
     {
-        public int point;             // 牌面点数（翻开后才有效）
+        public int point;             // 牌面点数
         public bool revealed;         // 是否已翻开
     }
 
     public class BlackjackModel : BaseModel
     {
-        public const int CardCount = 4;   // 下方小牌数量（固定 4 张）
-        public const int BustLimit = 21;  // 达到/超过即爆牌
+        public const int CardCount = 4;
+        public const int BustLimit = 21;
 
-        private const int MinPoint = 1;   // 单张牌随机点数下限
-        private const int MaxPoint = 11;  // 单张牌随机点数上限（含）
+        private const int MinPoint = 1;
+        private const int MaxPoint = 11;
 
         public readonly List<BlackjackCardData> Cards = new();
 
@@ -50,7 +49,13 @@ namespace Module.Blackjack
         {
             Cards.Clear();
             for (int i = 0; i < CardCount; i++)
-                Cards.Add(new BlackjackCardData { point = 0, revealed = false });
+            {
+                Cards.Add(new BlackjackCardData
+                {
+                    point = UnityEngine.Random.Range(MinPoint, MaxPoint + 1),
+                    revealed = false
+                });
+            }
 
             TotalPoint = 0;
             RevealedCount = 0;
@@ -59,18 +64,15 @@ namespace Module.Blackjack
         /// <summary>
         /// 翻开下一张牌：随机点数并累加。返回刚翻开的牌索引；无可翻牌返回 -1。
         /// </summary>
-        public int RevealNext()
+        public int RevealNext(int itemIndex = -1)
         {
             if (!CanDraw) return -1;
 
             int index = RevealedCount;
-            int point = UnityEngine.Random.Range(MinPoint, MaxPoint + 1);
-
             BlackjackCardData card = Cards[index];
-            card.point = point;
             card.revealed = true;
 
-            TotalPoint += point;
+            TotalPoint += card.point;
             RevealedCount++;
 
             return index;

@@ -1,8 +1,8 @@
 /*
 * ┌──────────────────────────────────┐
 * │  描    述: 21 点玩法控制器
-* │           点道具抽牌；达到/超过 21 点弹确认框并提示 debuff
 * │  类    名: BlackjackController.cs
+* │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
@@ -37,48 +37,57 @@ namespace Module.Blackjack
 
         public override void InitModuleEvent()
         {
-            RegisterFunc(EventDefines.OpenBlackjackView, OnOpen);
-            RegisterFunc(EventDefines.BlackjackDraw, OnDraw);
-            RegisterFunc(EventDefines.BlackjackRestart, OnRestart);
-            RegisterFunc(EventDefines.BlackjackReturn, OnReturn);
+            RegisterFunc(EventDefines.OpenBlackjackView, onOpen);
+            RegisterFunc(EventDefines.BlackjackDraw, onDraw);
+            RegisterFunc(EventDefines.BlackjackRestart, onRestart);
+            RegisterFunc(EventDefines.BlackjackReturn, onReturn);
         }
 
-        private void OnOpen(object[] args)
+        public override void RemoveModuleEvent()
+        {
+            UnRegisterFunc(EventDefines.OpenBlackjackView, onOpen);
+            UnRegisterFunc(EventDefines.BlackjackDraw, onDraw);
+            UnRegisterFunc(EventDefines.BlackjackRestart, onRestart);
+            UnRegisterFunc(EventDefines.BlackjackReturn, onReturn);
+        }
+
+        private void onOpen(object[] args)
         {
             _model.Reset();
             GameApp.ViewManager.Open((int)ViewType.BlackjackView, args);
-            RefreshView();
+            refreshView();
         }
 
-        private void OnRestart(object[] args)
+        private void onRestart(object[] args)
         {
             _model.Reset();
-            RefreshView();
+            refreshView();
         }
 
-        private void OnReturn(object[] args)
+        private void onReturn(object[] args)
         {
-            GameApp.ViewManager.Close((int)ViewType.BlackjackView);
+            returnToCookView();
         }
 
         // 点道具抽牌：翻开下一张，刷新界面；达/超 21 触发结算
-        private void OnDraw(object[] args)
+        private void onDraw(object[] args)
         {
             if (!_model.CanDraw) return;
 
-            int index = _model.RevealNext();
+            int itemIndex = args != null && args.Length > 0 && args[0] is int value ? value : -1;
+            int index = _model.RevealNext(itemIndex);
             if (index < 0) return;
 
-            RefreshView();
+            refreshView();
 
             if (_model.IsBusted)
-                ShowBustResult();
+                showBustResult();
             else if (_model.AllRevealed)
-                ShowSafeResult();
+                showSafeResult();
         }
 
         // 爆牌：弹确认框提示触发超级不好的 debuff（具体数值后续再接）
-        private void ShowBustResult()
+        private void showBustResult()
         {
             ConfirmController.Show(new ConfirmModel
             {
@@ -89,30 +98,35 @@ namespace Module.Blackjack
                 onConfirm = () =>
                 {
                     // TODO: 接入具体 debuff 数值效果
-                    _model.Reset();
-                    RefreshView();
+                    returnToCookView();
                 }
             });
         }
 
         // 安全翻完 4 张未爆牌
-        private void ShowSafeResult()
+        private void showSafeResult()
         {
             ConfirmController.Show(new ConfirmModel
             {
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "安全过关",
                 message = $"四张牌翻完，累计 {_model.TotalPoint} 点，未爆牌。",
-                confirmText = "再来一局",
+                confirmText = "收手",
                 onConfirm = () =>
                 {
-                    _model.Reset();
-                    RefreshView();
+                    returnToCookView();
                 }
             });
         }
 
-        private void RefreshView()
+        // 关闭 21 点并恢复烹饪界面
+        private void returnToCookView()
+        {
+            GameApp.ViewManager.Close((int)ViewType.BlackjackView);
+            ApplyControllerFunc(ControllerType.Cook, EventDefines.OpenCookView);
+        }
+
+        private void refreshView()
         {
             var view = GameApp.ViewManager.GetView((int)ViewType.BlackjackView);
             if (view is BlackjackView blackjackView)
