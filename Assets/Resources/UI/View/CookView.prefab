@@ -2748,11 +2748,11 @@ RectTransform:
   - {fileID: 7025888686719130336}
   - {fileID: 654066388853254780}
   - {fileID: 45138263882833282}
-  - {fileID: 556294963854992041}
   - {fileID: 8771362841136132269}
   - {fileID: 2916481896630377009}
   - {fileID: 447953844443792486}
   - {fileID: 7774250254664512132}
+  - {fileID: 556294963854992041}
   - {fileID: 5346510294285435296}
   - {fileID: 5579980087164923313}
   - {fileID: 9109100157519093814}
@@ -4300,7 +4300,7 @@ GameObject:
   m_Component:
   - component: {fileID: 556294963854992041}
   - component: {fileID: 8697565811251231563}
-  - component: {fileID: 5445295142439444453}
+  - component: {fileID: 5486640837382914278}
   m_Layer: 0
   m_Name: Img_MagicBox
   m_TagString: Untagged
@@ -4324,7 +4324,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 452.5, y: 394.7}
+  m_AnchoredPosition: {x: 550, y: 280}
   m_SizeDelta: {x: 457, y: 292}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8697565811251231563
@@ -4335,7 +4335,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6195392565487362410}
   m_CullTransparentMesh: 1
---- !u!114 &5445295142439444453
+--- !u!114 &5486640837382914278
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4344,10 +4344,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6195392565487362410}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: d85b887af7e6c3f45a2e2d2920d641bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: b66cf7a186d13054989b33a5c90044e4, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -4355,16 +4355,50 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: edada0ee324563540841bfd90be34590, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  skeletonDataAsset: {fileID: 11400000, guid: 5f6450c1970b36c4582d51ffe4c7080b, type: 2}
+  additiveMaterial: {fileID: 0}
+  multiplyMaterial: {fileID: 0}
+  screenMaterial: {fileID: 0}
+  forceAdditiveMaterial: 0
+  m_SkeletonColor: {r: 1, g: 1, b: 1, a: 1}
+  initialSkinName: 
+  initialFlipX: 0
+  initialFlipY: 0
+  startingAnimation: idie
+  startingLoop: 1
+  timeScale: 1
+  freeze: 0
+  layoutScaleMode: 0
+  referenceSize: {x: 457, y: 292}
+  pivotOffset: {x: 0, y: 0}
+  referenceScale: 1
+  layoutScale: 1
+  rectTransformSize: {x: 457, y: 292}
+  editReferenceRect: 0
+  updateWhenInvisible: 3
+  allowMultipleCanvasRenderers: 0
+  canvasRenderers: []
+  separatorSlotNames: []
+  enableSeparatorSlots: 0
+  separatorParts: []
+  updateSeparatorPartLocation: 1
+  updateSeparatorPartScale: 0
+  disableMeshAssignmentOnOverride: 1
+  physicsPositionInheritanceFactor: {x: 1, y: 1}
+  physicsRotationInheritanceFactor: 1
+  physicsMovementRelativeTo: {fileID: 0}
+  meshGenerator:
+    settings:
+      useClipping: 1
+      zSpacing: 0
+      tintBlack: 0
+      canvasGroupCompatible: 0
+      pmaVertexColors: 1
+      addNormals: 0
+      calculateTangents: 0
+      immutableTriangles: 0
+  updateTiming: 1
+  unscaledTime: 0
 --- !u!1 &6218419005005348466
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,83 @@
+﻿
+CookPageMagicBox.png
+size: 616,159
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 2, 10
+  size: 194, 147
+  orig: 195, 149
+  offset: 1, 1
+  index: -1
+body2
+  rotate: false
+  xy: 198, 59
+  size: 166, 98
+  orig: 245, 200
+  offset: 77, 25
+  index: -1
+eye color
+  rotate: false
+  xy: 346, 3
+  size: 52, 50
+  orig: 53, 50
+  offset: 1, 0
+  index: -1
+eye sketch
+  rotate: true
+  xy: 198, 2
+  size: 55, 51
+  orig: 56, 53
+  offset: 0, 1
+  index: -1
+eyebrow
+  rotate: true
+  xy: 578, 102
+  size: 55, 36
+  orig: 56, 36
+  offset: 0, 0
+  index: -1
+eyelid
+  rotate: false
+  xy: 478, 77
+  size: 98, 80
+  orig: 98, 80
+  offset: 0, 0
+  index: -1
+left foot
+  rotate: true
+  xy: 441, 8
+  size: 45, 35
+  orig: 45, 36
+  offset: 0, 1
+  index: -1
+left wing
+  rotate: false
+  xy: 478, 2
+  size: 104, 73
+  orig: 104, 73
+  offset: 0, 0
+  index: -1
+right foot
+  rotate: false
+  xy: 400, 5
+  size: 39, 48
+  orig: 40, 48
+  offset: 0, 0
+  index: -1
+right wing
+  rotate: false
+  xy: 251, 7
+  size: 93, 50
+  orig: 100, 50
+  offset: 0, 0
+  index: -1
+tongue
+  rotate: false
+  xy: 366, 55
+  size: 110, 102
+  orig: 110, 103
+  offset: 0, 1
+  index: -1
