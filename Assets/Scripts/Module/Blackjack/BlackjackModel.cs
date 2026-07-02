@@ -15,7 +15,7 @@ namespace Module.Blackjack
     [Serializable]
     public class BlackjackCardData
     {
-        public int point;             // 牌面点数
+        public int revealedPoint;     // 翻开后得到的点数
         public bool revealed;         // 是否已翻开
     }
 
@@ -52,7 +52,7 @@ namespace Module.Blackjack
             {
                 Cards.Add(new BlackjackCardData
                 {
-                    point = UnityEngine.Random.Range(MinPoint, MaxPoint + 1),
+                    revealedPoint = 0,
                     revealed = false
                 });
             }
@@ -64,18 +64,27 @@ namespace Module.Blackjack
         /// <summary>
         /// 翻开下一张牌：随机点数并累加。返回刚翻开的牌索引；无可翻牌返回 -1。
         /// </summary>
-        public int RevealNext(int itemIndex = -1)
+        public int RevealNext()
         {
             if (!CanDraw) return -1;
 
             int index = RevealedCount;
             BlackjackCardData card = Cards[index];
+            int point = UnityEngine.Random.Range(MinPoint, MaxPoint + 1);
+            card.revealedPoint = point;
             card.revealed = true;
 
-            TotalPoint += card.point;
+            TotalPoint += point;
             RevealedCount++;
 
             return index;
+        }
+
+        // 获取指定牌位的显示点数
+        public int GetRevealedPoint(int index)
+        {
+            if (index < 0 || index >= Cards.Count) return 0;
+            return Cards[index].revealed ? Cards[index].revealedPoint : 0;
         }
     }
 }

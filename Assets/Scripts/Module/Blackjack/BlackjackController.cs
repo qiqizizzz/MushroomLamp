@@ -74,8 +74,7 @@ namespace Module.Blackjack
         {
             if (!_model.CanDraw) return;
 
-            int itemIndex = args != null && args.Length > 0 && args[0] is int value ? value : -1;
-            int index = _model.RevealNext(itemIndex);
+            int index = _model.RevealNext();
             if (index < 0) return;
 
             refreshView();

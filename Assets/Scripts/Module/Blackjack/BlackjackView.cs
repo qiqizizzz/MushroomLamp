@@ -76,7 +76,7 @@ namespace Module.Blackjack
                 bool revealed = i < model.Cards.Count && model.Cards[i].revealed;
                 setCardFace(slot, revealed);
                 if (slot.point != null)
-                    slot.point.text = revealed ? model.Cards[i].point.ToString() : "?";
+                    slot.point.text = revealed ? model.GetRevealedPoint(i).ToString() : "?";
             }
 
             // 顶部按钮：不能继续翻牌时禁用
