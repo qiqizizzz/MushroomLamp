@@ -43,6 +43,7 @@ namespace Module.Cook
         private int _nextSubmitOrder;
         private float _magicBoxBonus;
         private float _devilRisk;
+        private int _turnProcessCount;
         private bool _hasPlacedHandThisTurn;
 
         public int TurnIndex { get; private set; }
@@ -85,13 +86,12 @@ namespace Module.Cook
             get
             {
                 if (!IsPotTrayFull) return 0f;
-                // 临时填入 _potEntries，复用 calculateRoundResult，算完立即清掉
+
                 int savedSubmitOrder = _nextSubmitOrder;
-                for (int i = 0; i < _potTraySlots.Length; i++)
-                {
-                    if (_potTraySlots[i] == null) continue;
-                    _potEntries.Add(new CookPotEntryData(_nextSubmitOrder++, i, _potTraySlots[i]));
-                }
+                List<CookPotEntryData> entries = buildPotEntriesFromTray(out _);
+                for (int i = 0; i < entries.Count; i++)
+                    _potEntries.Add(entries[i]);
+
                 CookRoundResultData result = calculateRoundResult(false);
                 _potEntries.Clear();
                 _nextSubmitOrder = savedSubmitOrder;
@@ -407,39 +407,57 @@ namespace Module.Cook
                 return false;
             }
 
-            // 收集本批投入材料（按暂存槽顺序），用于效果条件判断
-            List<CookMaterialData> batch = new List<CookMaterialData>();
-            for (int i = 0; i < _potTraySlots.Length; i++)
-                if (_potTraySlots[i] != null) batch.Add(_potTraySlots[i]);
-
-            // 计算本批卡牌效果加分（「加分」类，结算时生效）
-            int effectBonus = 0;
-            for (int i = 0; i < batch.Count; i++)
-                effectBonus += Module.Material.MaterialEffect.CalcBonus(batch, i);
+            // 收集本批投入材料（按暂存槽顺序），创建锅内条目并应用配置效果
+            List<CookPotEntryData> entries = buildPotEntriesFromTray(out List<CookMaterialData> batch);
 
             for (int i = 0; i < _potTraySlots.Length; i++)
             {
                 CookMaterialData material = _potTraySlots[i];
                 if (material == null) continue;
 
-                CookPotEntryData potEntry = new CookPotEntryData(_nextSubmitOrder++, i, material);
-                _potEntries.Add(potEntry);
-                recycleToDiscard(material);   // 投入计分的牌回收进弃牌堆，洗牌后可再抽到（牌不减少）
+                recycleToDiscard(material);
                 _potTraySlots[i] = null;
             }
 
-            // 投入即计分：基础计分 + 卡牌效果加分，累加到总分，然后清空准备下一批
+            for (int i = 0; i < entries.Count; i++)
+                _potEntries.Add(entries[i]);
+
             CookRoundResultData result = calculateRoundResult(true);
-            CurrentScore += result.RoundScore - result.PenaltyScore + effectBonus;
+            CurrentScore += result.RoundScore - result.PenaltyScore;
             Coin += result.CoinReward;
             LastRoundResult = result;
             _potEntries.Clear();
 
             refreshPreviewValue();
             LastTip = getSettleTip(result);
-            if (effectBonus != 0)
-                LastTip += $"，卡牌效果额外 +{effectBonus} 分";
             return true;
+        }
+
+        // 从暂存槽构建本批锅内条目，并按 MaterialCatalog 应用结算效果
+        private List<CookPotEntryData> buildPotEntriesFromTray(out List<CookMaterialData> batch)
+        {
+            batch = new List<CookMaterialData>();
+            List<CookPotEntryData> entries = new List<CookPotEntryData>();
+
+            for (int i = 0; i < _potTraySlots.Length; i++)
+            {
+                CookMaterialData material = _potTraySlots[i];
+                if (material == null) continue;
+
+                batch.Add(material);
+                entries.Add(new CookPotEntryData(_nextSubmitOrder++, i, material));
+            }
+
+            Module.Material.MaterialBatchEffectCalculator.EntryEffectModifiers[] modifiers =
+                Module.Material.MaterialBatchEffectCalculator.Calculate(batch, entries, _turnProcessCount);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Module.Material.MaterialBatchEffectCalculator.EntryEffectModifiers mod = modifiers[i];
+                entries[i].ApplyEffectModifiers(mod.Multiplier, mod.FlatBonus);
+            }
+
+            return entries;
         }
 
         // 加工手牌中的材料
@@ -472,6 +490,7 @@ namespace Module.Cook
 
             int processBonus = material.Ability.GetProcessBonus();
             material.MarkProcessed(processBonus, "研磨");
+            _turnProcessCount++;
             _handMaterials.Remove(material);
             _processedMaterials.Add(material);
             material.Ability.OnProcessed(this);
@@ -671,6 +690,7 @@ namespace Module.Cook
             _processedMaterials.Clear();
             // 注意：暂存槽（PotTray）跨回合保留，只在投入时清空
             _hasPlacedHandThisTurn = false;
+            _turnProcessCount = 0;
             _magicBoxBonus = 0;
             _devilRisk = 0;
             IsMagicBoxUsed = false;
@@ -699,6 +719,7 @@ namespace Module.Cook
             clearPotTray();
             _nextPlaceOrder = 1;
             _nextSubmitOrder = 1;
+            _turnProcessCount = 0;
             _hasPlacedHandThisTurn = false;
 
             for (int i = 0; i < _slots.Length; i++)
@@ -913,10 +934,10 @@ namespace Module.Cook
                 slotBonus += potEntry.CookScoreDelta;
             }
 
-            int adjacentComboCount = calculatePotAdjacentComboCount();
-            int orderComboCount = calculateOrderComboCount();
-            int comboCount = adjacentComboCount + orderComboCount;
-            float comboBonus = comboCount * 2f;
+            int adjacentComboCount = 0;
+            int orderComboCount = 0;
+            int comboCount = 0;
+            float comboBonus = 0f;
             float roundScore = baseScore + processBonus + slotBonus + comboBonus + _magicBoxBonus;
             bool isTargetMatched = roundScore >= TargetMin && roundScore <= TargetMax;
             bool isOverHeat = roundScore > TargetMax;
@@ -930,7 +951,7 @@ namespace Module.Cook
                 LevelFlow.Instance.ConsumeAngelRescue();
 
             int coinReward = isTargetMatched ? 3 : 1;
-            string comboText = buildComboText(adjacentComboCount, orderComboCount);
+            string comboText = "暂无连携";
 
             return new CookRoundResultData(
                 TurnIndex,
@@ -948,85 +969,6 @@ namespace Module.Cook
                 isTargetMatched,
                 isOverHeat,
                 comboText);
-        }
-
-        // 计算锅内相邻提交材料的同标签连携数量
-        private int calculatePotAdjacentComboCount()
-        {
-            int comboCount = 0;
-            for (int i = 0; i < _potEntries.Count - 1; i++)
-            {
-                if (isSamePrimaryTag(_potEntries[i].TagText, _potEntries[i + 1].TagText))
-                    comboCount++;
-            }
-
-            return comboCount;
-        }
-
-        // 计算依赖放置顺序的连携数量
-        private int calculateOrderComboCount()
-        {
-            int comboCount = 0;
-            for (int i = 0; i < _potEntries.Count; i++)
-            {
-                CookPotEntryData firstEntry = _potEntries[i];
-                if (!isHerbBeforePotatoSource(firstEntry.MaterialName, firstEntry.TagText)) continue;
-
-                for (int j = 0; j < _potEntries.Count; j++)
-                {
-                    CookPotEntryData nextEntry = _potEntries[j];
-                    if (firstEntry.SubmitOrder >= nextEntry.SubmitOrder) continue;
-                    if (isPotatoMaterial(nextEntry.MaterialName))
-                        comboCount++;
-                }
-            }
-
-            return comboCount;
-        }
-
-        // 生成连携说明文本
-        private static string buildComboText(int adjacentComboCount, int orderComboCount)
-        {
-            List<string> comboTexts = new List<string>();
-            if (adjacentComboCount > 0)
-                comboTexts.Add($"邻接同标签 x{adjacentComboCount}");
-
-            if (orderComboCount > 0)
-                comboTexts.Add($"草药先于土豆 x{orderComboCount}");
-
-            return comboTexts.Count == 0 ? "暂无连携" : string.Join(" / ", comboTexts);
-        }
-
-        private static bool isSamePrimaryTag(string leftTagText, string rightTagText)
-        {
-            if (string.IsNullOrWhiteSpace(leftTagText) || string.IsNullOrWhiteSpace(rightTagText)) return false;
-
-            return getPrimaryTag(leftTagText) == getPrimaryTag(rightTagText);
-        }
-
-        private static string getPrimaryTag(string tagText)
-        {
-            if (string.IsNullOrWhiteSpace(tagText))
-                return string.Empty;
-
-            int splitIndex = tagText.IndexOf('/');
-            return splitIndex < 0 ? tagText : tagText[..splitIndex];
-        }
-
-        // 判断材料是否可触发草药先于土豆的顺序连携
-        private static bool isHerbBeforePotatoSource(string materialName, string tagText)
-        {
-            if (string.IsNullOrWhiteSpace(materialName)) return false;
-
-            return materialName.Contains("草")
-                || materialName.Contains("胡萝卜")
-                || getPrimaryTag(tagText) == "香料";
-        }
-
-        // 判断材料是否为土豆
-        private static bool isPotatoMaterial(string materialName)
-        {
-            return !string.IsNullOrWhiteSpace(materialName) && materialName.Contains("土豆");
         }
 
         private bool advanceTurn()

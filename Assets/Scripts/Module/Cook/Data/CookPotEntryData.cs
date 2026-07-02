@@ -65,5 +65,14 @@ namespace Module.Cook
 
             FinalValue = CurrentValue * ScoreMultiplier;
         }
+
+        // 应用卡牌效果：倍率作用于 FinalValue，再加 flat 分
+        public void ApplyEffectModifiers(float multiplier, float flatBonus)
+        {
+            if (multiplier <= 0f)
+                multiplier = 1f;
+
+            FinalValue = FinalValue * multiplier + flatBonus;
+        }
     }
 }

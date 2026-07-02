@@ -69,8 +69,9 @@ namespace Module.Cook
         public string GetBreakdownText()
         {
             string magicText = MagicBoxBonus > 0 ? $" + 魔盒{FormatScore(MagicBoxBonus)}" : string.Empty;
+            string comboText = ComboBonus > 0 ? $" + 连携{FormatScore(ComboBonus)}" : string.Empty;
             string penaltyText = PenaltyScore > 0 ? $" - 惩罚{FormatScore(PenaltyScore)}" : string.Empty;
-            return $"基础{FormatScore(BaseScore)} + 加工{FormatScore(ProcessBonus)} + 熟度{FormatScore(SlotBonus)} + 连携{FormatScore(ComboBonus)}{magicText}{penaltyText} = {FormatScore(FinalScore)}";
+            return $"基础{FormatScore(BaseScore)} + 加工{FormatScore(ProcessBonus)} + 熟度{FormatScore(SlotBonus)}{comboText}{magicText}{penaltyText} = {FormatScore(FinalScore)}";
         }
 
         // 格式化可能带半分的数值
