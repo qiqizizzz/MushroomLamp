@@ -37,6 +37,7 @@ namespace Sound
         private float _effectVolume;
         private float _currentBgmVolumeScale = 1f;
         private int _lastPlaylistIndex = -1;
+        private SoundViewBgmJsonData[] _activeViewBgms;
 
         public bool IsStop
         {
@@ -53,9 +54,7 @@ namespace Sound
                 }
                 else
                 {
-                    if (!_bgmSource.isPlaying && _bgmSource.clip != null)
-                        _bgmSource.Play();
-                    resumeExtraBgms();
+                    resumeBgmAfterEnable();
                 }
             }
         }
@@ -149,6 +148,7 @@ namespace Sound
         // 播放单轨主 BGM（bgms 表 id）
         public void PlayBGM(string bgmId)
         {
+            _activeViewBgms = null;
             _isPlaylistMode = false;
             StopExtraBgms();
 
@@ -161,6 +161,7 @@ namespace Sound
         {
             if (entries == null || entries.Length == 0) return;
 
+            _activeViewBgms = entries;
             _isPlaylistMode = false;
             StopExtraBgms();
 
@@ -188,6 +189,7 @@ namespace Sound
         {
             if (_isPlaylistMode && _bgmSource != null && _bgmSource.isPlaying) return;
 
+            _activeViewBgms = null;
             _isPlaylistMode = true;
             StopExtraBgms();
             playNextPlaylistBgm();
@@ -254,6 +256,32 @@ namespace Sound
                 if (source != null && source.clip != null)
                     source.Play();
             }
+        }
+
+        // BGM 从关闭恢复：有已加载 clip 则续播，否则按当前播放意图重新启动
+        private void resumeBgmAfterEnable()
+        {
+            if (_bgmSource.clip != null)
+            {
+                if (!_bgmSource.isPlaying)
+                    _bgmSource.Play();
+                resumeExtraBgms();
+                return;
+            }
+
+            if (_activeViewBgms != null && _activeViewBgms.Length > 0)
+            {
+                PlayViewBgms(_activeViewBgms);
+                return;
+            }
+
+            if (_isPlaylistMode)
+            {
+                playNextPlaylistBgm();
+                return;
+            }
+
+            PlayRandomBGM();
         }
 
         private void StopExtraBgms()
@@ -385,6 +413,9 @@ namespace Sound
                     return;
                 }
             }
+
+            // BGM 关闭时播放会失败，保留轮播模式以便重新打开设置后能续播
+            if (IsStop) return;
 
             _isPlaylistMode = false;
         }
