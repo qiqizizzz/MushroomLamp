@@ -14,15 +14,22 @@ namespace Sound
 {
     public static class UISoundAutoBinder
     {
-        // 为 View 下所有按钮追加点击和悬停音效
         public static void Bind(IBaseView view)
         {
             if (view is not MonoBehaviour viewBehaviour) return;
 
             string viewName = viewBehaviour.GetType().Name;
             SoundViewBindingJsonData viewBinding = SoundConfigLoader.GetViewBinding(viewName);
-            if (viewBinding != null && viewBinding.disableAutoButtonSound) return;
 
+            if (viewBinding == null || !viewBinding.disableAutoButtonSound)
+                bindButtons(viewBehaviour, viewBinding);
+
+            if (viewBinding?.bgms != null && viewBinding.bgms.Length > 0)
+                GameApp.SoundManager?.PlayViewBgms(viewBinding.bgms);
+        }
+
+        private static void bindButtons(MonoBehaviour viewBehaviour, SoundViewBindingJsonData viewBinding)
+        {
             string viewClick = string.IsNullOrWhiteSpace(viewBinding?.buttonClick)
                 ? SoundConfigLoader.GetDefaultButtonClick()
                 : viewBinding.buttonClick;
@@ -58,9 +65,6 @@ namespace Sound
 
                 handler.Configure(click, hover);
             }
-
-            if (!string.IsNullOrWhiteSpace(viewBinding?.bgm))
-                GameApp.SoundManager?.PlayBGM(viewBinding.bgm);
         }
 
         private static string getRelativePath(Transform root, Transform target)

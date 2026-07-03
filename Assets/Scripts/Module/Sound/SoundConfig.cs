@@ -14,6 +14,7 @@ namespace Sound
     public class SoundCatalogJsonConfig
     {
         public SoundDefaultsJsonData defaults;
+        public SoundBgmJsonData[] bgms;
         public SoundClipJsonData[] clips;
         public SoundViewBindingJsonData[] viewBindings;
     }
@@ -23,8 +24,15 @@ namespace Sound
     {
         public string buttonClick;
         public string buttonHover;
-        public string gameplayBgm;
         public string[] bgmPlaylist;
+    }
+
+    [Serializable]
+    public class SoundBgmJsonData
+    {
+        public string id;
+        public string path;
+        public float volume = 1f;
     }
 
     [Serializable]
@@ -39,11 +47,19 @@ namespace Sound
     public class SoundViewBindingJsonData
     {
         public string view;
-        public string bgm;
+        public SoundViewBgmJsonData[] bgms;
         public string buttonClick;
         public string buttonHover;
         public bool disableAutoButtonSound;
         public SoundButtonBindingJsonData[] buttons;
+    }
+
+    [Serializable]
+    public class SoundViewBgmJsonData
+    {
+        public string id;
+        public bool loop = true;
+        public bool layer;
     }
 
     [Serializable]

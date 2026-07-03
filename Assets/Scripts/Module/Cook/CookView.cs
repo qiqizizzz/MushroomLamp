@@ -95,6 +95,8 @@ namespace Module.Cook
         private const string AngelLaunchAnim = "launch";
         private const string DevilIdleAnim = "idie";
         private const string DevilRecycleAnim = "recycle";
+        private const string SfxDealAppear = "sfx_ingame_appear";
+        private const string SfxDiscardDisappear = "sfx_ingame_disappear";
 
         public bool IsHandAnimating => _isHandAnimating;
         public System.Action OnDiscardAnimationDone;
@@ -204,7 +206,6 @@ namespace Module.Cook
         // 打开界面时关闭遗留弹窗
         public override void Open(params object[] args)
         {
-            GameApp.SoundManager?.PlayInGameBGM();
             hidePauseDialog();
             _lastHandIds.Clear();   // 重置，确保 Open 后首次 refreshHand 把全部牌视为新牌
             playAngelIdleAnimation();
@@ -899,6 +900,15 @@ namespace Module.Cook
             Common.QLog.Info("[CookView] playDealAnimation: enterDelay=" + enterDelay + " newIds=" + newIds.Count + " angelPos=" + worldToHandContent(_imgAngel.position));
 
             playAngelLaunchAnimation();
+            if (enterDelay > 0f)
+            {
+                DOVirtual.DelayedCall(enterDelay, () =>
+                    GameApp.SoundManager?.PlayEffect(SfxDealAppear));
+            }
+            else
+            {
+                GameApp.SoundManager?.PlayEffect(SfxDealAppear);
+            }
 
             int order = 0;
             float lastEnd = 0f;
@@ -1000,6 +1010,7 @@ namespace Module.Cook
 
             setHandInteractable(false);
             playDevilRecycleAnimation();
+            GameApp.SoundManager?.PlayEffect(SfxDiscardDisappear);
             Vector2 devilPos = worldToHandContent(_imgDevil.position);
 
             // 作废的牌对应池中当前显示这些 id 的 item

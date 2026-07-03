@@ -16,9 +16,9 @@ namespace Sound
     {
         private static SoundCatalogJsonConfig _catalog;
         private static Dictionary<string, SoundClipJsonData> _clipsById;
+        private static Dictionary<string, SoundBgmJsonData> _bgmsById;
         private static Dictionary<string, SoundViewBindingJsonData> _viewsByName;
 
-        // 加载声音配置目录
         public static SoundCatalogJsonConfig LoadCatalog()
         {
             if (_catalog != null) return _catalog;
@@ -31,45 +31,57 @@ namespace Sound
             return _catalog;
         }
 
-        // 重新加载声音配置
         public static void Reload()
         {
             _catalog = null;
             _clipsById = null;
+            _bgmsById = null;
             _viewsByName = null;
             LoadCatalog();
         }
 
-        // 查询音频 id，找不到时按原始 Resources/Sounds 路径兜底
-        public static bool TryResolveClip(string idOrPath, out SoundClipResolveData result)
+        // 查询音效（clips 表）
+        public static bool TryResolveClip(string id, out SoundClipResolveData result)
         {
             result = default;
-            if (string.IsNullOrWhiteSpace(idOrPath)) return false;
+            if (string.IsNullOrWhiteSpace(id)) return false;
 
             LoadCatalog();
-            if (_clipsById != null && _clipsById.TryGetValue(idOrPath, out SoundClipJsonData clipData))
-            {
-                if (string.IsNullOrWhiteSpace(clipData.path)) return false;
+            if (_clipsById == null || !_clipsById.TryGetValue(id, out SoundClipJsonData clipData))
+                return false;
 
-                result = new SoundClipResolveData
-                {
-                    Id = clipData.id,
-                    Path = normalizeSoundPath(clipData.path),
-                    VolumeScale = normalizeVolume(clipData.volume)
-                };
-                return true;
-            }
+            if (string.IsNullOrWhiteSpace(clipData.path)) return false;
 
             result = new SoundClipResolveData
             {
-                Id = idOrPath,
-                Path = normalizeSoundPath(idOrPath),
-                VolumeScale = 1f
+                Id = clipData.id,
+                Path = normalizeSoundPath(clipData.path),
+                VolumeScale = normalizeVolume(clipData.volume)
             };
             return true;
         }
 
-        // 获取普通界面 BGM 轮播列表
+        // 查询 BGM（bgms 表，通过 id 取 path）
+        public static bool TryResolveBgm(string id, out SoundClipResolveData result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(id)) return false;
+
+            LoadCatalog();
+            if (_bgmsById == null || !_bgmsById.TryGetValue(id, out SoundBgmJsonData bgmData))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(bgmData.path)) return false;
+
+            result = new SoundClipResolveData
+            {
+                Id = bgmData.id,
+                Path = normalizeSoundPath(bgmData.path),
+                VolumeScale = normalizeVolume(bgmData.volume)
+            };
+            return true;
+        }
+
         public static string[] GetBgmPlaylist(string[] fallback)
         {
             LoadCatalog();
@@ -77,29 +89,18 @@ namespace Sound
             return playlist != null && playlist.Length > 0 ? playlist : fallback;
         }
 
-        // 获取烹饪玩法 BGM
-        public static string GetGameplayBgm(string fallback)
-        {
-            LoadCatalog();
-            string bgm = _catalog?.defaults?.gameplayBgm;
-            return string.IsNullOrWhiteSpace(bgm) ? fallback : bgm;
-        }
-
-        // 获取全局默认按钮点击音效
         public static string GetDefaultButtonClick()
         {
             LoadCatalog();
             return _catalog?.defaults?.buttonClick;
         }
 
-        // 获取全局默认按钮悬停音效
         public static string GetDefaultButtonHover()
         {
             LoadCatalog();
             return _catalog?.defaults?.buttonHover;
         }
 
-        // 按 View 类名获取声音绑定配置
         public static SoundViewBindingJsonData GetViewBinding(string viewName)
         {
             LoadCatalog();
@@ -107,7 +108,6 @@ namespace Sound
             return _viewsByName.TryGetValue(viewName, out SoundViewBindingJsonData binding) ? binding : null;
         }
 
-        // 查询 View 内指定按钮路径的覆盖配置
         public static SoundButtonBindingJsonData FindButtonBinding(SoundViewBindingJsonData viewBinding, string buttonPath)
         {
             if (viewBinding?.buttons == null || string.IsNullOrEmpty(buttonPath)) return null;
@@ -132,6 +132,17 @@ namespace Sound
                 {
                     if (clip == null || string.IsNullOrWhiteSpace(clip.id)) continue;
                     _clipsById[clip.id] = clip;
+                }
+            }
+
+            _bgmsById = new Dictionary<string, SoundBgmJsonData>();
+            SoundBgmJsonData[] bgms = _catalog?.bgms;
+            if (bgms != null)
+            {
+                foreach (SoundBgmJsonData bgm in bgms)
+                {
+                    if (bgm == null || string.IsNullOrWhiteSpace(bgm.id)) continue;
+                    _bgmsById[bgm.id] = bgm;
                 }
             }
 
