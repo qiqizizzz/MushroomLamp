@@ -14,24 +14,25 @@ namespace Sound
 {
     public class SoundManager
     {
-        private const string IN_GAME_BGM = "BGM/ingame";
-
         private static readonly string[] S_DefaultBgmPlaylist =
         {
-            "BGM/Alchemical Clockwork",
-            "BGM/Cinder Crucible",
-            "BGM/Murmur Vatcall"
+            "bgm_alchemical_clockwork",
+            "bgm_cinder_crucible",
+            "bgm_murmur_vatcall"
         };
 
         private readonly Dictionary<string, AudioClip> _clips;
         private readonly Transform _audioRootTf;
         private readonly AudioSource _bgmSource;
+        private readonly List<AudioSource> _extraBgmSources = new();
+        private readonly List<float> _extraBgmVolumeScales = new();
 
         private readonly string[] _bgmPlaylist;
         private bool _isStop;
         private bool _isPlaylistMode;
         private bool _isApplicationPaused;
         private bool _wasBgmPlayingBeforePause;
+        private readonly List<bool> _wasExtraBgmPlayingBeforePause = new();
         private float _bgmVolume;
         private float _effectVolume;
         private float _currentBgmVolumeScale = 1f;
@@ -46,9 +47,16 @@ namespace Sound
                 if (_bgmSource == null) return;
 
                 if (_isStop)
+                {
                     _bgmSource.Pause();
-                else if (!_bgmSource.isPlaying && _bgmSource.clip != null)
-                    _bgmSource.Play();
+                    pauseExtraBgms();
+                }
+                else
+                {
+                    if (!_bgmSource.isPlaying && _bgmSource.clip != null)
+                        _bgmSource.Play();
+                    resumeExtraBgms();
+                }
             }
         }
 
@@ -58,8 +66,7 @@ namespace Sound
             set
             {
                 _bgmVolume = Mathf.Clamp01(value);
-                if (_bgmSource != null)
-                    _bgmSource.volume = _bgmVolume * _currentBgmVolumeScale;
+                applyBgmVolume();
             }
         }
 
@@ -69,10 +76,8 @@ namespace Sound
             set => _effectVolume = Mathf.Clamp01(value);
         }
 
-        // 音效总开关，关闭后 PlayEffect 不发声
         public bool EffectEnabled { get; set; }
 
-        // 背景音乐总开关（语义化封装 IsStop：开=不停，关=停）
         public bool BgmEnabled
         {
             get => !IsStop;
@@ -87,14 +92,12 @@ namespace Sound
             _audioRootTf = getOrCreateAudioRoot();
             _bgmSource = getOrCreateBgmSource();
 
-            // 从存档读取设置初值（默认开、音量 1）
             EffectEnabled = SettingsKeys.GetBool(SettingsKeys.SfxOn, true);
             EffectVolume = SettingsKeys.GetFloat(SettingsKeys.SfxVolume, 1f);
             BgmVolume = SettingsKeys.GetFloat(SettingsKeys.BgmVolume, 1f);
             IsStop = !SettingsKeys.GetBool(SettingsKeys.BgmOn, true);
         }
 
-        // 每帧检测轮播音乐是否需要切到下一首
         public void OnUpdate(float dt)
         {
             if (IsStop || _isApplicationPaused || !_isPlaylistMode || _bgmSource == null) return;
@@ -103,7 +106,6 @@ namespace Sound
             playNextPlaylistBgm();
         }
 
-        // 设置应用暂停状态，避免最小化时误判 BGM 播放结束
         public void SetApplicationPaused(bool isPaused)
         {
             if (_isApplicationPaused == isPaused) return;
@@ -116,67 +118,91 @@ namespace Sound
                 _wasBgmPlayingBeforePause = _bgmSource.isPlaying;
                 if (_wasBgmPlayingBeforePause)
                     _bgmSource.Pause();
+
+                _wasExtraBgmPlayingBeforePause.Clear();
+                for (int i = 0; i < _extraBgmSources.Count; i++)
+                {
+                    AudioSource source = _extraBgmSources[i];
+                    bool wasPlaying = source != null && source.isPlaying;
+                    _wasExtraBgmPlayingBeforePause.Add(wasPlaying);
+                    if (wasPlaying)
+                        source.Pause();
+                }
             }
-            else if (_wasBgmPlayingBeforePause && !IsStop && _bgmSource.clip != null)
+            else
             {
-                _bgmSource.Play();
+                if (_wasBgmPlayingBeforePause && !IsStop && _bgmSource.clip != null)
+                    _bgmSource.Play();
+
+                for (int i = 0; i < _extraBgmSources.Count; i++)
+                {
+                    if (i >= _wasExtraBgmPlayingBeforePause.Count) break;
+                    if (!_wasExtraBgmPlayingBeforePause[i] || IsStop) continue;
+
+                    AudioSource source = _extraBgmSources[i];
+                    if (source != null && source.clip != null)
+                        source.Play();
+                }
             }
         }
 
-        // 播放背景音乐，资源路径对应 Resources/Sounds
-        public void PlayBGM(string res)
+        // 播放单轨主 BGM（bgms 表 id）
+        public void PlayBGM(string bgmId)
         {
             _isPlaylistMode = false;
-            playBgm(res, true);
+            StopExtraBgms();
+
+            if (!SoundConfigLoader.TryResolveBgm(bgmId, out SoundClipResolveData data)) return;
+            playMainBgm(data, true);
         }
 
-        // 播放烹饪玩法背景音乐
-        public void PlayInGameBGM()
+        // 按 View 配置播放多轨 BGM（主轨 + 叠加层）
+        public void PlayViewBgms(SoundViewBgmJsonData[] entries)
         {
+            if (entries == null || entries.Length == 0) return;
+
             _isPlaylistMode = false;
-            playBgm(SoundConfigLoader.GetGameplayBgm(IN_GAME_BGM), true);
+            StopExtraBgms();
+
+            bool mainAssigned = false;
+            for (int i = 0; i < entries.Length; i++)
+            {
+                SoundViewBgmJsonData entry = entries[i];
+                if (entry == null || string.IsNullOrWhiteSpace(entry.id)) continue;
+                if (!SoundConfigLoader.TryResolveBgm(entry.id, out SoundClipResolveData data)) continue;
+
+                bool useLayer = entry.layer || mainAssigned;
+                if (!useLayer)
+                {
+                    playMainBgm(data, entry.loop);
+                    mainAssigned = true;
+                }
+                else
+                {
+                    playExtraBgm(data, entry.loop);
+                }
+            }
         }
 
-        // 随机播放普通界面背景音乐
         public void PlayRandomBGM()
         {
             if (_isPlaylistMode && _bgmSource != null && _bgmSource.isPlaying) return;
 
             _isPlaylistMode = true;
+            StopExtraBgms();
             playNextPlaylistBgm();
         }
 
-        // 播放指定背景音乐
-        private bool playBgm(string res, bool isLoop)
+        public void ReloadConfig()
         {
-            if (IsStop) return false;
-            if (!SoundConfigLoader.TryResolveClip(res, out SoundClipResolveData clipData)) return false;
-
-            AudioClip clip = loadClip(clipData.Path);
-            if (clip == null) return false;
-
-            _currentBgmVolumeScale = clipData.VolumeScale;
-            _bgmSource.volume = BgmVolume * _currentBgmVolumeScale;
-
-            if (_bgmSource.clip == clip && _bgmSource.isPlaying)
-            {
-                _bgmSource.loop = isLoop;
-                return true;
-            }
-
-            _bgmSource.clip = clip;
-            _bgmSource.loop = isLoop;
-            _bgmSource.Play();
-            return true;
+            SoundConfigLoader.Reload();
         }
 
-        // 播放音效，资源路径或音频 id 对应 Resources/Sounds
         public void PlayEffect(string name)
         {
             PlayEffect(name, Vector3.zero);
         }
 
-        // 播放音效，资源路径对应 Resources/Sounds
         public void PlayEffect(string name, Vector3 pos)
         {
             if (!EffectEnabled) return;
@@ -196,13 +222,98 @@ namespace Sound
             Object.Destroy(effectObj, clip.length);
         }
 
-        // 重新加载声音配置
-        public void ReloadConfig()
+        private void applyBgmVolume()
         {
-            SoundConfigLoader.Reload();
+            if (_bgmSource != null)
+                _bgmSource.volume = _bgmVolume * _currentBgmVolumeScale;
+
+            for (int i = 0; i < _extraBgmSources.Count; i++)
+            {
+                AudioSource source = _extraBgmSources[i];
+                if (source == null) continue;
+
+                float scale = i < _extraBgmVolumeScales.Count ? _extraBgmVolumeScales[i] : 1f;
+                source.volume = _bgmVolume * scale;
+            }
         }
 
-        // 获取或创建音频根节点
+        private void pauseExtraBgms()
+        {
+            for (int i = 0; i < _extraBgmSources.Count; i++)
+            {
+                if (_extraBgmSources[i] != null)
+                    _extraBgmSources[i].Pause();
+            }
+        }
+
+        private void resumeExtraBgms()
+        {
+            for (int i = 0; i < _extraBgmSources.Count; i++)
+            {
+                AudioSource source = _extraBgmSources[i];
+                if (source != null && source.clip != null)
+                    source.Play();
+            }
+        }
+
+        private void StopExtraBgms()
+        {
+            for (int i = 0; i < _extraBgmSources.Count; i++)
+            {
+                AudioSource source = _extraBgmSources[i];
+                if (source == null) continue;
+                source.Stop();
+                source.clip = null;
+            }
+
+            _extraBgmVolumeScales.Clear();
+        }
+
+        private bool playMainBgm(SoundClipResolveData data, bool isLoop)
+        {
+            if (IsStop) return false;
+
+            AudioClip clip = loadClip(data.Path);
+            if (clip == null) return false;
+
+            _currentBgmVolumeScale = data.VolumeScale;
+            applyBgmVolume();
+
+            if (_bgmSource.clip == clip && _bgmSource.isPlaying)
+            {
+                _bgmSource.loop = isLoop;
+                return true;
+            }
+
+            _bgmSource.clip = clip;
+            _bgmSource.loop = isLoop;
+            _bgmSource.Play();
+            return true;
+        }
+
+        private bool playExtraBgm(SoundClipResolveData data, bool isLoop)
+        {
+            if (IsStop) return false;
+
+            AudioClip clip = loadClip(data.Path);
+            if (clip == null) return false;
+
+            AudioSource source = getOrCreateExtraBgmSource(_extraBgmSources.Count);
+            _extraBgmVolumeScales.Add(data.VolumeScale);
+            applyBgmVolume();
+
+            if (source.clip == clip && source.isPlaying)
+            {
+                source.loop = isLoop;
+                return true;
+            }
+
+            source.clip = clip;
+            source.loop = isLoop;
+            source.Play();
+            return true;
+        }
+
         private Transform getOrCreateAudioRoot()
         {
             Transform rootTf = GameApp.RootTf;
@@ -223,7 +334,6 @@ namespace Sound
             return audioObj.transform;
         }
 
-        // 获取或创建 BGM 音源
         private AudioSource getOrCreateBgmSource()
         {
             Transform bgmTf = _audioRootTf.Find("BGM");
@@ -241,7 +351,19 @@ namespace Sound
             return audioSource;
         }
 
-        // 播放下一首轮播音乐
+        private AudioSource getOrCreateExtraBgmSource(int index)
+        {
+            while (_extraBgmSources.Count <= index)
+            {
+                string nodeName = $"BGM_Layer_{_extraBgmSources.Count}";
+                GameObject layerObj = new GameObject(nodeName);
+                layerObj.transform.SetParent(_audioRootTf, false);
+                _extraBgmSources.Add(layerObj.AddComponent<AudioSource>());
+            }
+
+            return _extraBgmSources[index];
+        }
+
         private void playNextPlaylistBgm()
         {
             if (_bgmPlaylist == null || _bgmPlaylist.Length == 0)
@@ -254,7 +376,10 @@ namespace Sound
             for (int i = 0; i < _bgmPlaylist.Length; i++)
             {
                 int playlistIndex = (startIndex + i) % _bgmPlaylist.Length;
-                if (playBgm(_bgmPlaylist[playlistIndex], false))
+                if (!SoundConfigLoader.TryResolveBgm(_bgmPlaylist[playlistIndex], out SoundClipResolveData data))
+                    continue;
+
+                if (playMainBgm(data, false))
                 {
                     _lastPlaylistIndex = playlistIndex;
                     return;
@@ -264,7 +389,6 @@ namespace Sound
             _isPlaylistMode = false;
         }
 
-        // 获取随机轮播索引，尽量避免连续重复
         private int getRandomPlaylistIndex()
         {
             if (_bgmPlaylist.Length <= 1)
@@ -277,7 +401,6 @@ namespace Sound
             return playlistIndex;
         }
 
-        // 加载并缓存音频
         private AudioClip loadClip(string name)
         {
             if (_clips.TryGetValue(name, out AudioClip clip))

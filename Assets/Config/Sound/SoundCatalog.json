@@ -2,14 +2,13 @@
   "defaults": {
     "buttonClick": "ui_click",
     "buttonHover": "ui_hover",
-    "gameplayBgm": "bgm_ingame",
     "bgmPlaylist": [
       "bgm_alchemical_clockwork",
       "bgm_cinder_crucible",
       "bgm_murmur_vatcall"
     ]
   },
-  "clips": [
+  "bgms": [
     {
       "id": "bgm_alchemical_clockwork",
       "path": "BGM/Alchemical Clockwork",
@@ -31,28 +30,124 @@
       "volume": 1.0
     },
     {
+      "id": "bgm_boiling_loop",
+      "path": "BGM/Ingame_BoilingLoop",
+      "volume": 1.0
+    }
+  ],
+  "clips": [
+    {
       "id": "ui_click",
-      "path": "",
+      "path": "Effects/Menu_Ui_Click",
       "volume": 1.0
     },
     {
       "id": "ui_hover",
-      "path": "",
+      "path": "Effects/Menu_UI_Hover",
+      "volume": 0.8
+    },
+    {
+      "id": "menu_ui_click",
+      "path": "Effects/Menu_Ui_Click",
+      "volume": 1.0
+    },
+    {
+      "id": "menu_ui_hover",
+      "path": "Effects/Menu_UI_Hover",
+      "volume": 0.8
+    },
+    {
+      "id": "sfx_box_change_1",
+      "path": "Effects/BoxChange_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_box_change_2",
+      "path": "Effects/BoxChange_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_menu_selection_1",
+      "path": "Effects/IngameMenuSelection_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_menu_selection_2",
+      "path": "Effects/IngameMenuSelection_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_appear",
+      "path": "Effects/Ingame_Appear",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_disappear",
+      "path": "Effects/Ingame_Disappear",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_put_in_right_place",
+      "path": "Effects/Ingame_PutInRightPlace",
       "volume": 1.0
     }
   ],
   "viewBindings": [
     {
       "view": "MainMenuView",
-      "bgm": "",
-      "buttonClick": "ui_click",
+      "bgms": [],
+      "buttonClick": "menu_ui_click",
+      "buttonHover": "menu_ui_hover",
+      "disableAutoButtonSound": false,
+      "buttons": [
+        {
+          "path": "ButtonGroup/Btn_Start",
+          "click": "menu_ui_click",
+          "hover": "menu_ui_hover"
+        },
+        {
+          "path": "ButtonGroup/Btn_Settings",
+          "click": "menu_ui_click",
+          "hover": "menu_ui_hover"
+        },
+        {
+          "path": "ButtonGroup/Btn_Exit",
+          "click": "menu_ui_click",
+          "hover": "menu_ui_hover"
+        }
+      ]
+    },
+    {
+      "view": "SelectBoxView",
+      "bgms": [],
+      "buttonClick": "",
       "buttonHover": "",
       "disableAutoButtonSound": false,
-      "buttons": []
+      "buttons": [
+        {
+          "path": "Bottom/Btn_Left",
+          "click": "sfx_box_change_1"
+        },
+        {
+          "path": "Bottom/Btn_Right",
+          "click": "sfx_box_change_1"
+        }
+      ]
     },
     {
       "view": "CookView",
-      "bgm": "bgm_ingame",
+      "bgms": [
+        {
+          "id": "bgm_ingame",
+          "loop": true,
+          "layer": false
+        },
+        {
+          "id": "bgm_boiling_loop",
+          "loop": true,
+          "layer": true
+        }
+      ],
       "buttonClick": "",
       "buttonHover": "",
       "disableAutoButtonSound": false,
