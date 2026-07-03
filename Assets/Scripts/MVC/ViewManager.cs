@@ -334,15 +334,30 @@ namespace MVC
 
             canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-            canvasScaler.matchWidthOrHeight = 0.5f;
+            canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            canvasScaler.matchWidthOrHeight = 1f;
 
             if (canvasObj.GetComponent<GraphicRaycaster>() == null)
                 canvasObj.AddComponent<GraphicRaycaster>();
 
             RectTransform rectTf = canvasObj.GetComponent<RectTransform>();
-            rectTf.sizeDelta = new Vector2(1920f, 1080f);
+            if (renderMode == RenderMode.ScreenSpaceOverlay)
+                setupOverlayCanvasRect(rectTf);
+            else
+                rectTf.sizeDelta = new Vector2(1920f, 1080f);
 
             return canvas;
+        }
+
+        // Overlay Canvas 铺满屏幕，由 CanvasScaler 负责缩放
+        private static void setupOverlayCanvasRect(RectTransform rectTf)
+        {
+            rectTf.anchorMin = Vector2.zero;
+            rectTf.anchorMax = Vector2.one;
+            rectTf.pivot = new Vector2(0.5f, 0.5f);
+            rectTf.anchoredPosition = Vector2.zero;
+            rectTf.sizeDelta = Vector2.zero;
+            rectTf.localScale = Vector3.one;
         }
 
         // 确保场景存在事件系统
