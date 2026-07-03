@@ -1,0 +1,348 @@
+﻿MainMenuBegin.png
+size: 1713,523
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Eyelid
+  rotate: false
+  xy: 1158, 204
+  size: 105, 96
+  orig: 105, 96
+  offset: 0, 0
+  index: -1
+Eyelid 2
+  rotate: false
+  xy: 1432, 214
+  size: 106, 95
+  orig: 106, 95
+  offset: 0, 0
+  index: -1
+Particle1
+  rotate: false
+  xy: 921, 183
+  size: 17, 19
+  orig: 17, 19
+  offset: 0, 0
+  index: -1
+Particle2
+  rotate: false
+  xy: 940, 183
+  size: 15, 19
+  orig: 15, 20
+  offset: 0, 0
+  index: -1
+Particle3
+  rotate: false
+  xy: 667, 168
+  size: 11, 11
+  orig: 11, 13
+  offset: 0, 1
+  index: -1
+Particle4
+  rotate: false
+  xy: 1453, 383
+  size: 17, 12
+  orig: 19, 14
+  offset: 1, 1
+  index: -1
+aureole
+  rotate: false
+  xy: 1546, 89
+  size: 71, 45
+  orig: 71, 45
+  offset: 0, 0
+  index: -1
+body1
+  rotate: true
+  xy: 1158, 302
+  size: 219, 168
+  orig: 219, 168
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 1338, 12
+  size: 206, 190
+  orig: 206, 190
+  offset: 0, 0
+  index: -1
+close
+  rotate: false
+  xy: 179, 3
+  size: 78, 58
+  orig: 78, 59
+  offset: 0, 1
+  index: -1
+e body
+  rotate: false
+  xy: 996, 4
+  size: 198, 198
+  orig: 198, 198
+  offset: 0, 0
+  index: -1
+e left foot
+  rotate: false
+  xy: 452, 13
+  size: 74, 49
+  orig: 74, 49
+  offset: 0, 0
+  index: -1
+e left wing
+  rotate: false
+  xy: 1265, 204
+  size: 93, 96
+  orig: 93, 96
+  offset: 0, 0
+  index: -1
+e mouth
+  rotate: false
+  xy: 1660, 259
+  size: 51, 53
+  orig: 51, 53
+  offset: 0, 0
+  index: -1
+e right foot
+  rotate: false
+  xy: 1546, 3
+  size: 44, 35
+  orig: 44, 35
+  offset: 0, 0
+  index: -1
+e right wing
+  rotate: false
+  xy: 1328, 392
+  size: 47, 129
+  orig: 47, 129
+  offset: 0, 0
+  index: -1
+e tail
+  rotate: false
+  xy: 1546, 136
+  size: 76, 76
+  orig: 77, 76
+  offset: 0, 0
+  index: -1
+eye1 sketch
+  rotate: false
+  xy: 398, 5
+  size: 52, 56
+  orig: 54, 57
+  offset: 1, 1
+  index: -1
+eye2
+  rotate: false
+  xy: 1567, 332
+  size: 55, 55
+  orig: 55, 55
+  offset: 0, 0
+  index: -1
+fire
+  rotate: true
+  xy: 411, 168
+  size: 353, 254
+  orig: 353, 254
+  offset: 0, 0
+  index: -1
+fire 2
+  rotate: true
+  xy: 1546, 40
+  size: 47, 69
+  orig: 47, 70
+  offset: 0, 1
+  index: -1
+fire 3
+  rotate: false
+  xy: 957, 184
+  size: 29, 18
+  orig: 29, 20
+  offset: 0, 1
+  index: -1
+g body
+  rotate: true
+  xy: 2, 63
+  size: 458, 407
+  orig: 458, 407
+  offset: 0, 0
+  index: -1
+g eye
+  rotate: true
+  xy: 667, 181
+  size: 340, 252
+  orig: 340, 252
+  offset: 0, 0
+  index: -1
+hand
+  rotate: false
+  xy: 1328, 311
+  size: 123, 76
+  orig: 124, 77
+  offset: 1, 1
+  index: -1
+left ear
+  rotate: true
+  xy: 1516, 323
+  size: 56, 49
+  orig: 56, 49
+  offset: 0, 0
+  index: -1
+left foot1
+  rotate: true
+  xy: 1476, 381
+  size: 76, 64
+  orig: 76, 64
+  offset: 0, 0
+  index: -1
+left foot2
+  rotate: true
+  xy: 1377, 397
+  size: 124, 97
+  orig: 124, 97
+  offset: 0, 0
+  index: -1
+left hand
+  rotate: false
+  xy: 1476, 459
+  size: 67, 62
+  orig: 67, 62
+  offset: 0, 0
+  index: -1
+liquid
+  rotate: true
+  xy: 921, 204
+  size: 317, 235
+  orig: 317, 235
+  offset: 0, 0
+  index: -1
+m left wing
+  rotate: true
+  xy: 1546, 389
+  size: 132, 153
+  orig: 132, 153
+  offset: 0, 0
+  index: -1
+m right wing
+  rotate: true
+  xy: 1540, 214
+  size: 107, 118
+  orig: 107, 118
+  offset: 0, 0
+  index: -1
+open
+  rotate: true
+  xy: 1660, 314
+  size: 73, 51
+  orig: 77, 58
+  offset: 1, 7
+  index: -1
+right ear
+  rotate: false
+  xy: 259, 4
+  size: 70, 57
+  orig: 70, 59
+  offset: 0, 1
+  index: -1
+right foot
+  rotate: false
+  xy: 2, 2
+  size: 69, 59
+  orig: 69, 60
+  offset: 0, 1
+  index: -1
+right hand
+  rotate: true
+  xy: 1660, 186
+  size: 71, 49
+  orig: 72, 49
+  offset: 0, 0
+  index: -1
+sketch
+  rotate: false
+  xy: 1453, 315
+  size: 61, 64
+  orig: 62, 65
+  offset: 1, 1
+  index: -1
+stirrer
+  rotate: false
+  xy: 1360, 211
+  size: 70, 98
+  orig: 71, 98
+  offset: 1, 0
+  index: -1
+t body
+  rotate: true
+  xy: 1196, 7
+  size: 195, 140
+  orig: 195, 140
+  offset: 0, 0
+  index: -1
+t close
+  rotate: true
+  xy: 1624, 64
+  size: 73, 25
+  orig: 75, 28
+  offset: 1, 2
+  index: -1
+t left wing
+  rotate: true
+  xy: 73, 3
+  size: 58, 104
+  orig: 58, 104
+  offset: 0, 0
+  index: -1
+t mouth
+  rotate: false
+  xy: 1666, 95
+  size: 44, 40
+  orig: 46, 40
+  offset: 1, 0
+  index: -1
+t open
+  rotate: true
+  xy: 1624, 139
+  size: 73, 30
+  orig: 75, 33
+  offset: 1, 1
+  index: -1
+t right foot
+  rotate: false
+  xy: 1656, 137
+  size: 49, 47
+  orig: 50, 47
+  offset: 0, 0
+  index: -1
+t right wing
+  rotate: true
+  xy: 411, 64
+  size: 102, 116
+  orig: 144, 116
+  offset: 42, 0
+  index: -1
+t tail
+  rotate: true
+  xy: 331, 5
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: -1
+tongue
+  rotate: false
+  xy: 529, 6
+  size: 239, 160
+  orig: 239, 160
+  offset: 0, 0
+  index: -1
+tray
+  rotate: false
+  xy: 770, 8
+  size: 224, 171
+  orig: 224, 171
+  offset: 0, 0
+  index: -1
+图层 97
+  rotate: true
+  xy: 1617, 14
+  size: 48, 47
+  orig: 48, 47
+  offset: 0, 0
+  index: -1
