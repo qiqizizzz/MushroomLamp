@@ -8,6 +8,7 @@
 
 using Common.Defines;
 using Module.Confirm;
+using Module.Cook;
 using Module.Item;
 using MVC;
 using MVC.Controller;
@@ -18,6 +19,7 @@ namespace Module.Blackjack
     public class BlackjackController : BaseController
     {
         private BlackjackModel _model;
+        private readonly BlackjackDialogSession _dialogSession = new();
 
         public BlackjackController()
         {
@@ -54,15 +56,15 @@ namespace Module.Blackjack
 
         private void onOpen(object[] args)
         {
-            _model.Reset();
+            _dialogSession.Reset();
             GameApp.ViewManager.Open((int)ViewType.BlackjackView, args);
-            refreshView();
+            beginSession();
         }
 
         private void onRestart(object[] args)
         {
-            _model.Reset();
-            refreshView();
+            _dialogSession.Reset();
+            beginSession();
         }
 
         private void onReturn(object[] args)
@@ -70,14 +72,22 @@ namespace Module.Blackjack
             returnToCookView();
         }
 
-        // 点道具抽牌：翻开下一张，刷新界面；达/超 21 触发结算
+        // 点道具抽牌：先播翻牌，动画结束后再刷新累计点数并判定结算
         private void onDraw(object[] args)
         {
-            if (!_model.CanDraw) return;
+            int slotIndex = resolveItemSlotIndex(args);
+            if (!_model.TryDrawFromSlot(slotIndex, out int cardIndex) || cardIndex < 0)
+                return;
 
-            int index = _model.RevealNext();
-            if (index < 0) return;
+            var view = getBlackjackView();
+            if (view == null) return;
 
+            int point = _model.GetRevealedPoint(cardIndex);
+            view.PlayCardFlipReveal(cardIndex, point, slotIndex, onDrawFlipFinished);
+        }
+
+        private void onDrawFlipFinished()
+        {
             refreshView();
 
             if (_model.IsBusted)
@@ -146,9 +156,49 @@ namespace Module.Blackjack
 
         private void refreshView()
         {
-            var view = GameApp.ViewManager.GetView((int)ViewType.BlackjackView);
-            if (view is BlackjackView blackjackView)
-                blackjackView.Refresh(_model);
+            var view = getBlackjackView();
+            if (view == null) return;
+
+            view.RefreshGameplay(_model);
+
+            if (!_dialogSession.DialogEnabled) return;
+
+            _dialogSession.Refresh(_model, buildDialogContext());
+            view.RefreshDialog(_dialogSession);
+        }
+
+        private void beginSession()
+        {
+            BlackjackView view = getBlackjackView();
+            if (view == null) return;
+
+            _model.Reset(view.GetItemSlotCount());
+            view.BeginSession(_model, onIntroFinished);
+        }
+
+        private void onIntroFinished()
+        {
+            _dialogSession.SetDialogEnabled(true);
+            refreshView();
+        }
+
+        private BlackjackView getBlackjackView()
+        {
+            return GameApp.ViewManager.GetView((int)ViewType.BlackjackView) as BlackjackView;
+        }
+
+        private static BlackjackDialogContext buildDialogContext()
+        {
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                return new BlackjackDialogContext(cookModel.CurrentScore, cookModel.TargetMin);
+
+            return BlackjackDialogContext.Empty;
+        }
+
+        private static int resolveItemSlotIndex(object[] args)
+        {
+            if (args == null || args.Length == 0) return 0;
+            return args[0] is int index ? index : 0;
         }
     }
 }

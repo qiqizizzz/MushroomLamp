@@ -97,7 +97,7 @@ namespace Module.Shop
             if (_txtGold?.font != null) _fontTemplate = _txtGold.font;
             else if (_txtSubtitle?.font != null) _fontTemplate = _txtSubtitle.font;
             else if (_txtInfo?.font != null) _fontTemplate = _txtInfo.font;
-            else _fontTemplate = UIFontHelper.SourceHanSans;
+            else _fontTemplate = UIFontHelper.JingnanFont;
         }
 
         public void Refresh(ShopModel model)

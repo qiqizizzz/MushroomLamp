@@ -184,7 +184,7 @@ namespace Module.Shop
 
         private static void applyPriceFont(TextMeshProUGUI txtPrice)
         {
-            UIFontHelper.ApplyChineseFont(txtPrice, UIFontHelper.SourceHanSans);
+            UIFontHelper.ApplyChineseFont(txtPrice, UIFontHelper.JingnanFont);
         }
 
         private static void hideNameLabel(Transform root)

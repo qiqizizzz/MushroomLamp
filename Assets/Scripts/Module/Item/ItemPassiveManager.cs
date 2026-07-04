@@ -11,8 +11,6 @@ namespace Module.Item
         private const string EffectModifyRoundCount = "modify_round_count";
         private const string EffectFreeFirstMagicBox = "free_first_magic_box";
 
-        private const float SlightBurnScoreMultiplier = 0.8f;
-
         private static bool _overcookPadUsed;
         private static bool _rabbitFootUsed;
         private static bool _pandoraKeyUsed;
@@ -55,11 +53,14 @@ namespace Module.Item
         // 防糊锅垫：本小关首次糊掉改为微焦（保留 80% 分）
         public static bool TryConvertOvercookToSlightBurn(out float scoreMultiplier, out string cookStateText)
         {
-            scoreMultiplier = SlightBurnScoreMultiplier;
+            scoreMultiplier = 1f;
             cookStateText = "微焦";
 
             if (_overcookPadUsed || !ownsEffect(EffectPreventFirstOvercook))
                 return false;
+
+            scoreMultiplier = getOwnedEffectValue(EffectPreventFirstOvercook);
+            if (scoreMultiplier <= 0f) scoreMultiplier = 0.8f;
 
             _overcookPadUsed = true;
             return true;
@@ -68,13 +69,13 @@ namespace Module.Item
         public static int GetMagicBoxOptionBonus()
         {
             if (!ownsEffect(EffectModifyMagicBoxOptionCount)) return 0;
-            return parsePlusInt(getOwnedEffectValue(EffectModifyMagicBoxOptionCount), 1);
+            return toIntBonus(getOwnedEffectValue(EffectModifyMagicBoxOptionCount));
         }
 
         public static int GetRoundCountBonus()
         {
             if (!ownsEffect(EffectModifyRoundCount)) return 0;
-            return parsePlusInt(getOwnedEffectValue(EffectModifyRoundCount), 1);
+            return toIntBonus(getOwnedEffectValue(EffectModifyRoundCount));
         }
 
         // 幸运兔脚：本小关首次爆牌可重抽
@@ -99,7 +100,7 @@ namespace Module.Item
             return false;
         }
 
-        private static string getOwnedEffectValue(string effectType)
+        private static float getOwnedEffectValue(string effectType)
         {
             foreach (string itemId in PlayerDataManager.Instance.GetOwnedItemIds())
             {
@@ -108,18 +109,12 @@ namespace Module.Item
                     return cfg.effectValue;
             }
 
-            return null;
+            return 0f;
         }
 
-        private static int parsePlusInt(string raw, int fallback)
+        private static int toIntBonus(float value)
         {
-            if (string.IsNullOrWhiteSpace(raw)) return fallback;
-
-            raw = raw.Trim();
-            if (raw.StartsWith("+"))
-                raw = raw.Substring(1);
-
-            return int.TryParse(raw, out int value) ? value : fallback;
+            return UnityEngine.Mathf.RoundToInt(value);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Module.Shop
         private RectTransform _rectTransform;
         private bool _interactable = true;
         private bool _isPointerInside;
+        private float _baseScale = 1f;
         private float _targetScale = 1f;
         private float _width = 200f;
         private float _height = 200f;
@@ -29,9 +30,9 @@ namespace Module.Shop
             if (value) return;
 
             _isPointerInside = false;
-            _targetScale = 1f;
+            _targetScale = _baseScale;
             if (_rectTransform != null)
-                _rectTransform.localScale = Vector3.one;
+                _rectTransform.localScale = Vector3.one * _baseScale;
         }
 
         protected override void OnAwake()
@@ -39,6 +40,11 @@ namespace Module.Shop
             _rectTransform = transform as RectTransform;
             if (_rectTransform != null)
             {
+                float scale = _rectTransform.localScale.x;
+                if (Mathf.Abs(scale) > 0.01f)
+                    _baseScale = scale;
+
+                _targetScale = _baseScale;
                 _width = _rectTransform.rect.width > 1f ? _rectTransform.rect.width : _width;
                 _height = _rectTransform.rect.height > 1f ? _rectTransform.rect.height : _height;
             }
@@ -62,7 +68,7 @@ namespace Module.Shop
         {
             if (!_interactable)
             {
-                _targetScale = 1f;
+                _targetScale = _baseScale;
                 return;
             }
 
@@ -70,14 +76,14 @@ namespace Module.Shop
             if (isInside)
             {
                 _isPointerInside = true;
-                _targetScale = HoverScale;
+                _targetScale = _baseScale * HoverScale;
                 return;
             }
 
             if (!_isPointerInside) return;
 
             _isPointerInside = false;
-            _targetScale = 1f;
+            _targetScale = _baseScale;
         }
 
         private bool isPointerOver()

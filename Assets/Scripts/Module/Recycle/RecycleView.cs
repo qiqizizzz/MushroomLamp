@@ -54,7 +54,7 @@ namespace Module.Recycle
             if (_txtTip != null) _fontTemplate = _txtTip.font;
             else if (_txtGold != null) _fontTemplate = _txtGold.font;
 
-            TMP_FontAsset chineseFont = UIFontHelper.SourceHanSans;
+            TMP_FontAsset chineseFont = UIFontHelper.JingnanFont;
             if (chineseFont != null)
                 _fontTemplate = chineseFont;
 

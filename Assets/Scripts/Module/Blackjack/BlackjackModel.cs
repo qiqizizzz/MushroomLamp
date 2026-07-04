@@ -23,15 +23,22 @@ namespace Module.Blackjack
 
     public class BlackjackModel : BaseModel
     {
-        public const int BaseCardCount = 4;
+        public const int DefaultItemSlotCount = 3;
         public const int BustLimit = 21;
 
         private const int MinPoint = 1;
         private const int MaxPoint = 11;
 
+        private readonly HashSet<int> _usedItemSlots = new();
+        private int _lastUsedItemSlot = -1;
+
         public readonly List<BlackjackCardData> Cards = new();
 
-        public int CardCount => BaseCardCount + ItemPassiveManager.GetMagicBoxOptionBonus();
+        // 上方道具槽数量（= 小牌数量），由界面 Items 数量或加成决定
+        public int ItemSlotCount { get; private set; }
+
+        // 小牌张数与道具槽一一对应
+        public int CardCount => ItemSlotCount;
 
         // 当前累计点数（已翻开牌之和）
         public int TotalPoint { get; private set; }
@@ -48,12 +55,29 @@ namespace Module.Blackjack
         // 是否还能继续抽（未爆且还有未翻开的牌）
         public bool CanDraw => !IsBusted && !AllRevealed;
 
-        // 开局/重开：重置所有牌为未翻开
-        public void Reset()
+        // 指定上方道具槽是否仍可点击
+        public bool IsItemSlotAvailable(int slotIndex)
         {
+            if (!CanDraw || slotIndex < 0 || slotIndex >= ItemSlotCount) return false;
+            return !_usedItemSlots.Contains(slotIndex);
+        }
+
+        // 计算小牌居中布局（anchoredPosition，相对 SmallCards 容器）
+        public IReadOnlyList<Vector2> GetSmallCardLayout(float containerWidth, float cardWidth, float spacing)
+        {
+            return BlackjackCardLayout.ComputeCenteredAnchoredPositions(
+                ItemSlotCount, containerWidth, cardWidth, spacing);
+        }
+
+        // 开局/重开：itemSlotCount 为界面 Items 子节点数量；<=0 时用默认 + 道具加成
+        public void Reset(int itemSlotCount = 0)
+        {
+            ItemSlotCount = resolveItemSlotCount(itemSlotCount);
             Cards.Clear();
-            int cardCount = CardCount;
-            for (int i = 0; i < cardCount; i++)
+            _usedItemSlots.Clear();
+            _lastUsedItemSlot = -1;
+
+            for (int i = 0; i < ItemSlotCount; i++)
             {
                 Cards.Add(new BlackjackCardData
                 {
@@ -64,6 +88,14 @@ namespace Module.Blackjack
 
             TotalPoint = 0;
             RevealedCount = 0;
+        }
+
+        private static int resolveItemSlotCount(int itemSlotCount)
+        {
+            if (itemSlotCount > 0)
+                return itemSlotCount + ItemPassiveManager.GetMagicBoxOptionBonus();
+
+            return DefaultItemSlotCount + ItemPassiveManager.GetMagicBoxOptionBonus();
         }
 
         /// <summary>
@@ -85,7 +117,23 @@ namespace Module.Blackjack
             return index;
         }
 
-        // 幸运兔脚：撤销最近一次翻牌
+        // 从指定道具槽抽牌：该槽位仅可使用一次
+        public bool TryDrawFromSlot(int slotIndex, out int cardIndex)
+        {
+            cardIndex = -1;
+            if (!IsItemSlotAvailable(slotIndex)) return false;
+
+            _usedItemSlots.Add(slotIndex);
+            _lastUsedItemSlot = slotIndex;
+            cardIndex = RevealNext();
+            if (cardIndex >= 0) return true;
+
+            _usedItemSlots.Remove(slotIndex);
+            _lastUsedItemSlot = -1;
+            return false;
+        }
+
+        // 幸运兔脚：撤销最近一次翻牌，并恢复对应道具槽
         public bool UndoLastReveal()
         {
             if (RevealedCount <= 0) return false;
@@ -95,6 +143,13 @@ namespace Module.Blackjack
             TotalPoint -= card.revealedPoint;
             card.revealed = false;
             card.revealedPoint = 0;
+
+            if (_lastUsedItemSlot >= 0)
+            {
+                _usedItemSlots.Remove(_lastUsedItemSlot);
+                _lastUsedItemSlot = -1;
+            }
+
             return true;
         }
 
