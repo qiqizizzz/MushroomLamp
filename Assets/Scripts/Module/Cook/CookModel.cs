@@ -124,8 +124,9 @@ namespace Module.Cook
         public bool IsFinalStage => LevelFlow.Instance.HasStageConfig && LevelFlow.Instance.IsLastStage;
         public bool ShouldOpenFinalSummary => IsStageFinished && (!IsStageTargetReached || IsFinalStage);
         public bool ShouldOpenStageSettle => IsStageFinished && IsStageTargetReached && !IsFinalStage;
-        // 结束回合（煮熟法阵材料）：只要法阵有材料即可
-        public bool CanSettle => IsRunActive && HasCookingMaterial && RoundState != CookRoundStateType.Finished;
+        // 结束回合：法阵有材料时可推进熟度；最后一回合无法阵材料时也允许手动结束小局
+        public bool CanSettle => IsRunActive && RoundState != CookRoundStateType.Finished
+            && (HasCookingMaterial || isLastTurn);
         public bool IsOverHeatRisk => PreviewValue > TargetMax;
 
         public CookModel()
@@ -660,14 +661,19 @@ namespace Module.Cook
         // 供 View 在弃牌动画结束后调用，发出新手牌（避免弃牌和发牌同帧导致动画对象被复用）
         public void DealNewHand()
         {
-            if (_pendingDeal)
+            if (!_pendingDeal) return;
+
+            _pendingDeal = false;
+            if (!isLastTurn)
             {
-                _pendingDeal = false;
                 dealHandMaterials();
                 refreshPreviewValue();
-                RoundState = CookRoundStateType.Operating;
             }
+
+            RoundState = CookRoundStateType.Operating;
         }
+
+        private bool isLastTurn => TurnIndex >= MaxTurn;
 
         private bool _pendingDeal;
 
@@ -699,13 +705,18 @@ namespace Module.Cook
 
             if (hasDiscard)
             {
-                // 有旧牌要飞向恶魔：先不发新牌，等 View 弃牌动画结束后调 DealNewHand()
+                // 有旧牌要飞向恶魔：等 View 弃牌动画结束后调 DealNewHand()；最后一回合只回收不发牌
                 _pendingDeal = true;
+                RoundState = CookRoundStateType.Operating;
+            }
+            else if (!isLastTurn)
+            {
+                dealHandMaterials();
+                refreshPreviewValue();
                 RoundState = CookRoundStateType.Operating;
             }
             else
             {
-                dealHandMaterials();
                 refreshPreviewValue();
                 RoundState = CookRoundStateType.Operating;
             }
