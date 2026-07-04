@@ -21,7 +21,7 @@ namespace Module.Player
         public string itemCategory;
         public string effectType;
         public string effectTarget;
-        public string effectValue;
+        public float effectValue;
         public string triggerType;
         public string durationType;
         public string resetRule;

@@ -8,6 +8,7 @@
 
 using Common.Defines;
 using Module.Confirm;
+using Module.Cook;
 using Module.Item;
 using MVC;
 using MVC.Controller;
@@ -18,6 +19,7 @@ namespace Module.Blackjack
     public class BlackjackController : BaseController
     {
         private BlackjackModel _model;
+        private readonly BlackjackDialogSession _dialogSession = new();
 
         public BlackjackController()
         {
@@ -55,6 +57,7 @@ namespace Module.Blackjack
         private void onOpen(object[] args)
         {
             _model.Reset();
+            _dialogSession.Reset();
             GameApp.ViewManager.Open((int)ViewType.BlackjackView, args);
             refreshView();
         }
@@ -62,6 +65,7 @@ namespace Module.Blackjack
         private void onRestart(object[] args)
         {
             _model.Reset();
+            _dialogSession.Reset();
             refreshView();
         }
 
@@ -146,9 +150,19 @@ namespace Module.Blackjack
 
         private void refreshView()
         {
+            _dialogSession.Refresh(_model, buildDialogContext());
+
             var view = GameApp.ViewManager.GetView((int)ViewType.BlackjackView);
             if (view is BlackjackView blackjackView)
-                blackjackView.Refresh(_model);
+                blackjackView.Refresh(_model, _dialogSession);
+        }
+
+        private static BlackjackDialogContext buildDialogContext()
+        {
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                return new BlackjackDialogContext(cookModel.CurrentScore, cookModel.TargetMin);
+
+            return BlackjackDialogContext.Empty;
         }
     }
 }

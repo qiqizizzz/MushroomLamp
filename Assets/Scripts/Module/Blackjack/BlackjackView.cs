@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using Common.Defines;
+using DG.Tweening;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -17,6 +18,9 @@ namespace Module.Blackjack
 {
     public class BlackjackView : BaseView
     {
+        private const float BubbleAnimDuration = 0.32f;
+        private const float BubbleHideScale = 0.08f;
+
         private readonly List<Button> _itemButtons = new();
         private readonly List<CardSlot> _smallCards = new();
 
@@ -24,17 +28,150 @@ namespace Module.Blackjack
 
         private CardSlot _bigCard;
         private TextMeshProUGUI _txtBottom;
-        private TextMeshProUGUI _bubbleLeft;
-        private TextMeshProUGUI _bubbleRight;
 
+        private BubbleAnimSlot _devilBubble;
+        private BubbleAnimSlot _angelBubble;
+
+        private BlackjackDialogSession _dialogSession;
         private TMP_FontAsset _fontTemplate;
 
-        // 单张牌的运行时绑定
         private class CardSlot
         {
             public GameObject root;
-            public TextMeshProUGUI point;   // 点数文本
-            public Image face;              // 牌面（翻开=亮色，未翻=暗色背面）
+            public TextMeshProUGUI point;
+            public Image face;
+        }
+
+        // 单侧气泡：从角色位置弹出 / 收回
+        private class BubbleAnimSlot
+        {
+            public RectTransform bubble;
+            public RectTransform character;
+            public TextMeshProUGUI text;
+            public Vector2 emitNormalized;
+            public Vector3 restLocalPos;
+            public Vector3 restLocalScale;
+            public bool isShown;
+            public bool isHiding;
+            public string lastText = string.Empty;
+            public Sequence tween;
+
+            public void init(RectTransform bubbleRt, RectTransform characterRt, TextMeshProUGUI label, Vector2 emitNorm)
+            {
+                bubble = bubbleRt;
+                character = characterRt;
+                text = label;
+                emitNormalized = emitNorm;
+
+                if (bubble == null) return;
+
+                restLocalPos = bubble.localPosition;
+                restLocalScale = bubble.localScale;
+                killTween();
+                bubble.gameObject.SetActive(false);
+                isShown = false;
+                isHiding = false;
+            }
+
+            public void sync(string content, bool shouldShow)
+            {
+                if (bubble == null) return;
+
+                if (shouldShow)
+                {
+                    if (isHiding)
+                    {
+                        killTween();
+                        isHiding = false;
+                    }
+
+                    if (!isShown)
+                    {
+                        playShow(content);
+                        return;
+                    }
+
+                    if (text != null && text.text != content)
+                        text.text = content;
+
+                    lastText = content;
+                    return;
+                }
+
+                if (isShown || isHiding)
+                    playHide();
+            }
+
+            private void playShow(string content)
+            {
+                killTween();
+                lastText = content ?? string.Empty;
+                if (text != null) text.text = lastText;
+
+                bubble.gameObject.SetActive(true);
+                bubble.localPosition = getEmitLocalPosition(character, bubble, emitNormalized);
+                bubble.localScale = restLocalScale * BubbleHideScale;
+
+                isShown = true;
+                isHiding = false;
+
+                tween = DOTween.Sequence()
+                    .Join(bubble.DOLocalMove(restLocalPos, BubbleAnimDuration).SetEase(Ease.OutBack))
+                    .Join(bubble.DOScale(restLocalScale, BubbleAnimDuration).SetEase(Ease.OutBack));
+            }
+
+            private void playHide()
+            {
+                if (isHiding || !isShown) return;
+
+                killTween();
+                isHiding = true;
+
+                Vector3 emitPos = getEmitLocalPosition(character, bubble, emitNormalized);
+                Vector3 hideScale = new Vector3(
+                    restLocalScale.x >= 0f ? BubbleHideScale : -BubbleHideScale,
+                    BubbleHideScale,
+                    restLocalScale.z);
+
+                tween = DOTween.Sequence()
+                    .Join(bubble.DOLocalMove(emitPos, BubbleAnimDuration).SetEase(Ease.InBack))
+                    .Join(bubble.DOScale(hideScale, BubbleAnimDuration).SetEase(Ease.InBack))
+                    .OnComplete(() =>
+                    {
+                        if (bubble != null)
+                        {
+                            bubble.gameObject.SetActive(false);
+                            bubble.localPosition = restLocalPos;
+                            bubble.localScale = restLocalScale;
+                        }
+
+                        isShown = false;
+                        isHiding = false;
+                        lastText = string.Empty;
+                    });
+            }
+
+            public void killTween()
+            {
+                if (tween == null) return;
+                tween.Kill();
+                tween = null;
+            }
+
+            public void resetInstant()
+            {
+                killTween();
+                if (bubble != null)
+                {
+                    bubble.localPosition = restLocalPos;
+                    bubble.localScale = restLocalScale;
+                    bubble.gameObject.SetActive(false);
+                }
+
+                isShown = false;
+                isHiding = false;
+                lastText = string.Empty;
+            }
         }
 
         public override void InitUI()
@@ -44,11 +181,20 @@ namespace Module.Blackjack
             collectBoxButton();
 
             _txtBottom = findText("BottomText/Txt_Bottom");
-            _bubbleLeft = findText("BubbleLeft/Txt_Bubble");
-            _bubbleRight = findText("BubbleRight/Txt_Bubble");
+
+            RectTransform devilTf = transform.Find("Devil") as RectTransform;
+            RectTransform angelTf = transform.Find("Angel") as RectTransform;
+            RectTransform bubbleLeftRt = transform.Find("BubbleLeft") as RectTransform;
+            RectTransform bubbleRightRt = transform.Find("BubbleRight") as RectTransform;
+
+            _devilBubble = new BubbleAnimSlot();
+            _devilBubble.init(bubbleLeftRt, devilTf, findText("BubbleLeft/Txt_Bubble"), new Vector2(0.82f, 0.72f));
+
+            _angelBubble = new BubbleAnimSlot();
+            _angelBubble.init(bubbleRightRt, angelTf, findText("BubbleRight/Txt_Bubble"), new Vector2(0.18f, 0.72f));
 
             if (_txtBottom != null) _fontTemplate = _txtBottom.font;
-            else if (_bubbleLeft != null) _fontTemplate = _bubbleLeft.font;
+            else if (_devilBubble.text != null) _fontTemplate = _devilBubble.text.font;
         }
 
         public override void InitData()
@@ -58,18 +204,41 @@ namespace Module.Blackjack
             bindBoxButton();
         }
 
-        public void Refresh(BlackjackModel model)
+        public override void Open(params object[] args)
+        {
+            base.Open(args);
+            _dialogSession = null;
+            _devilBubble?.resetInstant();
+            _angelBubble?.resetInstant();
+        }
+
+        public override void Close(params object[] args)
+        {
+            _devilBubble?.killTween();
+            _angelBubble?.killTween();
+            base.Close(args);
+        }
+
+        protected override void OnUpdate()
+        {
+            if (_dialogSession == null) return;
+
+            _dialogSession.Tick();
+            applyBubbleVisibility();
+        }
+
+        public void Refresh(BlackjackModel model, BlackjackDialogSession dialogSession)
         {
             if (model == null) return;
 
-            // 大牌显示当前累计点数
+            _dialogSession = dialogSession;
+
             if (_bigCard != null)
             {
                 setCardFace(_bigCard, true);
                 if (_bigCard.point != null) _bigCard.point.text = model.TotalPoint.ToString();
             }
 
-            // 四张小牌
             for (int i = 0; i < _smallCards.Count; i++)
             {
                 CardSlot slot = _smallCards[i];
@@ -79,21 +248,37 @@ namespace Module.Blackjack
                     slot.point.text = revealed ? model.GetRevealedPoint(i).ToString() : "?";
             }
 
-            // 顶部按钮：不能继续翻牌时禁用
             foreach (Button btn in _itemButtons)
                 if (btn != null) btn.interactable = model.CanDraw;
 
-            // 底部文本
             if (_txtBottom != null)
                 _txtBottom.text = $"累计点数：{model.TotalPoint} / {BlackjackModel.BustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
 
-            if (_bubbleLeft != null)
-                _bubbleLeft.text = BlackjackDialogCatalogLoader.GetDevilText(model.IsBusted);
-            if (_bubbleRight != null)
-                _bubbleRight.text = BlackjackDialogCatalogLoader.GetAngelText(model.IsBusted);
+            applyBubbleVisibility();
         }
 
-        // ---------------- 道具按钮 ----------------
+        private void applyBubbleVisibility()
+        {
+            if (_dialogSession == null) return;
+
+            _devilBubble?.sync(_dialogSession.DevilText, !string.IsNullOrEmpty(_dialogSession.DevilText));
+            _angelBubble?.sync(_dialogSession.AngelText, !string.IsNullOrEmpty(_dialogSession.AngelText));
+        }
+
+        private static Vector3 getEmitLocalPosition(RectTransform character, RectTransform bubble, Vector2 normalizedInCharacter)
+        {
+            if (bubble == null) return Vector3.zero;
+            if (character == null || bubble.parent == null)
+                return bubble.localPosition;
+
+            var localOffset = new Vector3(
+                (normalizedInCharacter.x - character.pivot.x) * character.rect.width,
+                (normalizedInCharacter.y - character.pivot.y) * character.rect.height,
+                0f);
+
+            Vector3 world = character.TransformPoint(localOffset);
+            return bubble.parent.InverseTransformPoint(world);
+        }
 
         private void collectItemButtons()
         {
@@ -121,7 +306,6 @@ namespace Module.Blackjack
             }
         }
 
-        // 左上魔盒：返回 CookView
         private void collectBoxButton()
         {
             Transform boxTf = Find<Transform>("Box");
@@ -147,8 +331,6 @@ namespace Module.Blackjack
             _btnBox.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackReturn));
         }
 
-        // ---------------- 卡牌 ----------------
-
         private void collectCards()
         {
             _smallCards.Clear();
@@ -172,7 +354,6 @@ namespace Module.Blackjack
             };
         }
 
-        // 翻开=亮色牌面，未翻=暗色背面
         private static void setCardFace(CardSlot slot, bool revealed)
         {
             if (slot == null) return;
@@ -181,8 +362,6 @@ namespace Module.Blackjack
             if (slot.point != null)
                 slot.point.gameObject.SetActive(true);
         }
-
-        // ---------------- 查找工具 ----------------
 
         private TextMeshProUGUI findText(string path)
         {
