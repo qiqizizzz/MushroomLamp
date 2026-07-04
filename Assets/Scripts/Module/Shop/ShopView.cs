@@ -71,19 +71,25 @@ namespace Module.Shop
                 itemSample.gameObject.SetActive(false);
 
             bindButtons();
-            setupContinueHover();
+            setupButtonHovers();
             collectSlots();
         }
 
-        private void setupContinueHover()
+        private void setupButtonHovers()
         {
-            if (_btnContinue == null) return;
+            setupButtonHover(_btnContinue, AddressDefines.Art_ShopContinueHover);
+            setupButtonHover(_btnRefresh, null);
+        }
 
-            UIButtonHoverItem hover = _btnContinue.GetComponent<UIButtonHoverItem>();
+        private static void setupButtonHover(Button button, string hoverSpriteAddress)
+        {
+            if (button == null) return;
+
+            UIButtonHoverItem hover = button.GetComponent<UIButtonHoverItem>();
             if (hover == null)
-                hover = _btnContinue.gameObject.AddComponent<UIButtonHoverItem>();
+                hover = button.gameObject.AddComponent<UIButtonHoverItem>();
 
-            hover.Setup(_btnContinue, AddressDefines.Art_ShopContinueHover);
+            hover.Setup(button, hoverSpriteAddress);
         }
 
         private void resolveUIFont()
