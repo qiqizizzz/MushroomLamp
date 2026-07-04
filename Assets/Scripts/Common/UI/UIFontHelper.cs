@@ -14,17 +14,17 @@ namespace Common.UI
 {
     public static class UIFontHelper
     {
-        private static TMP_FontAsset _sourceHanSans;
+        private static TMP_FontAsset _jingnanFont;
 
         // Assets/Resources/Fonts/jingnan/荆南缘默体 SDF.asset
-        public static TMP_FontAsset SourceHanSans
+        public static TMP_FontAsset JingnanFont
         {
             get
             {
-                if (_sourceHanSans != null) return _sourceHanSans;
+                if (_jingnanFont != null) return _jingnanFont;
 
-                _sourceHanSans = Resources.Load<TMP_FontAsset>(AddressDefines.Font_SourceHanSansSdf);
-                return _sourceHanSans;
+                _jingnanFont = Resources.Load<TMP_FontAsset>(AddressDefines.Font_JingnanSdf);
+                return _jingnanFont;
             }
         }
 
@@ -32,7 +32,7 @@ namespace Common.UI
         {
             if (text == null) return;
 
-            TMP_FontAsset font = preferred ?? SourceHanSans;
+            TMP_FontAsset font = preferred ?? JingnanFont;
             if (font != null)
                 text.font = font;
         }
