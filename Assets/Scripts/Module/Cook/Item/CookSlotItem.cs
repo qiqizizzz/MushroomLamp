@@ -9,7 +9,6 @@
 using Common;
 using Module.Cook;
 using MVC.View;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -47,10 +46,6 @@ namespace Module.View
         private RectTransform _rectTransform;
         private GameObject _dragIconObject;
         private RectTransform _dragIconRect;
-        private TextMeshProUGUI _txtOrder;
-        private TextMeshProUGUI _txtEnchant;
-        private TextMeshProUGUI _txtName;
-        private TextMeshProUGUI _txtValue;
 
         public int SlotIndex => _slotIndex;
         public bool HasMaterial => _hasMaterial;
@@ -67,7 +62,6 @@ namespace Module.View
             _slotIndex = slotIndex;
             ensureReferences();
             applySlotBackground(null);
-            applyFont(view == null ? null : view.GetFontAsset());
         }
 
         // 绑定槽位数据
@@ -85,31 +79,6 @@ namespace Module.View
             {
                 _imgIcon.sprite = material?.Icon;
                 _imgIcon.enabled = material?.Icon != null;
-                _imgIcon.preserveAspect = true;
-            }
-
-            if (_txtOrder != null)
-            {
-                _txtOrder.enabled = _hasMaterial;
-                _txtOrder.text = _hasMaterial ? slotData.Order.ToString() : string.Empty;
-            }
-
-            if (_txtEnchant != null)
-            {
-                _txtEnchant.enabled = _hasMaterial;
-                _txtEnchant.text = slotData == null ? string.Empty : $"+{slotData.EnchantText}";
-            }
-
-            if (_txtName != null)
-            {
-                _txtName.enabled = _hasMaterial;
-                _txtName.text = material?.Config?.name ?? string.Empty;
-            }
-
-            if (_txtValue != null)
-            {
-                _txtValue.enabled = _hasMaterial;
-                _txtValue.text = material == null ? string.Empty : $"{material.ValueText}\n{material.CookProgressText}";
             }
         }
 
@@ -196,30 +165,23 @@ namespace Module.View
             if (_rectTransform == null)
                 _rectTransform = gameObject.AddComponent<RectTransform>();
 
+            bool isIconGenerated = transform.Find("Img_Icon") == null;
             _imgBackground = getOrCreateBackgroundImage(transform, _emptyColor);
-            _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white);
-            _txtOrder = getOrCreateText("Txt_Order", transform, 26, TextAlignmentOptions.Center);
-            _txtEnchant = getOrCreateText("Txt_Enchant", transform, 22, TextAlignmentOptions.Center);
-            _txtName = getOrCreateText("Txt_Name", transform, 18, TextAlignmentOptions.Center);
-            _txtValue = getOrCreateText("Txt_Value", transform, 22, TextAlignmentOptions.Center);
+            _imgIcon = getOrCreateImage("Img_Icon", transform, Color.white, isIconGenerated);
+            removeGeneratedParameterTexts();
 
             if (_imgBackground.transform != transform)
                 setupChildRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
-            setupChildRect(_imgIcon.rectTransform, new Vector2(0.22f, 0.3f), new Vector2(0.78f, 0.78f));
-            setupChildRect(_txtOrder.rectTransform, new Vector2(0.02f, 0.72f), new Vector2(0.28f, 0.98f));
-            setupChildRect(_txtEnchant.rectTransform, new Vector2(0.34f, 0.72f), new Vector2(0.66f, 0.98f));
-            setupChildRect(_txtName.rectTransform, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.3f));
-            setupChildRect(_txtValue.rectTransform, new Vector2(0.72f, 0.72f), new Vector2(0.98f, 0.98f));
 
             _imgBackground.type = Image.Type.Simple;
             _imgBackground.preserveAspect = true;
             _imgBackground.raycastTarget = true;
-            _imgIcon.preserveAspect = true;
-            _imgIcon.raycastTarget = false;
-            _txtOrder.raycastTarget = false;
-            _txtEnchant.raycastTarget = false;
-            _txtName.raycastTarget = false;
-            _txtValue.raycastTarget = false;
+            if (isIconGenerated)
+            {
+                setupChildRect(_imgIcon.rectTransform, new Vector2(0.22f, 0.3f), new Vector2(0.78f, 0.78f));
+                _imgIcon.preserveAspect = true;
+                _imgIcon.raycastTarget = false;
+            }
 
             applySlotBackground(null);
         }
@@ -269,18 +231,6 @@ namespace Module.View
         {
             if (_imgIcon != null)
                 _imgIcon.enabled = isVisible && _imgIcon.sprite != null;
-
-            if (_txtOrder != null)
-                _txtOrder.enabled = isVisible && _hasMaterial;
-
-            if (_txtName != null)
-                _txtName.enabled = isVisible && _hasMaterial;
-
-            if (_txtEnchant != null)
-                _txtEnchant.enabled = isVisible && _hasMaterial;
-
-            if (_txtValue != null)
-                _txtValue.enabled = isVisible && _hasMaterial;
         }
 
         private void moveDragIconToPointer(PointerEventData eventData)
@@ -320,7 +270,7 @@ namespace Module.View
             return Camera.main;
         }
 
-        private static Image getOrCreateImage(string childName, Transform parent, Color color)
+        private static Image getOrCreateImage(string childName, Transform parent, Color color, bool applyDefaultColor = true)
         {
             Transform child = parent.Find(childName);
             if (child == null)
@@ -334,7 +284,9 @@ namespace Module.View
             if (image == null)
                 image = child.gameObject.AddComponent<Image>();
 
-            image.color = color;
+            if (applyDefaultColor)
+                image.color = color;
+
             return image;
         }
 
@@ -353,48 +305,6 @@ namespace Module.View
             return image;
         }
 
-        private static TextMeshProUGUI getOrCreateText(
-            string childName,
-            Transform parent,
-            int fontSize,
-            TextAlignmentOptions alignment)
-        {
-            Transform child = parent.Find(childName);
-            if (child == null)
-            {
-                GameObject obj = new GameObject(childName, typeof(RectTransform));
-                obj.transform.SetParent(parent, false);
-                child = obj.transform;
-            }
-
-            TextMeshProUGUI text = child.GetComponent<TextMeshProUGUI>();
-            if (text == null)
-                text = child.gameObject.AddComponent<TextMeshProUGUI>();
-
-            text.fontSize = fontSize;
-            text.alignment = alignment;
-            text.color = new Color(0.16f, 0.09f, 0.05f, 1f);
-            text.enableWordWrapping = false;
-            return text;
-        }
-
-        private void applyFont(TMP_FontAsset fontAsset)
-        {
-            if (fontAsset == null) return;
-
-            if (_txtOrder != null)
-                _txtOrder.font = fontAsset;
-
-            if (_txtEnchant != null)
-                _txtEnchant.font = fontAsset;
-
-            if (_txtName != null)
-                _txtName.font = fontAsset;
-
-            if (_txtValue != null)
-                _txtValue.font = fontAsset;
-        }
-
         private static void setupChildRect(RectTransform rectTransform, Vector2 anchorMin, Vector2 anchorMax)
         {
             if (rectTransform == null) return;
@@ -403,6 +313,27 @@ namespace Module.View
             rectTransform.anchorMax = anchorMax;
             rectTransform.offsetMin = Vector2.zero;
             rectTransform.offsetMax = Vector2.zero;
+        }
+
+        // 清理旧版本自动生成的槽位参数文本
+        private void removeGeneratedParameterTexts()
+        {
+            removeChildIfExists("Txt_Order");
+            removeChildIfExists("Txt_Enchant");
+            removeChildIfExists("Txt_Name");
+            removeChildIfExists("Txt_Value");
+        }
+
+        // 删除指定子节点，兼容运行时与编辑态初始化
+        private void removeChildIfExists(string childName)
+        {
+            Transform child = transform.Find(childName);
+            if (child == null) return;
+
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
         }
 
         // 应用当前槽位类型对应的九宫格背景
