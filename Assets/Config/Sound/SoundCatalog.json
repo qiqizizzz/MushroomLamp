@@ -138,6 +138,11 @@
           "hover": "menu_ui_hover"
         },
         {
+          "path": "ButtonGroup/Btn_Gallery",
+          "click": "menu_ui_click",
+          "hover": ""
+        },
+        {
           "path": "ButtonGroup/Btn_Exit",
           "click": "menu_ui_click",
           "hover": "menu_ui_hover"
