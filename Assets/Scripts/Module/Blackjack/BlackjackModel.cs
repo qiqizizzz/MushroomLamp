@@ -8,7 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using Module.Item;
 using MVC.Model;
+using UnityEngine;
 
 namespace Module.Blackjack
 {
@@ -21,13 +23,15 @@ namespace Module.Blackjack
 
     public class BlackjackModel : BaseModel
     {
-        public const int CardCount = 4;
+        public const int BaseCardCount = 4;
         public const int BustLimit = 21;
 
         private const int MinPoint = 1;
         private const int MaxPoint = 11;
 
         public readonly List<BlackjackCardData> Cards = new();
+
+        public int CardCount => BaseCardCount + ItemPassiveManager.GetMagicBoxOptionBonus();
 
         // 当前累计点数（已翻开牌之和）
         public int TotalPoint { get; private set; }
@@ -48,7 +52,8 @@ namespace Module.Blackjack
         public void Reset()
         {
             Cards.Clear();
-            for (int i = 0; i < CardCount; i++)
+            int cardCount = CardCount;
+            for (int i = 0; i < cardCount; i++)
             {
                 Cards.Add(new BlackjackCardData
                 {
@@ -70,7 +75,7 @@ namespace Module.Blackjack
 
             int index = RevealedCount;
             BlackjackCardData card = Cards[index];
-            int point = UnityEngine.Random.Range(MinPoint, MaxPoint + 1);
+            int point = rollNextPoint();
             card.revealedPoint = point;
             card.revealed = true;
 
@@ -80,11 +85,43 @@ namespace Module.Blackjack
             return index;
         }
 
+        // 幸运兔脚：撤销最近一次翻牌
+        public bool UndoLastReveal()
+        {
+            if (RevealedCount <= 0) return false;
+
+            RevealedCount--;
+            BlackjackCardData card = Cards[RevealedCount];
+            TotalPoint -= card.revealedPoint;
+            card.revealed = false;
+            card.revealedPoint = 0;
+            return true;
+        }
+
         // 获取指定牌位的显示点数
         public int GetRevealedPoint(int index)
         {
             if (index < 0 || index >= Cards.Count) return 0;
             return Cards[index].revealed ? Cards[index].revealedPoint : 0;
+        }
+
+        private int rollNextPoint()
+        {
+            if (ItemPassiveManager.IsPandoraSafeDrawActive)
+                return rollSafePoint();
+
+            return UnityEngine.Random.Range(MinPoint, MaxPoint + 1);
+        }
+
+        // 潘多拉钥匙：抽牌点数保证累计仍低于 21
+        private int rollSafePoint()
+        {
+            int maxSafe = BustLimit - 1 - TotalPoint;
+            if (maxSafe < MinPoint)
+                return MinPoint;
+
+            int upper = Math.Min(MaxPoint, maxSafe);
+            return UnityEngine.Random.Range(MinPoint, upper + 1);
         }
     }
 }

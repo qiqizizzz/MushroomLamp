@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections;
 using Common;
 using Module.Cook;
+using Module.Item;
 using Module.Material;
 using Module.Select;
 
@@ -274,6 +275,7 @@ namespace Module.Level
             HasStageConfig = true;
             StageId = stage.stageId;
             MaxTurn = stage.turnCount > 0 ? stage.turnCount : 1;
+            MaxTurn += ItemPassiveManager.GetRoundCountBonus();
             PotTrayCapacity = stage.potTrayCapacity > 0 ? stage.potTrayCapacity : 3;
             TargetMin = stage.targetMin;
             TargetMax = stage.targetMax;

@@ -9,6 +9,7 @@
 using Common;
 using Common.Defines;
 using Module.Confirm;
+using Module.Item;
 using Module.Level;
 using Module.Player;
 using Module.Store;
@@ -145,6 +146,22 @@ namespace Module.Shop
                 {
                     if (!PlayerDataManager.Instance.SpendMoney(slotData.price)) return;
 
+                    if (!slotData.isBox && !slotData.isCard)
+                    {
+                        if (!PlayerDataManager.Instance.AddItem(slotData.id))
+                        {
+                            PlayerDataManager.Instance.AddMoney(slotData.price);
+                            ConfirmController.Show(new ConfirmModel
+                            {
+                                mode = ConfirmModel.Mode.ConfirmOnly,
+                                title = "无法购买",
+                                message = $"你已经拥有「{slotData.name}」，该道具不可重复购买。",
+                                confirmText = "知道了"
+                            });
+                            return;
+                        }
+                    }
+
                     slotData.isPurchased = true;
                     RefreshView();
 
@@ -167,7 +184,7 @@ namespace Module.Shop
                        $"花费 {slotData.price} 金币，剩余 {remain} 金币。\n";
             }
 
-            return $"购买「{slotData.name}」\n花费 {slotData.price} 金币，剩余 {remain} 金币。";
+            return $"购买「{slotData.name}」\n{slotData.description}\n花费 {slotData.price} 金币，剩余 {remain} 金币。";
         }
 
         private void openStoreAfterBoxPurchase(ShopSlotData slotData)
