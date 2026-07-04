@@ -9,7 +9,7 @@ namespace Module.Shop
     public class ShopSlotBinder : MonoBehaviour
     {
         [SerializeField] private Image imgIcon;
-        [SerializeField] private TextMeshProUGUI txtName;
+        [SerializeField] private Image imgPriceTag;
         [SerializeField] private TextMeshProUGUI txtPrice;
         [SerializeField] private TextMeshProUGUI txtDesc;
 
@@ -17,21 +17,48 @@ namespace Module.Shop
         {
             if (data == null) return;
 
-            if (txtName  != null) txtName.text  = data.name;
+            ensureReferences();
+            ShopPriceRowHelper.PreparePropSlot(transform, ref txtPrice, ref imgPriceTag);
             if (txtPrice != null) txtPrice.text = data.price.ToString();
             if (txtDesc  != null) txtDesc.text  = data.description;
 
             if (imgIcon != null)
             {
                 var sprite = ArtAssetLoader.LoadSprite(data.iconPath);
-                imgIcon.sprite  = sprite;
+                imgIcon.sprite = sprite;
+                imgIcon.preserveAspect = true;
                 imgIcon.enabled = sprite != null;
             }
 
             bindBuyButton(data, onBuy);
         }
 
-        // 旧的私有 LoadSprite 已废弃（真机分支直接返回 null 导致图丢失），统一改走 ArtAssetLoader
+        private void ensureReferences()
+        {
+            if (imgIcon == null)
+            {
+                Transform iconTf = transform.Find("Img_Icon");
+                if (iconTf != null) imgIcon = iconTf.GetComponent<Image>();
+            }
+
+            if (txtPrice == null)
+            {
+                Transform priceTf = transform.Find("PriceRow/Txt_Price") ?? transform.Find("Txt_Price");
+                if (priceTf != null) txtPrice = priceTf.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (imgPriceTag == null)
+            {
+                Transform tagTf = transform.Find("PriceRow/Img_PriceTag");
+                if (tagTf != null) imgPriceTag = tagTf.GetComponent<Image>();
+            }
+
+            if (txtDesc == null)
+            {
+                Transform descTf = transform.Find("Txt_Desc");
+                if (descTf != null) txtDesc = descTf.GetComponent<TextMeshProUGUI>();
+            }
+        }
 
         // 整个卡槽即购买按钮：绑根节点上的 Button
         private void bindBuyButton(ShopSlotData data, Action<ShopSlotData> onBuy)
@@ -53,4 +80,3 @@ namespace Module.Shop
         }
     }
 }
-

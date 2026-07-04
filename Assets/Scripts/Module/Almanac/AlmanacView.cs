@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Common;
 using Common.Defines;
 using Common.UI;
+using Module.Material;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -51,12 +52,6 @@ namespace Module.Almanac
             public string iconPath;
             public string description;
             public int price;
-        }
-
-        [Serializable]
-        private class CardCatalog
-        {
-            public CatalogRow[] cards;
         }
 
         [Serializable]
@@ -157,10 +152,8 @@ namespace Module.Almanac
 
             if (isCard)
             {
-                var cfg = JsonConfigLoader.LoadFromConfig<CardCatalog>(AddressDefines.Config_CardParamCatalog);
-                if (cfg?.cards != null)
-                    foreach (var c in cfg.cards)
-                        addEntry(c);
+                foreach (MaterialJsonData material in MaterialCatalogLoader.GetAll())
+                    addEntry(material);
             }
             else
             {
@@ -175,6 +168,12 @@ namespace Module.Almanac
         {
             if (row == null) return;
             _entries.Add(new AlmanacEntry { name = row.name, iconPath = row.iconPath });
+        }
+
+        private void addEntry(MaterialJsonData material)
+        {
+            if (material == null) return;
+            _entries.Add(new AlmanacEntry { name = material.name, iconPath = material.iconPath });
         }
 
         private void highlightTab(bool isCard)

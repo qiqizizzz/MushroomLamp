@@ -8,15 +8,14 @@
 using System;
 using System.Collections.Generic;
 using Common;
-using Common.Defines;
+using Module.Material;
 using Module.Player;
-using Module.Select;
 using Module.Shop;
 using MVC.Model;
+using UnityEngine;
 
 namespace Module.Store
 {
-    // 中间三个定位点上的购买卡牌数据
     [Serializable]
     public class StoreBuySlotData
     {
@@ -28,7 +27,6 @@ namespace Module.Store
         public bool isPurchased;
     }
 
-    // 底部背包格子数据（玩家已拥有的卡牌 + 数量）
     [Serializable]
     public class StoreBagEntryData
     {
@@ -40,10 +38,8 @@ namespace Module.Store
 
     public class StoreModel : BaseModel
     {
-        // 中间购买槽数量（设计图为 3 个定位点）
         public const int BuySlotCount = 3;
 
-        // 金币直接读玩家单例
         public int Gold => PlayerDataManager.Instance.Money;
 
         public readonly List<StoreBuySlotData> BuySlots = new();
@@ -64,12 +60,8 @@ namespace Module.Store
             return false;
         }
 
-        // 手动指定背包卡牌数量（>0 时生效，用配置表卡牌循环填充，覆盖真实背包）；<=0 表示读真实背包
         public int OverrideBagCount { get; private set; } = -1;
 
-        private CardParamCatalogJsonConfig _cardConfig;
-
-        // 购箱后进入 Store：按材料箱配置刷新可选卡牌
         public void SetupForBox(StoreOpenContext context)
         {
             if (context == null || string.IsNullOrWhiteSpace(context.boxId))
@@ -91,92 +83,96 @@ namespace Module.Store
             CardsIncludedInBoxPrice = false;
         }
 
-        // 手动设置背包卡牌数量（传 <=0 可恢复读真实背包）
         public void SetBagCount(int count)
         {
             OverrideBagCount = count;
         }
 
-        // 刷新购买槽（随机抽取卡牌，无材料箱上下文时使用）
         public void RefreshBuySlots()
         {
             ClearBoxContext();
-            refreshBuySlotsFromPool(null);
+            refreshBuySlotsFromMaterialCatalog(-1);
         }
 
-        // 按已购材料箱内的材料图标，匹配可选卡牌（购箱价已含，不再额外收费）
+        // 从商店材料箱池随机抽 3 张材料供玩家三选一
         public void RefreshBuySlotsFromBox(string boxId)
         {
-            HashSet<string> iconPaths = collectBoxMaterialIconPaths(boxId);
-            refreshBuySlotsFromPool(iconPaths, CardsIncludedInBoxPrice ? 0 : -1);
+            ShopBoxPoolJsonConfig pool = ShopCatalog.LoadBoxPoolByBoxId(boxId);
+            refreshBuySlotsFromMaterialPool(pool?.materialIds, CardsIncludedInBoxPrice ? 0 : -1);
         }
 
-        private void refreshBuySlotsFromPool(HashSet<string> iconFilter, int overridePrice = -1)
+        private void refreshBuySlotsFromMaterialPool(string[] materialIds, int overridePrice = -1)
         {
-            EnsureConfig();
             BuySlots.Clear();
-
-            var source = _cardConfig?.cards;
-            if (source == null || source.Length == 0) return;
-
-            var pool = new List<CardParamJsonData>();
-            foreach (CardParamJsonData data in source)
+            if (materialIds == null || materialIds.Length == 0)
             {
-                if (data == null) continue;
-                if (iconFilter != null && iconFilter.Count > 0)
-                {
-                    if (string.IsNullOrEmpty(data.iconPath) || !iconFilter.Contains(data.iconPath))
-                        continue;
-                }
-                pool.Add(data);
+                QLog.Warning($"[{nameof(StoreModel)}] 材料箱池为空：boxId={CurrentBoxId}");
+                return;
             }
 
-            if (pool.Count == 0)
+            var pool = new List<string>();
+            foreach (string materialId in materialIds)
             {
-                foreach (CardParamJsonData data in source)
-                    if (data != null) pool.Add(data);
+                if (!string.IsNullOrWhiteSpace(materialId))
+                    pool.Add(materialId);
             }
 
             for (int i = 0; i < BuySlotCount && pool.Count > 0; i++)
             {
                 int index = UnityEngine.Random.Range(0, pool.Count);
-                CardParamJsonData data = pool[index];
+                string materialId = pool[index];
                 pool.RemoveAt(index);
 
-                int price = overridePrice >= 0 ? overridePrice : data.price;
-                BuySlots.Add(new StoreBuySlotData
+                MaterialJsonData meta = MaterialCatalogLoader.GetById(materialId);
+                if (meta == null)
                 {
-                    id = data.id,
-                    name = data.name,
-                    iconPath = data.iconPath,
-                    description = string.IsNullOrEmpty(CurrentBoxName)
-                        ? data.description
-                        : $"来自「{CurrentBoxName}」\n{data.description}",
-                    price = price
-                });
+                    QLog.Warning($"[{nameof(StoreModel)}] 材料配置缺失：{materialId}");
+                    continue;
+                }
+
+                addBuySlot(meta, overridePrice);
             }
         }
 
-        private static HashSet<string> collectBoxMaterialIconPaths(string boxId)
+        private void refreshBuySlotsFromMaterialCatalog(int overridePrice = -1)
         {
-            var result = new HashSet<string>();
-            SelectBoxCatalogEntry entry = ShopCatalog.GetBoxEntry(boxId);
-            SelectBoxDetailJsonConfig detail = entry != null ? ShopCatalog.LoadBoxDetail(entry) : null;
-            if (detail?.lines == null) return result;
+            BuySlots.Clear();
 
-            foreach (SelectMaterialLineJsonData line in detail.lines)
+            var pool = new List<MaterialJsonData>();
+            foreach (MaterialJsonData material in MaterialCatalogLoader.GetAll())
             {
-                if (line != null && !string.IsNullOrEmpty(line.iconPath))
-                    result.Add(line.iconPath);
+                if (material != null && !string.IsNullOrWhiteSpace(material.id))
+                    pool.Add(material);
             }
 
-            return result;
+            for (int i = 0; i < BuySlotCount && pool.Count > 0; i++)
+            {
+                int index = UnityEngine.Random.Range(0, pool.Count);
+                MaterialJsonData meta = pool[index];
+                pool.RemoveAt(index);
+                addBuySlot(meta, overridePrice);
+            }
         }
 
-        // 刷新背包：OverrideBagCount>0 时生成指定数量的占位卡（用于测试复用）；否则读玩家真实背包
+        private void addBuySlot(MaterialJsonData meta, int overridePrice)
+        {
+            if (meta == null) return;
+
+            int price = overridePrice >= 0 ? overridePrice : meta.price;
+            BuySlots.Add(new StoreBuySlotData
+            {
+                id = meta.id,
+                name = meta.name,
+                iconPath = meta.iconPath,
+                description = string.IsNullOrEmpty(CurrentBoxName)
+                    ? meta.desc
+                    : $"来自「{CurrentBoxName}」\n{meta.desc}",
+                price = price
+            });
+        }
+
         public void RefreshBag()
         {
-            EnsureConfig();
             BagEntries.Clear();
 
             if (OverrideBagCount > 0)
@@ -186,27 +182,29 @@ namespace Module.Store
             }
 
             foreach (PlayerCardState card in PlayerDataManager.Instance.GetAllCards())
-            {
-                CardParamJsonData meta = FindCardMeta(card.cardId);
-                BagEntries.Add(new StoreBagEntryData
-                {
-                    id = card.cardId,
-                    name = meta != null ? meta.name : card.cardId,
-                    iconPath = meta != null ? meta.iconPath : string.Empty,
-                    count = card.count
-                });
-            }
+                fillBagEntryMeta(card.cardId, card.count);
         }
 
-        // 用配置表卡牌循环填充指定数量；无配置时退化为编号占位卡
+        private void fillBagEntryMeta(string id, int count)
+        {
+            MaterialJsonData material = MaterialCatalogLoader.GetById(id);
+            BagEntries.Add(new StoreBagEntryData
+            {
+                id = id,
+                name = material != null ? material.name : id,
+                iconPath = material != null ? material.iconPath : string.Empty,
+                count = count
+            });
+        }
+
         private void BuildMockBag(int count)
         {
-            var source = _cardConfig?.cards;
+            IReadOnlyList<MaterialJsonData> source = MaterialCatalogLoader.GetAll();
             for (int i = 0; i < count; i++)
             {
-                if (source != null && source.Length > 0)
+                if (source != null && source.Count > 0)
                 {
-                    CardParamJsonData data = source[i % source.Length];
+                    MaterialJsonData data = source[i % source.Count];
                     BagEntries.Add(new StoreBagEntryData
                     {
                         id = data.id,
@@ -235,24 +233,6 @@ namespace Module.Store
             else
                 RefreshBuySlots();
             RefreshBag();
-        }
-
-        private CardParamJsonData FindCardMeta(string id)
-        {
-            var source = _cardConfig?.cards;
-            if (source == null || string.IsNullOrEmpty(id)) return null;
-
-            foreach (CardParamJsonData data in source)
-                if (data != null && data.id == id)
-                    return data;
-
-            return null;
-        }
-
-        private void EnsureConfig()
-        {
-            if (_cardConfig != null) return;
-            _cardConfig = JsonConfigLoader.LoadFromConfig<CardParamCatalogJsonConfig>(AddressDefines.Config_CardParamCatalog);
         }
     }
 }

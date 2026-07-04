@@ -25,7 +25,6 @@ namespace Module.Level
         public string id;
         public string displayName;
         public string boxId;                         // 关联的卡牌箱（沿用现有 SelectBox 体系）
-        public InitialHandCardJsonData[] initialHandCards;
         public StageFilesByDifficulty stageFilesByDifficulty;
 
         // 按难度取对应的小局集合文件（相对 Config，不含 .json）
@@ -48,15 +47,6 @@ namespace Module.Level
         public string normal;
         public string hard;
     }
-
-    [Serializable]
-    public class InitialHandCardJsonData
-    {
-        public string cardId;
-        public int count = 1;
-    }
-
-    // ── 小局表 Stage_<种类>.json：一个种类一个文件，内含该种类全部小局 ──
 
     [Serializable]
     public class StageGroupJsonConfig

@@ -71,19 +71,25 @@ namespace Module.Shop
                 itemSample.gameObject.SetActive(false);
 
             bindButtons();
-            setupContinueHover();
+            setupButtonHovers();
             collectSlots();
         }
 
-        private void setupContinueHover()
+        private void setupButtonHovers()
         {
-            if (_btnContinue == null) return;
+            setupButtonHover(_btnContinue, AddressDefines.Art_ShopContinueHover);
+            setupButtonHover(_btnRefresh, null);
+        }
 
-            UIButtonHoverItem hover = _btnContinue.GetComponent<UIButtonHoverItem>();
+        private static void setupButtonHover(Button button, string hoverSpriteAddress)
+        {
+            if (button == null) return;
+
+            UIButtonHoverItem hover = button.GetComponent<UIButtonHoverItem>();
             if (hover == null)
-                hover = _btnContinue.gameObject.AddComponent<UIButtonHoverItem>();
+                hover = button.gameObject.AddComponent<UIButtonHoverItem>();
 
-            hover.Setup(_btnContinue, AddressDefines.Art_ShopContinueHover);
+            hover.Setup(button, hoverSpriteAddress);
         }
 
         private void resolveUIFont()
@@ -97,7 +103,7 @@ namespace Module.Shop
         public void Refresh(ShopModel model)
         {
             if (model == null) return;
-            if (_txtGold != null) _txtGold.text = $"金币 {model.Gold}";
+            if (_txtGold != null) _txtGold.text = model.Gold.ToString();
             if (_txtTitle != null) _txtTitle.text = "黑猫夜市";
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
             if (_txtInfo != null)
@@ -226,8 +232,9 @@ namespace Module.Shop
             applyBoxSprite(icon);
             icon.raycastTarget = false;
 
-            TextMeshProUGUI nameText = createChildText(rootRt, "Txt_Name", new Vector2(0.5f, 0.22f), new Vector2(220f, 44f), 32);
-            TextMeshProUGUI priceText = createChildText(rootRt, "Txt_Price", new Vector2(0.5f, 0.06f), new Vector2(120f, 40f), 30);
+            RectTransform priceRowRt = ShopPriceRowHelper.CreatePriceRow(rootRt, new Vector2(0.5f, 0.06f), new Vector2(170f, 52f));
+            ShopPriceRowHelper.CreatePriceTag(priceRowRt);
+            TextMeshProUGUI priceText = ShopPriceRowHelper.CreatePriceText(priceRowRt, _fontTemplate, 30);
 
             hover.SetHitSize(rootRt.rect.width > 1f ? rootRt.rect.width : 200f,
                 rootRt.rect.height > 1f ? rootRt.rect.height : 240f);

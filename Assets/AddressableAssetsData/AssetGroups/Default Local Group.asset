@@ -402,11 +402,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a9dd63ab13a9ef041a59bfa0f3b2804a
-    m_Address: CardParamCatalog
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: aad8859a62badf344a064ce62ba88f8f
     m_Address: "Art/MainMenuView/\u9000\u51FA_\u9ED8\u8BA4"
     m_ReadOnly: 0

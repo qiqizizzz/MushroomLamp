@@ -13,15 +13,30 @@ namespace Module.Shop
     public class ShopBoxCatalogEntryJson
     {
         public string boxId;
+        public string name;
         public int price;
         public string description;
+        public string poolFile;
+        public int baseWeight = 1;
+        public bool enabled = true;
+        public string unlockStage;
+        public int minMaterialCount;
+        public int maxMaterialCount;
     }
 
     [Serializable]
     public class ShopCatalogJsonConfig
     {
         public string defaultBoxIconPath = "Art/ShopView/材料箱样本";
+        public int pickCount = 3;
         public ShopBoxCatalogEntryJson[] entries;
+    }
+
+    [Serializable]
+    public class ShopBoxPoolJsonConfig
+    {
+        public string boxId;
+        public string[] materialIds;
     }
 
     public static class ShopCatalog
@@ -31,6 +46,7 @@ namespace Module.Shop
         private static ItemParamCatalogJsonConfig _itemConfig;
         private static ShopCatalogJsonConfig _shopConfig;
         private static SelectBoxCatalogJsonConfig _boxCatalog;
+        private static readonly Dictionary<string, ShopBoxPoolJsonConfig> _poolCache = new();
 
         public static string DefaultBoxIconPathValue => getShopConfig()?.defaultBoxIconPath ?? DefaultBoxIconPath;
 
@@ -46,6 +62,44 @@ namespace Module.Shop
             return PickItems(count);
         }
 
+        public static ShopBoxCatalogEntryJson GetShopEntry(string boxId)
+        {
+            EnsureLoaded();
+            if (_shopConfig?.entries == null || string.IsNullOrWhiteSpace(boxId)) return null;
+
+            foreach (ShopBoxCatalogEntryJson entry in _shopConfig.entries)
+            {
+                if (entry != null && entry.boxId == boxId)
+                    return entry;
+            }
+
+            return null;
+        }
+
+        public static ShopBoxPoolJsonConfig LoadBoxPool(string poolFile)
+        {
+            if (string.IsNullOrWhiteSpace(poolFile)) return null;
+
+            if (_poolCache.TryGetValue(poolFile, out ShopBoxPoolJsonConfig cached))
+                return cached;
+
+            ShopBoxPoolJsonConfig pool = JsonConfigLoader.LoadFromConfig<ShopBoxPoolJsonConfig>(poolFile);
+            if (pool != null)
+                _poolCache[poolFile] = pool;
+
+            return pool;
+        }
+
+        public static ShopBoxPoolJsonConfig LoadBoxPoolByBoxId(string boxId)
+        {
+            ShopBoxCatalogEntryJson entry = GetShopEntry(boxId);
+            if (entry == null || string.IsNullOrWhiteSpace(entry.poolFile))
+                return LoadBoxPool($"Shop/Pools/{boxId}");
+
+            return LoadBoxPool(entry.poolFile);
+        }
+
+        // 兼容旧 SelectBox 查询（初始选箱等非商店流程）
         public static SelectBoxCatalogEntry GetBoxEntry(string boxId)
         {
             EnsureLoaded();
@@ -77,19 +131,20 @@ namespace Module.Shop
                 ? DefaultBoxIconPath
                 : shopConfig.defaultBoxIconPath;
 
-            var pool = shopConfig.entries.ToList();
+            var pool = shopConfig.entries
+                .Where(entry => entry != null && entry.enabled && !string.IsNullOrWhiteSpace(entry.boxId))
+                .ToList();
+
             for (int i = 0; i < count && pool.Count > 0; i++)
             {
-                int index = UnityEngine.Random.Range(0, pool.Count);
+                int index = pickWeightedIndex(pool);
                 ShopBoxCatalogEntryJson data = pool[index];
                 pool.RemoveAt(index);
-                if (data == null || string.IsNullOrWhiteSpace(data.boxId)) continue;
 
-                SelectBoxCatalogEntry boxEntry = GetBoxEntry(data.boxId);
                 result.Add(new ShopSlotData
                 {
                     id = data.boxId,
-                    name = boxEntry?.displayName ?? data.boxId,
+                    name = string.IsNullOrWhiteSpace(data.name) ? data.boxId : data.name,
                     iconPath = iconPath,
                     description = data.description,
                     price = data.price,
@@ -99,6 +154,27 @@ namespace Module.Shop
             }
 
             return result;
+        }
+
+        private static int pickWeightedIndex(List<ShopBoxCatalogEntryJson> pool)
+        {
+            int total = 0;
+            foreach (ShopBoxCatalogEntryJson entry in pool)
+                total += Math.Max(0, entry.baseWeight);
+
+            if (total <= 0)
+                return UnityEngine.Random.Range(0, pool.Count);
+
+            int roll = UnityEngine.Random.Range(0, total);
+            int acc = 0;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                acc += Math.Max(0, pool[i].baseWeight);
+                if (roll < acc)
+                    return i;
+            }
+
+            return pool.Count - 1;
         }
 
         private static IReadOnlyList<ShopSlotData> PickItems(int count)
@@ -153,9 +229,16 @@ namespace Module.Shop
                 defaultBoxIconPath = DefaultBoxIconPath,
                 entries = new[]
                 {
-                    new ShopBoxCatalogEntryJson { boxId = "herb", price = 8, description = "草本材料箱" },
-                    new ShopBoxCatalogEntryJson { boxId = "mineral", price = 10, description = "矿物材料箱" },
-                    new ShopBoxCatalogEntryJson { boxId = "spice", price = 12, description = "香料材料箱" }
+                    new ShopBoxCatalogEntryJson
+                    {
+                        boxId = "shop_box_veg_basic",
+                        name = "蔬菜基础材料箱",
+                        price = 5,
+                        description = "蔬菜基础材料箱",
+                        poolFile = "Shop/Pools/shop_box_veg_basic",
+                        baseWeight = 90,
+                        enabled = true
+                    }
                 }
             };
         }
