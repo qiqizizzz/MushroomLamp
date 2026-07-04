@@ -30,15 +30,12 @@ namespace Module.StageSettle
         private TextMeshProUGUI _txtCoin;
         private TextMeshProUGUI _txtNext;
         private TextMeshProUGUI _txtTip;
-        private Transform _infoContainer;
-        private Image _imgResultBadge;
 
         // 初始化小局结算界面节点引用
         public override void InitUI()
         {
             _btnToShop = Find<Button>("Btn_ToShop");
             _txtButtonLabel = Find<TextMeshProUGUI>("Btn_ToShop/Txt_Label");
-            _infoContainer = Find<Transform>("InfoContainer");
             _txtTitle = Find<TextMeshProUGUI>("InfoContainer/Txt_Title");
             _txtSubtitle = Find<TextMeshProUGUI>("InfoContainer/Txt_Subtitle");
             _txtResult = Find<TextMeshProUGUI>("InfoContainer/Badge_Result/Txt_Result");
@@ -49,9 +46,6 @@ namespace Module.StageSettle
             _txtCoin = Find<TextMeshProUGUI>("InfoContainer/RightStats/Row_Coin/Txt_Value");
             _txtNext = Find<TextMeshProUGUI>("InfoContainer/RightStats/Row_Next/Txt_Value");
             _txtTip = Find<TextMeshProUGUI>("InfoContainer/Txt_Tip");
-            _imgResultBadge = Find<Image>("InfoContainer/Badge_Result");
-
-            setupReadableTextStyle();
         }
 
         // 绑定小局结算界面按钮事件
@@ -99,44 +93,8 @@ namespace Module.StageSettle
                 ? (data.IsTargetReached ? "已通关全部小局，进入最终结算" : "本小局未达到目标，进入最终结算")
                 : "本小局目标已完成，进入商店准备下一小局");
 
-            if (_imgResultBadge != null)
-                _imgResultBadge.color = data.IsTargetReached
-                    ? new Color(0.55f, 0.32f, 0.13f, 0.92f)
-                    : new Color(0.50f, 0.16f, 0.12f, 0.92f);
-
             if (_txtButtonLabel != null)
                 _txtButtonLabel.text = nextText;
-        }
-
-        // 校正文本显示层级与可读样式
-        private void setupReadableTextStyle()
-        {
-            _infoContainer?.SetAsLastSibling();
-
-            if (_infoContainer != null)
-            {
-                TextMeshProUGUI[] texts = _infoContainer.GetComponentsInChildren<TextMeshProUGUI>(true);
-                for (int i = 0; i < texts.Length; i++)
-                    setupText(texts[i], 22, 34, new Color(0.24f, 0.16f, 0.10f, 1f));
-            }
-
-            setupText(_txtTitle, 34, 52, new Color(0.20f, 0.14f, 0.09f, 1f));
-            setupText(_txtResult, 22, 30, Color.white);
-            setupText(_txtButtonLabel, 26, 38, new Color(0.58f, 0.34f, 0.20f, 1f));
-        }
-
-        // 设置单个文本的字号和颜色
-        private static void setupText(TextMeshProUGUI text, int minSize, int maxSize, Color color)
-        {
-            if (text == null) return;
-
-            text.color = color;
-            text.enableAutoSizing = true;
-            text.fontSizeMin = minSize;
-            text.fontSizeMax = maxSize;
-            text.fontSize = maxSize;
-            text.enableWordWrapping = true;
-            text.raycastTarget = false;
         }
 
         // 设置文本内容
