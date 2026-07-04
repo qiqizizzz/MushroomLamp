@@ -17,8 +17,6 @@ namespace Module.Blackjack
 {
     public class BlackjackView : BaseView
     {
-        private const string SfxItemClick = "sfx_poker_card_flipping";
-
         private readonly List<Button> _itemButtons = new();
         private readonly List<CardSlot> _smallCards = new();
 
@@ -117,11 +115,7 @@ namespace Module.Blackjack
                 Button btn = _itemButtons[i];
                 if (btn == null) continue;
                 btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(() =>
-                {
-                    GameApp.SoundManager?.PlayEffect(SfxItemClick);
-                    ApplyFunc(EventDefines.BlackjackDraw, itemIndex);
-                });
+                btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackDraw, itemIndex));
             }
         }
 
