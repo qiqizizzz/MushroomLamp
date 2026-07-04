@@ -34,8 +34,7 @@ namespace Module.Blackjack
 
         private enum ItemInteractionMode
         {
-            DrawCard,
-            PickBuff,
+            PlaySlot,
             PickMaterial
         }
 
@@ -69,8 +68,10 @@ namespace Module.Blackjack
         private bool _interactionLocked;
         private Action _onIntroComplete;
         private readonly HashSet<int> _flippingCardIndices = new();
-        private ItemInteractionMode _itemMode = ItemInteractionMode.DrawCard;
-        private bool _buffSlotPicked;
+        private readonly HashSet<int> _usedSlotIndices = new();
+        private ItemInteractionMode _itemMode = ItemInteractionMode.PlaySlot;
+        private readonly List<MagicBoxBuffJsonData> _slotBuffs = new();
+        private readonly List<MaterialJsonData> _materialCandidates = new();
 
         private class CardSlot
         {
@@ -272,6 +273,10 @@ namespace Module.Blackjack
             killIntroSequence();
             killAllCardFlipTweens();
             _flippingCardIndices.Clear();
+            _usedSlotIndices.Clear();
+            _slotBuffs.Clear();
+            _materialCandidates.Clear();
+            clearItemLabels();
             _devilBubble?.resetInstant();
             _angelBubble?.resetInstant();
 
@@ -313,7 +318,13 @@ namespace Module.Blackjack
 
             if (applyLayout)
             {
-                syncItemSlots(model.ItemSlotCount);
+                if (_itemMode == ItemInteractionMode.PlaySlot)
+                    syncSlotBuffItems(model.ItemSlotCount);
+                else if (_itemMode == ItemInteractionMode.PickMaterial)
+                    syncMaterialItemSlots(_materialCandidates);
+                else
+                    syncItemSlots(model.ItemSlotCount);
+
                 syncSmallCards(model);
             }
 
@@ -335,6 +346,8 @@ namespace Module.Blackjack
                 bool available = resolveItemAvailable(model, i);
                 applyItemSlotState(i, available);
             }
+
+            reapplyItemLabels();
         }
 
         private bool resolveItemAvailable(BlackjackModel model, int index)
@@ -343,10 +356,8 @@ namespace Module.Blackjack
 
             switch (_itemMode)
             {
-                case ItemInteractionMode.PickBuff:
-                    return !_buffSlotPicked && index >= 0;
                 case ItemInteractionMode.PickMaterial:
-                    return index >= 0;
+                    return index >= 0 && index < _materialCandidates.Count;
                 default:
                     return model.IsItemSlotAvailable(index);
             }
@@ -416,29 +427,63 @@ namespace Module.Blackjack
                 _txtBottom.text = $"累计点数：{model.TotalPoint} / {model.EffectiveBustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
         }
 
-        public void SetupBuffPick(IReadOnlyList<MagicBoxBuffJsonData> candidates)
+        public void SetupSlotBuffs(IReadOnlyList<MagicBoxBuffJsonData> slotBuffs)
         {
-            _itemMode = ItemInteractionMode.PickBuff;
-            _buffSlotPicked = false;
+            _itemMode = ItemInteractionMode.PlaySlot;
+            _usedSlotIndices.Clear();
+            _slotBuffs.Clear();
+            if (slotBuffs != null)
+                _slotBuffs.AddRange(slotBuffs);
+
             bindItemButtons();
-            syncBuffItemSlots(candidates, pickedIndex: -1);
+            syncSlotBuffItems(_slotBuffs.Count);
             setInteractionLocked(false);
+        }
+
+        public void RestorePlaySlotMode()
+        {
+            _itemMode = ItemInteractionMode.PlaySlot;
+            bindItemButtons();
+            syncSlotBuffItems(_slotBuffs.Count);
+        }
+
+        public void MarkSlotUsed(int slotIndex)
+        {
+            if (slotIndex >= 0)
+                _usedSlotIndices.Add(slotIndex);
+            applyItemSlotState(slotIndex, false);
+        }
+
+        public void MarkSlotAvailable(int slotIndex)
+        {
+            if (slotIndex >= 0)
+                _usedSlotIndices.Remove(slotIndex);
         }
 
         public void SetupMaterialPick(IReadOnlyList<MaterialJsonData> candidates)
         {
             _itemMode = ItemInteractionMode.PickMaterial;
+
+            _materialCandidates.Clear();
+            if (candidates != null)
+                _materialCandidates.AddRange(candidates);
+
             bindItemButtons();
-            syncMaterialItemSlots(candidates);
+            syncMaterialItemSlots(_materialCandidates);
             setInteractionLocked(false);
         }
 
-        public void BindDrawMode()
+        private void reapplyItemLabels()
         {
-            _itemMode = ItemInteractionMode.DrawCard;
-            bindItemButtons();
-            clearItemLabels();
-            setInteractionLocked(false);
+            switch (_itemMode)
+            {
+                case ItemInteractionMode.PlaySlot:
+                    syncSlotBuffItemLabels();
+                    break;
+                case ItemInteractionMode.PickMaterial:
+                    syncMaterialItemSlots(_materialCandidates);
+                    break;
+            }
         }
 
         public void RefreshDialog(BlackjackDialogSession dialogSession)
@@ -642,6 +687,7 @@ namespace Module.Blackjack
         {
             _itemButtons.Clear();
             _itemHovers.Clear();
+            _itemLabels.Clear();
             Transform items = Find<Transform>("Items");
             if (items == null) return;
 
@@ -656,6 +702,7 @@ namespace Module.Blackjack
 
                 _itemHovers.Add(hover);
                 _itemButtons.Add(btn);
+                _itemLabels.Add(findTextIn(child, "Txt_BuffName"));
             }
         }
 
@@ -670,27 +717,17 @@ namespace Module.Blackjack
 
                 switch (_itemMode)
                 {
-                    case ItemInteractionMode.PickBuff:
-                        btn.onClick.AddListener(() => onBuffItemClicked(itemIndex));
-                        break;
                     case ItemInteractionMode.PickMaterial:
                         btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackPickMaterial, itemIndex));
                         break;
                     default:
-                        btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackDraw, itemIndex));
+                        btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackUseItemSlot, itemIndex));
                         break;
                 }
             }
         }
 
-        private void onBuffItemClicked(int itemIndex)
-        {
-            if (_buffSlotPicked) return;
-            _buffSlotPicked = true;
-            ApplyFunc(EventDefines.BlackjackPickBuff, itemIndex);
-        }
-
-        private void syncBuffItemSlots(IReadOnlyList<MagicBoxBuffJsonData> candidates, int pickedIndex)
+        private void syncSlotBuffItems(int slotCount)
         {
             Transform items = Find<Transform>("Items");
             if (items == null) return;
@@ -698,18 +735,18 @@ namespace Module.Blackjack
             int childIndex = 0;
             foreach (Transform child in items)
             {
-                bool active = candidates != null && childIndex < candidates.Count;
+                bool active = childIndex < slotCount;
                 child.gameObject.SetActive(active);
-                if (active)
-                {
-                    MagicBoxBuffJsonData buff = candidates[childIndex];
-                    setItemLabel(childIndex, buff?.name ?? "Buff");
-                }
-
-                if (childIndex == pickedIndex)
-                    applyItemSlotState(childIndex, false);
-
                 childIndex++;
+            }
+        }
+
+        private void syncSlotBuffItemLabels()
+        {
+            for (int i = 0; i < _slotBuffs.Count && i < _itemLabels.Count; i++)
+            {
+                MagicBoxBuffJsonData buff = _slotBuffs[i];
+                setItemLabel(i, buff?.name ?? "Buff");
             }
         }
 
@@ -735,47 +772,24 @@ namespace Module.Blackjack
 
         private void setItemLabel(int index, string text)
         {
-            ensureItemLabel(index);
-            if (index < 0 || index >= _itemLabels.Count || _itemLabels[index] == null) return;
-            _itemLabels[index].text = text ?? string.Empty;
-            _itemLabels[index].gameObject.SetActive(true);
+            if (index < 0 || index >= _itemLabels.Count) return;
+
+            TextMeshProUGUI label = _itemLabels[index];
+            if (label == null) return;
+
+            bool show = !string.IsNullOrEmpty(text);
+            label.text = show ? text : string.Empty;
+            label.gameObject.SetActive(show);
         }
 
         private void clearItemLabels()
         {
             for (int i = 0; i < _itemLabels.Count; i++)
             {
-                if (_itemLabels[i] != null)
-                    _itemLabels[i].gameObject.SetActive(false);
+                if (_itemLabels[i] == null) continue;
+                _itemLabels[i].text = string.Empty;
+                _itemLabels[i].gameObject.SetActive(false);
             }
-        }
-
-        private void ensureItemLabel(int index)
-        {
-            while (_itemLabels.Count <= index)
-                _itemLabels.Add(null);
-
-            if (_itemLabels[index] != null) return;
-            if (index >= _itemButtons.Count || _itemButtons[index] == null) return;
-
-            Transform parent = _itemButtons[index].transform;
-            var labelGo = new GameObject("Txt_BuffName", typeof(RectTransform));
-            labelGo.transform.SetParent(parent, false);
-
-            var rect = labelGo.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(4f, 4f);
-            rect.offsetMax = new Vector2(-4f, -4f);
-
-            var label = labelGo.AddComponent<TextMeshProUGUI>();
-            label.alignment = TextAlignmentOptions.Center;
-            label.fontSize = 22f;
-            label.color = Color.white;
-            label.raycastTarget = false;
-            if (_fontTemplate != null) label.font = _fontTemplate;
-
-            _itemLabels[index] = label;
         }
 
         private void collectBoxButton()

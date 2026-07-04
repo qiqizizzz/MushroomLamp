@@ -65,6 +65,7 @@ namespace Common.Defines
 
         // 21 点玩法
         public const string OpenBlackjackView = "OpenBlackjackView";
+        public const string BlackjackUseItemSlot = "BlackjackUseItemSlot";
         public const string BlackjackDraw = "BlackjackDraw";
         public const string BlackjackPickBuff = "BlackjackPickBuff";
         public const string BlackjackPickMaterial = "BlackjackPickMaterial";
