@@ -66,10 +66,64 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 48a8ce10cc5fad94baa3753300e3cf00: 21300000
+    - 861d58a084da2ea4e9c24cb5741a993f: 21300000
+    - 851069910579d024487e69cdbff60b93: 21300000
+    - 80ce5c427a31b434aaaffd7221239157: 21300000
+    - de389ca3aa0389645a450f1b63907392: 21300000
+    - 6dd418255208d4a408ee3393cd548921: 21300000
+    - 5800117594255e94180fecf94c8a415c: 21300000
+    - cb48b495c32d6124aa61699a52e37df6: 21300000
+    - c10c2c46e21105c42a81b190e627139a: 21300000
+    - e439e137aa46e5043909b6f0011b82e6: 21300000
+    - 523a99d99c6b4874a85f9d419f5721f5: 21300000
+    - 0ae3c35a3e948f24abc2c9865c6b12ab: 21300000
+    - 7492529aadfe04644907454d40653087: 21300000
+    - aad8859a62badf344a064ce62ba88f8f: 21300000
+    - f5ffe36ca0388024699172f86ced6b7e: 21300000
+    - 18cbbeac9260cb448b6f9fdbd0c067c8: 21300000
+    - 59065c1d876ff8c4683e27cea035ab69: 21300000
+    - 4634c59fcaec6a346b05a0c3db713818: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 48a8ce10cc5fad94baa3753300e3cf00, type: 3}
+  - {fileID: 21300000, guid: 861d58a084da2ea4e9c24cb5741a993f, type: 3}
+  - {fileID: 21300000, guid: 851069910579d024487e69cdbff60b93, type: 3}
+  - {fileID: 21300000, guid: 80ce5c427a31b434aaaffd7221239157, type: 3}
+  - {fileID: 21300000, guid: de389ca3aa0389645a450f1b63907392, type: 3}
+  - {fileID: 21300000, guid: 6dd418255208d4a408ee3393cd548921, type: 3}
+  - {fileID: 21300000, guid: 5800117594255e94180fecf94c8a415c, type: 3}
+  - {fileID: 21300000, guid: cb48b495c32d6124aa61699a52e37df6, type: 3}
+  - {fileID: 21300000, guid: c10c2c46e21105c42a81b190e627139a, type: 3}
+  - {fileID: 21300000, guid: e439e137aa46e5043909b6f0011b82e6, type: 3}
+  - {fileID: 21300000, guid: 523a99d99c6b4874a85f9d419f5721f5, type: 3}
+  - {fileID: 21300000, guid: 0ae3c35a3e948f24abc2c9865c6b12ab, type: 3}
+  - {fileID: 21300000, guid: 7492529aadfe04644907454d40653087, type: 3}
+  - {fileID: 21300000, guid: aad8859a62badf344a064ce62ba88f8f, type: 3}
+  - {fileID: 21300000, guid: f5ffe36ca0388024699172f86ced6b7e, type: 3}
+  - {fileID: 21300000, guid: 18cbbeac9260cb448b6f9fdbd0c067c8, type: 3}
+  - {fileID: 21300000, guid: 59065c1d876ff8c4683e27cea035ab69, type: 3}
+  - {fileID: 21300000, guid: 4634c59fcaec6a346b05a0c3db713818, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - "\u8BBE\u7F6E_\u9ED8\u8BA4"
+  - FrameLeft
+  - BtnBackHome
+  - SuccessTitle
+  - BtnBackHomeHover
+  - "\u56FE\u9274_\u672A\u89E3\u9501"
+  - "\u5F00\u59CB\u6E38\u620F_\u9ED8\u8BA4"
+  - Potion
+  - BtnNextRoundHover
+  - FrameRight
+  - "\u8BBE\u7F6E_\u70B9\u51FB"
+  - BtnNextRound
+  - DevilCat
+  - "\u9000\u51FA_\u9ED8\u8BA4"
+  - "\u9000\u51FA_\u70B9\u51FB"
+  - "\u5F00\u59CB\u6E38\u620F_\u70B9\u51FB"
+  - AngelPuppy
+  - Cauldron
   m_RenderDataMap: {}
   m_Tag: ArtMenuSummary
   m_IsVariant: 0

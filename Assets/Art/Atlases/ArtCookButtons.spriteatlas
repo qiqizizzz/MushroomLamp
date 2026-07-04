@@ -71,10 +71,79 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 1351e800934ed5a459dd4a5fbd8210c2: 21300000
+    - 24063d4079e4ab04d994395b4c7cb734: 21300000
+    - a49c45708edc4c646a16ebe95e6c6b15: 21300000
+    - c1772cf140bd5f94382cf7297baaa781: 21300000
+    - 932fc4936a53c7945bc3d49cf1060a11: 21300000
+    - 6f97dbb30ad3dd74a855a8b681034c8c: 21300000
+    - bb9ea4644e9903d4d9b88e993a7cb51d: 21300000
+    - 47639d65483116c4fa0a491888753937: 21300000
+    - 290dab1612815fa4db8f51f83001cf0f: 21300000
+    - 5f8a9236a082cde45832c1e9bb11667c: 21300000
+    - 6fbf8df6ea810e54facf62272325ab12: 21300000
+    - e43134772935e4a42baad135f9c8d206: 21300000
+    - 1daf3b681f71e9549afe214f89da847d: 21300000
+    - b1345e799d3d53b449c5b75f10e1e725: 21300000
+    - 5bc87d8abc424f142bc5590efd3eaa24: 21300000
+    - 89bb7fba5b835d8498ec1c684386b80d: 21300000
+    - 92acc70bb6746cd4f8c95d6c37321ae2: 21300000
+    - dc1bfa1b6b8d2b94f9d59a712b0547e1: 21300000
+    - 7aa6192b78de80a4da74d305aa64b99f: 21300000
+    - 02472eab6010f0e4da2c3fb20a231742: 21300000
+    - f2b3d33cf82f45544b4c58ccdb41c6f9: 21300000
+    - 6c3ea95d7862fd8489f6db11fde48ac6: 21300000
+    - 4e17648e619e4b541a3b52113fa0d1ba: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 1351e800934ed5a459dd4a5fbd8210c2, type: 3}
+  - {fileID: 21300000, guid: 24063d4079e4ab04d994395b4c7cb734, type: 3}
+  - {fileID: 21300000, guid: a49c45708edc4c646a16ebe95e6c6b15, type: 3}
+  - {fileID: 21300000, guid: c1772cf140bd5f94382cf7297baaa781, type: 3}
+  - {fileID: 21300000, guid: 932fc4936a53c7945bc3d49cf1060a11, type: 3}
+  - {fileID: 21300000, guid: 6f97dbb30ad3dd74a855a8b681034c8c, type: 3}
+  - {fileID: 21300000, guid: bb9ea4644e9903d4d9b88e993a7cb51d, type: 3}
+  - {fileID: 21300000, guid: 47639d65483116c4fa0a491888753937, type: 3}
+  - {fileID: 21300000, guid: 290dab1612815fa4db8f51f83001cf0f, type: 3}
+  - {fileID: 21300000, guid: 5f8a9236a082cde45832c1e9bb11667c, type: 3}
+  - {fileID: 21300000, guid: 6fbf8df6ea810e54facf62272325ab12, type: 3}
+  - {fileID: 21300000, guid: e43134772935e4a42baad135f9c8d206, type: 3}
+  - {fileID: 21300000, guid: 1daf3b681f71e9549afe214f89da847d, type: 3}
+  - {fileID: 21300000, guid: b1345e799d3d53b449c5b75f10e1e725, type: 3}
+  - {fileID: 21300000, guid: 5bc87d8abc424f142bc5590efd3eaa24, type: 3}
+  - {fileID: 21300000, guid: 89bb7fba5b835d8498ec1c684386b80d, type: 3}
+  - {fileID: 21300000, guid: 92acc70bb6746cd4f8c95d6c37321ae2, type: 3}
+  - {fileID: 21300000, guid: dc1bfa1b6b8d2b94f9d59a712b0547e1, type: 3}
+  - {fileID: 21300000, guid: 7aa6192b78de80a4da74d305aa64b99f, type: 3}
+  - {fileID: 21300000, guid: 02472eab6010f0e4da2c3fb20a231742, type: 3}
+  - {fileID: 21300000, guid: f2b3d33cf82f45544b4c58ccdb41c6f9, type: 3}
+  - {fileID: 21300000, guid: 6c3ea95d7862fd8489f6db11fde48ac6, type: 3}
+  - {fileID: 21300000, guid: 4e17648e619e4b541a3b52113fa0d1ba, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - "\u6309\u94AE"
+  - Btn_pause_clicked
+  - Btn_pause
+  - Btn_setting
+  - Btn_home
+  - Btn_skip
+  - "\u8DF3\u8FC7_\u70B9\u51FB"
+  - "\u8DF3\u8FC7_\u9ED8\u8BA4"
+  - "\u7ED3\u675F\u56DE\u5408_\u70B9\u51FB"
+  - "\u5173\u95ED\u6309\u94AE_\u70B9\u51FB"
+  - Btn_skip_clicked
+  - "\u7ED3\u675F\u56DE\u5408_\u9ED8\u8BA4"
+  - "\u6E05\u7A7A_\u9ED8\u8BA4"
+  - "\u6750\u6599\u4ECB\u7ECD\u6846"
+  - "\u6E05\u7A7A_\u70B9\u51FB"
+  - "\u64A4\u56DE_\u9ED8\u8BA4"
+  - "\u5173\u95ED\u6309\u94AE_\u9ED8\u8BA4"
+  - "\u64A4\u56DE_\u70B9\u51FB"
+  - Btn_continue_clicked
+  - "\u63D0\u793A\u80CC\u666F_\u5C0F"
+  - Btn_continue
+  - Btn_setting_clicked
+  - Btn_home_clicked
   m_RenderDataMap: {}
   m_Tag: ArtCookButtons
   m_IsVariant: 0

@@ -62,10 +62,52 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - ca931041386c43f5b72bfb5e5acd69ee: 21300000
+    - 1cc046238fd24fda815aabdeed4d7753: 21300000
+    - 2898968468b6402790d36a1b2b446054: 21300000
+    - 59b94ee5eeed4307b1619d06dc9c5140: 21300000
+    - 98ee7ab6a6ffdc74c8955e8e32398f99: 21300000
+    - f32ce367e15f40b98634592e94dd60e6: 21300000
+    - 16572148e42c47fa9448425714db67ed: 21300000
+    - 25af57485fc7488fa6009c33dbb161b5: 21300000
+    - d836596a1d584254b52a64cf56882eff: 21300000
+    - 383683da7a9d42d8a16d79b0815dc676: 21300000
+    - ee777d7b88254e478521ad8bd277b348: 21300000
+    - 68f920abad75ef8419bd9f2b99f2d90d: 21300000
+    - dd984bacee094f89a3387702235723a7: 21300000
+    - 910e66dcbad249c69b7d8e5800c6f1aa: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: ca931041386c43f5b72bfb5e5acd69ee, type: 3}
+  - {fileID: 21300000, guid: 1cc046238fd24fda815aabdeed4d7753, type: 3}
+  - {fileID: 21300000, guid: 2898968468b6402790d36a1b2b446054, type: 3}
+  - {fileID: 21300000, guid: 59b94ee5eeed4307b1619d06dc9c5140, type: 3}
+  - {fileID: 21300000, guid: 98ee7ab6a6ffdc74c8955e8e32398f99, type: 3}
+  - {fileID: 21300000, guid: f32ce367e15f40b98634592e94dd60e6, type: 3}
+  - {fileID: 21300000, guid: 16572148e42c47fa9448425714db67ed, type: 3}
+  - {fileID: 21300000, guid: 25af57485fc7488fa6009c33dbb161b5, type: 3}
+  - {fileID: 21300000, guid: d836596a1d584254b52a64cf56882eff, type: 3}
+  - {fileID: 21300000, guid: 383683da7a9d42d8a16d79b0815dc676, type: 3}
+  - {fileID: 21300000, guid: ee777d7b88254e478521ad8bd277b348, type: 3}
+  - {fileID: 21300000, guid: 68f920abad75ef8419bd9f2b99f2d90d, type: 3}
+  - {fileID: 21300000, guid: dd984bacee094f89a3387702235723a7, type: 3}
+  - {fileID: 21300000, guid: 910e66dcbad249c69b7d8e5800c6f1aa, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - "\u5C0F\u6076\u9B54"
+  - "\u6251\u514B\u724C"
+  - "\u8FD4\u56DE"
+  - "\u56DE\u6536\u6876"
+  - "\u5BFC\u51FA\u7269\u6837\u672C"
+  - "\u5BF9\u8BDD\u6846"
+  - "\u6750\u6599\u4ECB\u7ECDui"
+  - "\u80CC\u5305\u5185\u9053\u5177\u6837\u672C"
+  - "\u80CC\u5305\u5C55\u5F00ui"
+  - "\u80CC\u5305"
+  - "\u5C0F\u6076\u9B54"
+  - "\u56DE\u6536\u754C\u9762\u80CC\u5305\u6846"
+  - "\u5C0F\u5929\u4F7F"
+  - "\u9B54\u76D2"
   m_RenderDataMap: {}
   m_Tag: ArtRecycleBlackjack
   m_IsVariant: 0
