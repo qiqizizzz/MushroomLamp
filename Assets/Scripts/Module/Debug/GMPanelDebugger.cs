@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using Common.Defines;
+using Module.Cook;
+using Module.Item;
 using Module.Player;
 using Module.Store;
 using MVC;
@@ -100,6 +103,7 @@ namespace Module.Debug
             GUILayout.EndArea();
 
             drawMoneyColumn(panelWidth);
+            drawItemColumn(panelWidth);
         }
 
         // 独立的金币列，放在面板右侧（不与 View 按钮同列）
@@ -128,6 +132,87 @@ namespace Module.Debug
             Module.Cook.CookModel.ForceStageWin = forceWin;
 
             GUILayout.EndArea();
+        }
+
+        // 道具 GM：获得/移除任意道具
+        private void drawItemColumn(float leftPanelWidth)
+        {
+            const float colWidth = 280f;
+            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f, 16f, colWidth, 420f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+
+            ItemParamCatalogLoader.EnsureLoaded();
+            IReadOnlyList<ItemParamJsonData> allItems = ItemParamCatalogLoader.GetAll();
+            int totalCount = allItems.Count;
+
+            GUILayout.Label("道具 GM");
+            GUILayout.Label($"拥有：{PlayerDataManager.Instance.OwnedItemCount}/{totalCount}");
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("获得全部", GUILayout.Height(26f)))
+            {
+                gmAddAllItems(allItems);
+                notifyItemInventoryChanged();
+            }
+
+            if (GUILayout.Button("清除全部", GUILayout.Height(26f)))
+            {
+                PlayerDataManager.Instance.ClearAllItems();
+                notifyItemInventoryChanged();
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(6f);
+
+            foreach (ItemParamJsonData item in allItems)
+            {
+                if (item == null || string.IsNullOrWhiteSpace(item.id)) continue;
+
+                bool owned = PlayerDataManager.Instance.HasItem(item.id);
+                string label = owned ? $"[√] {item.name}" : $"[ ] {item.name}";
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(label, GUILayout.Width(130f));
+
+                GUI.enabled = !owned;
+                if (GUILayout.Button("获得", GUILayout.Width(56f), GUILayout.Height(24f)))
+                {
+                    PlayerDataManager.Instance.AddItem(item.id);
+                    notifyItemInventoryChanged();
+                }
+                GUI.enabled = true;
+
+                GUI.enabled = owned;
+                if (GUILayout.Button("移除", GUILayout.Width(56f), GUILayout.Height(24f)))
+                {
+                    PlayerDataManager.Instance.RemoveItem(item.id);
+                    notifyItemInventoryChanged();
+                }
+                GUI.enabled = true;
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private static void gmAddAllItems(IReadOnlyList<ItemParamJsonData> allItems)
+        {
+            foreach (ItemParamJsonData item in allItems)
+            {
+                if (item == null || string.IsNullOrWhiteSpace(item.id)) continue;
+                PlayerDataManager.Instance.AddItem(item.id);
+            }
+        }
+
+        private static void notifyItemInventoryChanged()
+        {
+            if (GameApp.ViewManager == null) return;
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.CookView)) return;
+
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            cookView?.RefreshOwnedItemsDisplay();
         }
     }
 }

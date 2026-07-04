@@ -53,6 +53,19 @@ namespace Module.Player
             return true;
         }
 
+        public bool RemoveItem(string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(itemId)) return false;
+            return _ownedItemIds.Remove(itemId);
+        }
+
+        public void ClearAllItems()
+        {
+            _ownedItemIds.Clear();
+        }
+
+        public int OwnedItemCount => _ownedItemIds.Count;
+
         public bool HasItem(string itemId)
         {
             return !string.IsNullOrWhiteSpace(itemId) && _ownedItemIds.Contains(itemId);
