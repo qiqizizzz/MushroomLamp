@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using Module.Cook;
 using Common.Defines;
+using Module.Player;
 using MVC.View;
 using Module.Item;
 using Module.View;
@@ -29,6 +30,7 @@ namespace Module.Cook
     {
         private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
         private const string POT_TRAY_PLUS_SPRITE = "Art/CookView/Pot/加号";
+        private const string OWNED_ITEM_ICON_PATH = AddressDefines.Art_ShopItemSample;
 
         private static Sprite S_PotTrayPlusSprite;
         private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
@@ -71,6 +73,24 @@ namespace Module.Cook
         private Transform _potTrayRoot;
         private Button _btnSubmitTray;
         private CookPotTrayItem[] _potTrayItems;
+
+        // 右侧已拥有道具列表（LoopGridView 复用）
+        private const int OwnedItemColumns = 1;
+        private const int OwnedItemPoolRows = 4;
+        private static readonly Vector2 OwnedItemCellSize = new Vector2(112f, 136f);
+        private static readonly Vector2 OwnedItemSpacing = new Vector2(0f, 10f);
+
+        private GameObject _ownedItemScrollRoot;
+        private ScrollRect _ownedItemScroll;
+        private LoopGridView _ownedItemGrid;
+        private bool _ownedItemGridInited;
+        private readonly List<CookOwnedItemEntry> _ownedItems = new();
+
+        private class CookOwnedItemEntry
+        {
+            public string name;
+            public string iconPath;
+        }
 
         private CookModel _cookModel;
         private ItemTooltip _itemTooltip;
@@ -174,6 +194,7 @@ namespace Module.Cook
             initPotArea();
             initPauseDialog();
             initHandFlyNodes();
+            initOwnedItemScroll();
         }
 
         // 查找天使发牌锚点 / 恶魔回收锚点（位置可在 prefab 里手动微调），递归按名字找
@@ -210,6 +231,107 @@ namespace Module.Cook
             _magicBoxHover.SetupSpineButton(_btnMagicBox, spine, 1.15f);
 
             _btnMagicBoxLegacy = Find<Button>("Right/MagicBox/Btn_Touch");
+        }
+
+        // 右侧已拥有道具 ScrollView（LoopGridView 复用 EmptyGo，无道具时隐藏 ItemScroll）
+        private void initOwnedItemScroll()
+        {
+            if (_ownedItemGridInited) return;
+
+            _ownedItemScroll = tryFindComponent<ScrollRect>("Right/ItemScroll/ScrollView");
+            if (_ownedItemScroll == null)
+            {
+                QLog.Error($"[{nameof(CookView)}] 未找到 Right/ItemScroll/ScrollView，请在 CookView 预制体中配置");
+                return;
+            }
+
+            _ownedItemScrollRoot = _ownedItemScroll.transform.parent != null
+                ? _ownedItemScroll.transform.parent.gameObject
+                : _ownedItemScroll.gameObject;
+
+            GameObject slotPrefab = ResManager.LoadAsset<GameObject>(AddressDefines.UI_CookOwnedItemSlot);
+            if (slotPrefab == null)
+            {
+                QLog.Error($"[{nameof(CookView)}] 未找到道具槽预制体：{AddressDefines.UI_CookOwnedItemSlot}");
+                return;
+            }
+
+            _ownedItemGrid = _ownedItemScroll.gameObject.GetComponent<LoopGridView>();
+            if (_ownedItemGrid == null)
+                _ownedItemGrid = _ownedItemScroll.gameObject.AddComponent<LoopGridView>();
+
+            stripLayoutComponents(_ownedItemScroll.content);
+
+            var padding = new RectOffset(8, 8, 8, 8);
+            _ownedItemGrid.Init(_ownedItemScroll, slotPrefab, OwnedItemColumns, OwnedItemPoolRows,
+                OwnedItemCellSize, OwnedItemSpacing, onUpdateOwnedItemSlot, padding);
+            _ownedItemGridInited = true;
+
+            refreshOwnedItems();
+        }
+
+        private static void stripLayoutComponents(RectTransform content)
+        {
+            if (content == null) return;
+
+            var layout = content.GetComponent<LayoutGroup>();
+            if (layout != null) Destroy(layout);
+
+            var fitter = content.GetComponent<ContentSizeFitter>();
+            if (fitter != null) Destroy(fitter);
+        }
+
+        private void refreshOwnedItems()
+        {
+            _ownedItems.Clear();
+            ItemParamCatalogLoader.EnsureLoaded();
+
+            foreach (string itemId in PlayerDataManager.Instance.GetOwnedItemIds())
+            {
+                ItemParamJsonData cfg = ItemParamCatalogLoader.GetById(itemId);
+                if (cfg == null) continue;
+
+                _ownedItems.Add(new CookOwnedItemEntry
+                {
+                    name = cfg.name,
+                    iconPath = OWNED_ITEM_ICON_PATH
+                });
+            }
+
+            bool hasItems = _ownedItems.Count > 0;
+            if (_ownedItemScrollRoot != null)
+                _ownedItemScrollRoot.SetActive(hasItems);
+
+            if (!hasItems || !_ownedItemGridInited || _ownedItemGrid == null)
+                return;
+
+            _ownedItemGrid.SetTotalCount(_ownedItems.Count);
+        }
+
+        private void onUpdateOwnedItemSlot(int dataIndex, GameObject item)
+        {
+            if (dataIndex < 0 || dataIndex >= _ownedItems.Count) return;
+
+            CookOwnedItemEntry entry = _ownedItems[dataIndex];
+
+            Transform iconTf = item.transform.Find("Img_Icon");
+            if (iconTf != null)
+            {
+                Image img = iconTf.GetComponent<Image>();
+                if (img != null)
+                {
+                    Sprite sprite = ArtAssetLoader.LoadSprite(entry.iconPath);
+                    img.sprite = sprite;
+                    img.enabled = sprite != null;
+                }
+            }
+
+            Transform nameTf = item.transform.Find("Txt_Name");
+            if (nameTf != null)
+            {
+                TextMeshProUGUI txt = nameTf.GetComponent<TextMeshProUGUI>();
+                if (txt != null) txt.text = entry.name ?? string.Empty;
+            }
         }
 
         // 打开界面时关闭遗留弹窗
@@ -316,6 +438,12 @@ namespace Module.Cook
                 _itemTooltip.Hide();
         }
 
+        // GM / 商店购买后刷新右侧道具列表
+        public void RefreshOwnedItemsDisplay()
+        {
+            refreshOwnedItems();
+        }
+
         // 根据烹饪模型刷新界面
         public void Refresh(CookModel cookModel)
         {
@@ -331,6 +459,7 @@ namespace Module.Cook
             refreshHand(cookModel);
             refreshProcessedMaterials(cookModel);
             refreshActions(cookModel);
+            refreshOwnedItems();
 
             if (cookModel.LastRoundResult != null && cookModel.LastRoundResult != _lastShownResult)
             {
@@ -509,6 +638,13 @@ namespace Module.Cook
                 slotItem.Init(this, i);
                 _slotItems[i] = slotItem;
             }
+        }
+
+        // 可选节点查找：不存在时不打 Error（与 BaseView.Find 区分）
+        private T tryFindComponent<T>(string path) where T : Component
+        {
+            Transform tf = transform.Find(path);
+            return tf != null ? tf.GetComponent<T>() : null;
         }
 
         // 在 root 的所有后代中按名查找（Transform.Find 只查直接子级，无法跨分组层）

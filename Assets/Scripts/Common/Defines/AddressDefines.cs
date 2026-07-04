@@ -24,6 +24,7 @@ namespace Common.Defines
         public const string UI_StoreView = "UI/View/StoreView";
         public const string UI_StoreBagItem = "UI/Store/StoreBagItem";
         public const string UI_StoreBuyItem = "UI/Store/StoreBuyItem";
+        public const string UI_CookOwnedItemSlot = "UI/Cook/CookOwnedItemSlot";
         public const string UI_BlackjackView = "UI/View/BlackjackView";
         public const string UI_ConfirmView = "UI/View/ConfirmView";
         public const string UI_SummaryView = "UI/View/SummaryView";
@@ -39,6 +40,7 @@ namespace Common.Defines
 
         // Art 与字体（Resources 路径，相对 Resources/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
+        public const string Art_ShopItemSample = "Art/ShopView/道具样本";
         public const string Art_ShopPriceTag = "Art/ShopView/价格贴";
         public const string Art_ShopContinueHover = "Art/ShopView/IMG_9173";
         public const string Art_SelectBoxStartHover = "Art/SelectBoxView/IMG_9171";
