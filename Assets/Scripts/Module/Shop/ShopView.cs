@@ -97,7 +97,7 @@ namespace Module.Shop
         public void Refresh(ShopModel model)
         {
             if (model == null) return;
-            if (_txtGold != null) _txtGold.text = $"金币 {model.Gold}";
+            if (_txtGold != null) _txtGold.text = model.Gold.ToString();
             if (_txtTitle != null) _txtTitle.text = "黑猫夜市";
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
             if (_txtInfo != null)
