@@ -2,22 +2,32 @@
   "stages": [
     {
       "stageId": "spice_easy_1",
-      "displayName": "香气初探",
+      "displayName": "简单·第一小局",
       "turnCount": 5,
-      "potTrayCapacity": 3,
-      "targetMin": 14,
-      "targetMax": 18,
-      "handCount": 6,
-      "angelRescueCount": 3
+      "potTrayCapacity": 4,
+      "targetMin": 16,
+      "targetMax": 20,
+      "handCount": 5,
+      "angelRescueCount": 2
     },
     {
       "stageId": "spice_easy_2",
-      "displayName": "百味交响",
+      "displayName": "简单·第二小局",
       "turnCount": 6,
-      "potTrayCapacity": 3,
-      "targetMin": 18,
-      "targetMax": 24,
-      "handCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 22,
+      "targetMax": 27,
+      "handCount": 5,
+      "angelRescueCount": 2
+    },
+    {
+      "stageId": "spice_easy_3",
+      "displayName": "简单·第三小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 28,
+      "targetMax": 34,
+      "handCount": 5,
       "angelRescueCount": 2
     }
   ]

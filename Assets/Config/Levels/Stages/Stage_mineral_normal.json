@@ -2,22 +2,32 @@
   "stages": [
     {
       "stageId": "mineral_normal_1",
-      "displayName": "矿坑首战",
-      "turnCount": 6,
-      "potTrayCapacity": 3,
+      "displayName": "普通·第一小局",
+      "turnCount": 5,
+      "potTrayCapacity": 4,
       "targetMin": 20,
-      "targetMax": 24,
-      "handCount": 6,
+      "targetMax": 25,
+      "handCount": 5,
       "angelRescueCount": 1
     },
     {
       "stageId": "mineral_normal_2",
-      "displayName": "矿脉深处",
-      "turnCount": 7,
+      "displayName": "普通·第二小局",
+      "turnCount": 5,
       "potTrayCapacity": 4,
-      "targetMin": 26,
-      "targetMax": 32,
-      "handCount": 6,
+      "targetMin": 28,
+      "targetMax": 34,
+      "handCount": 5,
+      "angelRescueCount": 1
+    },
+    {
+      "stageId": "mineral_normal_3",
+      "displayName": "普通·第三小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 36,
+      "targetMax": 44,
+      "handCount": 5,
       "angelRescueCount": 1
     }
   ]
