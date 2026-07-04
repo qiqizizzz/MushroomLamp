@@ -99,6 +99,7 @@ namespace Module.Cook
         private const string DevilRecycleAnim = "recycle";
         private const string SfxDealAppear = "sfx_ingame_appear";
         private const string SfxDiscardDisappear = "sfx_ingame_disappear";
+        private const string SfxHandSelect = "sfx_ingame_select";
 
         public bool IsHandAnimating => _isHandAnimating;
         public System.Action OnDiscardAnimationDone;
@@ -366,6 +367,7 @@ namespace Module.Cook
             if (!canPlaceMaterial(materialItem.MaterialId, slotIndex)) return false;
 
             ApplyFunc(EventDefines.CookPlaceMaterial, materialItem.MaterialId, slotIndex);
+            GameApp.SoundManager?.PlayEffect(SfxHandSelect);
             return true;
         }
 
