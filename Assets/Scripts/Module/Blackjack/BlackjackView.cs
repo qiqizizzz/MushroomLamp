@@ -35,6 +35,8 @@ namespace Module.Blackjack
         [Header("小牌布局")]
         [SerializeField] private float _layoutCardWidth = 140f;
         [SerializeField] private float _layoutSpacing = 20f;
+        [Header("翻牌")]
+        [SerializeField] private float _flipHalfDuration = 0.18f;
 
         private readonly List<Button> _itemButtons = new();
         private readonly List<UIButtonHoverItem> _itemHovers = new();
@@ -56,6 +58,7 @@ namespace Module.Blackjack
         private Sequence _introSequence;
         private bool _interactionLocked;
         private Action _onIntroComplete;
+        private readonly HashSet<int> _flippingCardIndices = new();
 
         private class CardSlot
         {
@@ -63,6 +66,7 @@ namespace Module.Blackjack
             public RectTransform rect;
             public TextMeshProUGUI point;
             public Image face;
+            public Tween flipTween;
         }
 
         // 单侧气泡：从角色位置弹出 / 收回
@@ -239,6 +243,7 @@ namespace Module.Blackjack
         public override void Close(params object[] args)
         {
             killIntroSequence();
+            killAllCardFlipTweens();
             _devilBubble?.killTween();
             _angelBubble?.killTween();
             base.Close(args);
@@ -253,6 +258,8 @@ namespace Module.Blackjack
         {
             _onIntroComplete = onIntroComplete;
             killIntroSequence();
+            killAllCardFlipTweens();
+            _flippingCardIndices.Clear();
             _devilBubble?.resetInstant();
             _angelBubble?.resetInstant();
 
@@ -298,14 +305,12 @@ namespace Module.Blackjack
                 syncSmallCards(model);
             }
 
-            if (_bigCard != null)
-            {
-                setCardFace(_bigCard, true);
-                if (_bigCard.point != null) _bigCard.point.text = model.TotalPoint.ToString();
-            }
+            refreshBigCardAndBottom(model);
 
             for (int i = 0; i < _smallCards.Count; i++)
             {
+                if (_flippingCardIndices.Contains(i)) continue;
+
                 CardSlot slot = _smallCards[i];
                 bool revealed = i < model.Cards.Count && model.Cards[i].revealed;
                 setCardFace(slot, revealed);
@@ -317,6 +322,67 @@ namespace Module.Blackjack
             {
                 bool available = !_interactionLocked && model.IsItemSlotAvailable(i);
                 applyItemSlotState(i, available);
+            }
+        }
+
+        // 点击道具后播放小牌翻转；数值与累计点数在动画结束后由 onComplete 触发刷新
+        public void PlayCardFlipReveal(int cardIndex, int pointValue, int usedItemSlot, Action onComplete)
+        {
+            if (cardIndex < 0 || cardIndex >= _smallCards.Count)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            CardSlot slot = _smallCards[cardIndex];
+            if (slot.rect == null)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            killCardFlipTween(slot);
+            _flippingCardIndices.Add(cardIndex);
+
+            applyItemSlotState(usedItemSlot, false);
+            setInteractionLocked(true);
+
+            setCardFace(slot, false);
+            if (slot.point != null)
+            {
+                slot.point.text = "?";
+                slot.point.gameObject.SetActive(true);
+            }
+
+            slot.rect.localScale = Vector3.one;
+            float half = Mathf.Max(0.05f, _flipHalfDuration);
+
+            slot.flipTween = DOTween.Sequence()
+                .Append(slot.rect.DOScaleX(0f, half).SetEase(Ease.InQuad))
+                .AppendCallback(() =>
+                {
+                    setCardFace(slot, true);
+                    if (slot.point != null)
+                        slot.point.text = pointValue.ToString();
+                })
+                .Append(slot.rect.DOScaleX(1f, half).SetEase(Ease.OutQuad))
+                .OnComplete(() =>
+                {
+                    slot.flipTween = null;
+                    _flippingCardIndices.Remove(cardIndex);
+                    if (slot.rect != null)
+                        slot.rect.localScale = Vector3.one;
+                    setInteractionLocked(false);
+                    onComplete?.Invoke();
+                });
+        }
+
+        private void refreshBigCardAndBottom(BlackjackModel model)
+        {
+            if (_bigCard != null)
+            {
+                setCardFace(_bigCard, true);
+                if (_bigCard.point != null) _bigCard.point.text = model.TotalPoint.ToString();
             }
 
             if (_txtBottom != null)
@@ -487,6 +553,22 @@ namespace Module.Blackjack
             if (_introSequence == null) return;
             _introSequence.Kill();
             _introSequence = null;
+        }
+
+        private void killCardFlipTween(CardSlot slot)
+        {
+            if (slot?.flipTween == null) return;
+            slot.flipTween.Kill();
+            slot.flipTween = null;
+            if (slot.rect != null)
+                slot.rect.localScale = Vector3.one;
+        }
+
+        private void killAllCardFlipTweens()
+        {
+            _flippingCardIndices.Clear();
+            for (int i = 0; i < _smallCardPool.Count; i++)
+                killCardFlipTween(_smallCardPool[i]);
         }
 
         private static Vector3 getEmitLocalPosition(RectTransform character, RectTransform bubble, Vector2 normalizedInCharacter)

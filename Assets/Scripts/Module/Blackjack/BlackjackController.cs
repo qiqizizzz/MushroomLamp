@@ -72,13 +72,22 @@ namespace Module.Blackjack
             returnToCookView();
         }
 
-        // 点道具抽牌：翻开下一张，刷新界面；达/超 21 触发结算
+        // 点道具抽牌：先播翻牌，动画结束后再刷新累计点数并判定结算
         private void onDraw(object[] args)
         {
             int slotIndex = resolveItemSlotIndex(args);
             if (!_model.TryDrawFromSlot(slotIndex, out int cardIndex) || cardIndex < 0)
                 return;
 
+            var view = getBlackjackView();
+            if (view == null) return;
+
+            int point = _model.GetRevealedPoint(cardIndex);
+            view.PlayCardFlipReveal(cardIndex, point, slotIndex, onDrawFlipFinished);
+        }
+
+        private void onDrawFlipFinished()
+        {
             refreshView();
 
             if (_model.IsBusted)
