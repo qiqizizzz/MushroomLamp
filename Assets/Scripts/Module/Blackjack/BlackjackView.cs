@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using Common.Defines;
 using Common.UI;
 using DG.Tweening;
+using Module.MagicBoxBuff;
+using Module.Material;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -30,6 +32,12 @@ namespace Module.Blackjack
         private static readonly Color ItemNormalColor = Color.white;
         private static readonly Color ItemDisabledColor = new Color(0.78f, 0.78f, 0.78f, 0.55f);
 
+        private enum ItemInteractionMode
+        {
+            PlaySlot,
+            PickMaterial
+        }
+
         [Header("开场")]
         [SerializeField] private float _openCooldownSeconds = 1.5f;
         [Header("小牌布局")]
@@ -40,6 +48,7 @@ namespace Module.Blackjack
 
         private readonly List<Button> _itemButtons = new();
         private readonly List<UIButtonHoverItem> _itemHovers = new();
+        private readonly List<TextMeshProUGUI> _itemLabels = new();
         private readonly List<CardSlot> _smallCardPool = new();
         private readonly List<CardSlot> _smallCards = new();
 
@@ -59,6 +68,10 @@ namespace Module.Blackjack
         private bool _interactionLocked;
         private Action _onIntroComplete;
         private readonly HashSet<int> _flippingCardIndices = new();
+        private readonly HashSet<int> _usedSlotIndices = new();
+        private ItemInteractionMode _itemMode = ItemInteractionMode.PlaySlot;
+        private readonly List<MagicBoxBuffJsonData> _slotBuffs = new();
+        private readonly List<MaterialJsonData> _materialCandidates = new();
 
         private class CardSlot
         {
@@ -260,6 +273,10 @@ namespace Module.Blackjack
             killIntroSequence();
             killAllCardFlipTweens();
             _flippingCardIndices.Clear();
+            _usedSlotIndices.Clear();
+            _slotBuffs.Clear();
+            _materialCandidates.Clear();
+            clearItemLabels();
             _devilBubble?.resetInstant();
             _angelBubble?.resetInstant();
 
@@ -301,7 +318,13 @@ namespace Module.Blackjack
 
             if (applyLayout)
             {
-                syncItemSlots(model.ItemSlotCount);
+                if (_itemMode == ItemInteractionMode.PlaySlot)
+                    syncSlotBuffItems(model.ItemSlotCount);
+                else if (_itemMode == ItemInteractionMode.PickMaterial)
+                    syncMaterialItemSlots(_materialCandidates);
+                else
+                    syncItemSlots(model.ItemSlotCount);
+
                 syncSmallCards(model);
             }
 
@@ -320,8 +343,23 @@ namespace Module.Blackjack
 
             for (int i = 0; i < _itemButtons.Count; i++)
             {
-                bool available = !_interactionLocked && model.IsItemSlotAvailable(i);
+                bool available = resolveItemAvailable(model, i);
                 applyItemSlotState(i, available);
+            }
+
+            reapplyItemLabels();
+        }
+
+        private bool resolveItemAvailable(BlackjackModel model, int index)
+        {
+            if (_interactionLocked) return false;
+
+            switch (_itemMode)
+            {
+                case ItemInteractionMode.PickMaterial:
+                    return index >= 0 && index < _materialCandidates.Count;
+                default:
+                    return model.IsItemSlotAvailable(index);
             }
         }
 
@@ -386,7 +424,66 @@ namespace Module.Blackjack
             }
 
             if (_txtBottom != null)
-                _txtBottom.text = $"累计点数：{model.TotalPoint} / {BlackjackModel.BustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
+                _txtBottom.text = $"累计点数：{model.TotalPoint} / {model.EffectiveBustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
+        }
+
+        public void SetupSlotBuffs(IReadOnlyList<MagicBoxBuffJsonData> slotBuffs)
+        {
+            _itemMode = ItemInteractionMode.PlaySlot;
+            _usedSlotIndices.Clear();
+            _slotBuffs.Clear();
+            if (slotBuffs != null)
+                _slotBuffs.AddRange(slotBuffs);
+
+            bindItemButtons();
+            syncSlotBuffItems(_slotBuffs.Count);
+            setInteractionLocked(false);
+        }
+
+        public void RestorePlaySlotMode()
+        {
+            _itemMode = ItemInteractionMode.PlaySlot;
+            bindItemButtons();
+            syncSlotBuffItems(_slotBuffs.Count);
+        }
+
+        public void MarkSlotUsed(int slotIndex)
+        {
+            if (slotIndex >= 0)
+                _usedSlotIndices.Add(slotIndex);
+            applyItemSlotState(slotIndex, false);
+        }
+
+        public void MarkSlotAvailable(int slotIndex)
+        {
+            if (slotIndex >= 0)
+                _usedSlotIndices.Remove(slotIndex);
+        }
+
+        public void SetupMaterialPick(IReadOnlyList<MaterialJsonData> candidates)
+        {
+            _itemMode = ItemInteractionMode.PickMaterial;
+
+            _materialCandidates.Clear();
+            if (candidates != null)
+                _materialCandidates.AddRange(candidates);
+
+            bindItemButtons();
+            syncMaterialItemSlots(_materialCandidates);
+            setInteractionLocked(false);
+        }
+
+        private void reapplyItemLabels()
+        {
+            switch (_itemMode)
+            {
+                case ItemInteractionMode.PlaySlot:
+                    syncSlotBuffItemLabels();
+                    break;
+                case ItemInteractionMode.PickMaterial:
+                    syncMaterialItemSlots(_materialCandidates);
+                    break;
+            }
         }
 
         public void RefreshDialog(BlackjackDialogSession dialogSession)
@@ -590,6 +687,7 @@ namespace Module.Blackjack
         {
             _itemButtons.Clear();
             _itemHovers.Clear();
+            _itemLabels.Clear();
             Transform items = Find<Transform>("Items");
             if (items == null) return;
 
@@ -604,6 +702,7 @@ namespace Module.Blackjack
 
                 _itemHovers.Add(hover);
                 _itemButtons.Add(btn);
+                _itemLabels.Add(findTextIn(child, "Txt_BuffName"));
             }
         }
 
@@ -615,7 +714,81 @@ namespace Module.Blackjack
                 Button btn = _itemButtons[i];
                 if (btn == null) continue;
                 btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackDraw, itemIndex));
+
+                switch (_itemMode)
+                {
+                    case ItemInteractionMode.PickMaterial:
+                        btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackPickMaterial, itemIndex));
+                        break;
+                    default:
+                        btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackUseItemSlot, itemIndex));
+                        break;
+                }
+            }
+        }
+
+        private void syncSlotBuffItems(int slotCount)
+        {
+            Transform items = Find<Transform>("Items");
+            if (items == null) return;
+
+            int childIndex = 0;
+            foreach (Transform child in items)
+            {
+                bool active = childIndex < slotCount;
+                child.gameObject.SetActive(active);
+                childIndex++;
+            }
+        }
+
+        private void syncSlotBuffItemLabels()
+        {
+            for (int i = 0; i < _slotBuffs.Count && i < _itemLabels.Count; i++)
+            {
+                MagicBoxBuffJsonData buff = _slotBuffs[i];
+                setItemLabel(i, buff?.name ?? "Buff");
+            }
+        }
+
+        private void syncMaterialItemSlots(IReadOnlyList<MaterialJsonData> candidates)
+        {
+            Transform items = Find<Transform>("Items");
+            if (items == null) return;
+
+            int childIndex = 0;
+            foreach (Transform child in items)
+            {
+                bool active = candidates != null && childIndex < candidates.Count;
+                child.gameObject.SetActive(active);
+                if (active)
+                {
+                    MaterialJsonData material = candidates[childIndex];
+                    setItemLabel(childIndex, material?.name ?? "材料");
+                }
+
+                childIndex++;
+            }
+        }
+
+        private void setItemLabel(int index, string text)
+        {
+            if (index < 0 || index >= _itemLabels.Count) return;
+
+            TextMeshProUGUI label = _itemLabels[index];
+            if (label == null) return;
+
+            bool show = !string.IsNullOrEmpty(text);
+            label.text = show ? text : string.Empty;
+            label.gameObject.SetActive(show);
+        }
+
+        private void clearItemLabels()
+        {
+            for (int i = 0; i < _itemLabels.Count; i++)
+            {
+                if (_itemLabels[i] == null) continue;
+                _itemLabels[i].text = string.Empty;
+                _itemLabels[i].gameObject.SetActive(false);
             }
         }
 

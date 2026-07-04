@@ -6,10 +6,13 @@
 * └──────────────────────────────────┘
 */
 
+using System.Collections.Generic;
 using Common.Defines;
 using Module.Confirm;
 using Module.Cook;
 using Module.Item;
+using Module.MagicBoxBuff;
+using Module.Material;
 using MVC;
 using MVC.Controller;
 using MVC.View;
@@ -18,8 +21,21 @@ namespace Module.Blackjack
 {
     public class BlackjackController : BaseController
     {
+        private const float DefaultBustDebuff = 5f;
+
+        private enum SessionPhase
+        {
+            Intro,
+            PlayItem,
+            MaterialPick,
+        }
+
         private BlackjackModel _model;
         private readonly BlackjackDialogSession _dialogSession = new();
+        private SessionPhase _phase = SessionPhase.Intro;
+        private List<MagicBoxBuffJsonData> _slotBuffs = new();
+        private List<MaterialJsonData> _materialCandidates = new();
+        private int _pendingMaterialSlot = -1;
 
         public BlackjackController()
         {
@@ -41,7 +57,8 @@ namespace Module.Blackjack
         public override void InitModuleEvent()
         {
             RegisterFunc(EventDefines.OpenBlackjackView, onOpen);
-            RegisterFunc(EventDefines.BlackjackDraw, onDraw);
+            RegisterFunc(EventDefines.BlackjackUseItemSlot, onUseItemSlot);
+            RegisterFunc(EventDefines.BlackjackPickMaterial, onPickMaterial);
             RegisterFunc(EventDefines.BlackjackRestart, onRestart);
             RegisterFunc(EventDefines.BlackjackReturn, onReturn);
         }
@@ -49,7 +66,8 @@ namespace Module.Blackjack
         public override void RemoveModuleEvent()
         {
             UnRegisterFunc(EventDefines.OpenBlackjackView, onOpen);
-            UnRegisterFunc(EventDefines.BlackjackDraw, onDraw);
+            UnRegisterFunc(EventDefines.BlackjackUseItemSlot, onUseItemSlot);
+            UnRegisterFunc(EventDefines.BlackjackPickMaterial, onPickMaterial);
             UnRegisterFunc(EventDefines.BlackjackRestart, onRestart);
             UnRegisterFunc(EventDefines.BlackjackReturn, onReturn);
         }
@@ -57,6 +75,7 @@ namespace Module.Blackjack
         private void onOpen(object[] args)
         {
             _dialogSession.Reset();
+            _pendingMaterialSlot = -1;
             GameApp.ViewManager.Open((int)ViewType.BlackjackView, args);
             beginSession();
         }
@@ -64,6 +83,7 @@ namespace Module.Blackjack
         private void onRestart(object[] args)
         {
             _dialogSession.Reset();
+            _pendingMaterialSlot = -1;
             beginSession();
         }
 
@@ -72,18 +92,73 @@ namespace Module.Blackjack
             returnToCookView();
         }
 
-        // 点道具抽牌：先播翻牌，动画结束后再刷新累计点数并判定结算
-        private void onDraw(object[] args)
+        // 每个 Item 对应一个 Buff：点击即获得该 Buff 并翻对应小牌
+        private void onUseItemSlot(object[] args)
         {
+            if (_phase != SessionPhase.PlayItem) return;
+
             int slotIndex = resolveItemSlotIndex(args);
+            if (!_model.IsItemSlotAvailable(slotIndex)) return;
+            if (slotIndex < 0 || slotIndex >= _slotBuffs.Count) return;
+
+            MagicBoxBuffJsonData buff = _slotBuffs[slotIndex];
+            if (buff == null) return;
+
+            MagicBoxBuffManager.GrantBuff(buff.id);
+
+            if (buff.effectType == MagicBoxBuffManager.EffectPickMaterialReward)
+            {
+                _pendingMaterialSlot = slotIndex;
+                beginMaterialPick(buff);
+                return;
+            }
+
+            drawFromSlot(slotIndex);
+        }
+
+        private void onPickMaterial(object[] args)
+        {
+            if (_phase != SessionPhase.MaterialPick) return;
+
+            int slotIndex = resolveItemSlotIndex(args);
+            if (slotIndex < 0 || slotIndex >= _materialCandidates.Count) return;
+
+            MaterialJsonData material = _materialCandidates[slotIndex];
+            if (material == null) return;
+
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                cookModel.TryGrantMaterialFromCatalog(material.id);
+
+            int drawSlot = _pendingMaterialSlot;
+            _pendingMaterialSlot = -1;
+            _phase = SessionPhase.PlayItem;
+
+            BlackjackView view = getBlackjackView();
+            view?.RestorePlaySlotMode();
+            drawFromSlot(drawSlot, showMaterialConfirm: material);
+        }
+
+        private void drawFromSlot(int slotIndex, MaterialJsonData showMaterialConfirm = null)
+        {
             if (!_model.TryDrawFromSlot(slotIndex, out int cardIndex) || cardIndex < 0)
                 return;
 
-            var view = getBlackjackView();
+            BlackjackView view = getBlackjackView();
             if (view == null) return;
 
+            view.MarkSlotUsed(slotIndex);
             int point = _model.GetRevealedPoint(cardIndex);
             view.PlayCardFlipReveal(cardIndex, point, slotIndex, onDrawFlipFinished);
+
+            if (showMaterialConfirm == null) return;
+
+            ConfirmController.Show(new ConfirmModel
+            {
+                mode = ConfirmModel.Mode.ConfirmOnly,
+                title = "幸运三选一",
+                message = $"已获得材料：{showMaterialConfirm.name}",
+                confirmText = "继续"
+            });
         }
 
         private void onDrawFlipFinished()
@@ -94,6 +169,7 @@ namespace Module.Blackjack
             {
                 if (ItemPassiveManager.TryConsumeRabbitFootReroll() && _model.UndoLastReveal())
                 {
+                    getBlackjackView()?.MarkSlotAvailable(_model.LastUndoneItemSlot);
                     refreshView();
                     ConfirmController.Show(new ConfirmModel
                     {
@@ -113,24 +189,26 @@ namespace Module.Blackjack
             }
         }
 
-        // 爆牌：弹确认框提示触发超级不好的 debuff（具体数值后续再接）
         private void showBustResult()
         {
+            float debuff = DefaultBustDebuff * MagicBoxBuffManager.GetBlackjackBustPenaltyMultiplier();
+            string guardText = debuff < DefaultBustDebuff ? "\n（天使底护：惩罚减半）" : string.Empty;
+
             ConfirmController.Show(new ConfirmModel
             {
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "爆牌！",
-                message = $"累计 {_model.TotalPoint} 点，达到/超过 21 点。\n触发超级不好的 debuff！",
+                message = $"累计 {_model.TotalPoint} 点，达到/超过 {_model.EffectiveBustLimit} 点。\n恶魔风险 +{debuff:0.#}{guardText}",
                 confirmText = "认栽",
                 onConfirm = () =>
                 {
-                    // TODO: 接入具体 debuff 数值效果
+                    if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                        cookModel.AddDevil(debuff);
                     returnToCookView();
                 }
             });
         }
 
-        // 安全翻完所有牌未爆牌
         private void showSafeResult()
         {
             ConfirmController.Show(new ConfirmModel
@@ -139,17 +217,14 @@ namespace Module.Blackjack
                 title = "安全过关",
                 message = $"全部牌翻完，累计 {_model.TotalPoint} 点，未爆牌。",
                 confirmText = "收手",
-                onConfirm = () =>
-                {
-                    returnToCookView();
-                }
+                onConfirm = () => returnToCookView()
             });
         }
 
-        // 关闭 21 点并恢复烹饪界面
         private void returnToCookView()
         {
             ItemPassiveManager.EndMagicBoxSession();
+            MagicBoxBuffManager.EndMagicBoxSession();
             GameApp.ViewManager.Close((int)ViewType.BlackjackView);
             ApplyControllerFunc(ControllerType.Cook, EventDefines.OpenCookView);
         }
@@ -172,6 +247,7 @@ namespace Module.Blackjack
             BlackjackView view = getBlackjackView();
             if (view == null) return;
 
+            _phase = SessionPhase.Intro;
             _model.Reset(view.GetItemSlotCount());
             view.BeginSession(_model, onIntroFinished);
         }
@@ -179,6 +255,26 @@ namespace Module.Blackjack
         private void onIntroFinished()
         {
             _dialogSession.SetDialogEnabled(true);
+            beginPlayItems();
+        }
+
+        private void beginPlayItems()
+        {
+            _phase = SessionPhase.PlayItem;
+            _slotBuffs = MagicBoxBuffPicker.RollCandidates(_model.ItemSlotCount);
+
+            BlackjackView view = getBlackjackView();
+            view?.SetupSlotBuffs(_slotBuffs);
+            refreshView();
+        }
+
+        private void beginMaterialPick(MagicBoxBuffJsonData buff)
+        {
+            _phase = SessionPhase.MaterialPick;
+            _materialCandidates = MagicBoxBuffManager.RollMaterialRewardCandidates(buff);
+
+            BlackjackView view = getBlackjackView();
+            view?.SetupMaterialPick(_materialCandidates);
             refreshView();
         }
 

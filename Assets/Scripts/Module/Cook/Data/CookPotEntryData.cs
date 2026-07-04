@@ -17,6 +17,7 @@ namespace Module.Cook
         public int SubmitOrder { get; private set; }
         public int SourceSlotIndex { get; private set; }
         public string MaterialName { get; private set; }
+        public string Category { get; private set; }
         public int BaseValue { get; private set; }
         public int CurrentValue { get; private set; }
         public string TagText { get; private set; }
@@ -34,6 +35,7 @@ namespace Module.Cook
             SubmitOrder = submitOrder;
             SourceSlotIndex = sourceSlotIndex;
             MaterialName = material.Config.name;
+            Category = material.Config.category;
             BaseValue = material.Config.baseValue;
             CurrentValue = material.CurrentValue;
             TagText = material.TagText;

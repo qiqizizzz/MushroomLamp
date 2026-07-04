@@ -3,6 +3,7 @@ using System.Linq;
 using Common.Defines;
 using Module.Cook;
 using Module.Item;
+using Module.MagicBoxBuff;
 using Module.Player;
 using Module.Store;
 using MVC;
@@ -104,6 +105,7 @@ namespace Module.Debug
 
             drawMoneyColumn(panelWidth);
             drawItemColumn(panelWidth);
+            drawBuffColumn(panelWidth);
         }
 
         // 独立的金币列，放在面板右侧（不与 View 按钮同列）
@@ -189,6 +191,64 @@ namespace Module.Debug
                     PlayerDataManager.Instance.RemoveItem(item.id);
                     notifyItemInventoryChanged();
                 }
+                GUI.enabled = true;
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private void drawBuffColumn(float leftPanelWidth)
+        {
+            const float colWidth = 280f;
+            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f + 280f + 12f, 16f, colWidth, 420f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+
+            MagicBoxBuffCatalogLoader.EnsureLoaded();
+            IReadOnlyList<MagicBoxBuffJsonData> allBuffs = MagicBoxBuffCatalogLoader.GetAll();
+            int activeCount = MagicBoxBuffManager.RoundBuffIds.Count + MagicBoxBuffManager.SessionBuffIds.Count;
+
+            GUILayout.Label("魔盒 Buff GM");
+            GUILayout.Label($"生效中：{activeCount}");
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("获得全部", GUILayout.Height(26f)))
+            {
+                foreach (MagicBoxBuffJsonData buff in allBuffs)
+                {
+                    if (buff == null || string.IsNullOrWhiteSpace(buff.id)) continue;
+                    MagicBoxBuffManager.GrantBuff(buff.id);
+                }
+            }
+
+            if (GUILayout.Button("清除全部", GUILayout.Height(26f)))
+            {
+                MagicBoxBuffManager.ClearAll();
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(6f);
+
+            foreach (MagicBoxBuffJsonData buff in allBuffs)
+            {
+                if (buff == null || string.IsNullOrWhiteSpace(buff.id)) continue;
+
+                bool owned = MagicBoxBuffManager.HasBuff(buff.id);
+                string label = owned ? $"[√] {buff.name}" : $"[ ] {buff.name}";
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(label, GUILayout.Width(130f));
+
+                GUI.enabled = !owned;
+                if (GUILayout.Button("获得", GUILayout.Width(56f), GUILayout.Height(24f)))
+                    MagicBoxBuffManager.GrantBuff(buff.id);
+                GUI.enabled = true;
+
+                GUI.enabled = owned;
+                if (GUILayout.Button("移除", GUILayout.Width(56f), GUILayout.Height(24f)))
+                    MagicBoxBuffManager.RemoveBuff(buff.id);
                 GUI.enabled = true;
 
                 GUILayout.EndHorizontal();

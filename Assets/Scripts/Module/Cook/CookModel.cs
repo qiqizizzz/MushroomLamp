@@ -9,6 +9,7 @@
 using Module.Card;
 using MVC.Model;
 using Module.Item;
+using Module.MagicBoxBuff;
 using Module.Level;
 using System;
 using System.Collections.Generic;
@@ -145,6 +146,7 @@ namespace Module.Cook
         {
             setupStartData(startData);
             ItemPassiveManager.ResetStageState();
+            MagicBoxBuffManager.ResetRound();
 
             TurnIndex = 1;
             CurrentScore = 0;
@@ -967,6 +969,8 @@ namespace Module.Cook
             int comboCount = 0;
             float comboBonus = 0f;
             float roundScore = baseScore + processBonus + slotBonus + comboBonus + _magicBoxBonus;
+            roundScore += MagicBoxBuffManager.GetRoundScoreFlatBonus();
+            roundScore += MagicBoxBuffManager.GetVegetableScoreBonus(countVegetableMaterialsInPot());
             bool isTargetMatched = roundScore >= TargetMin && roundScore <= TargetMax;
             bool isOverHeat = roundScore > TargetMax;
             bool isAngelRescued = includePenalty && isOverHeat && LevelFlow.Instance.AngelRescueCount > 0;
@@ -1067,6 +1071,36 @@ namespace Module.Cook
         public void AddBonus(float value) { _magicBoxBonus += value; }
         public void AddDevil(float value) { _devilRisk = Mathf.Max(0f, _devilRisk + value); }
         public void ExpandTarget(int value) { LevelFlow.Instance.ExpandTarget(value); }
+
+        // 魔盒 Buff：将配置表材料加入天使抽牌堆（幸运三选一等）
+        public bool TryGrantMaterialFromCatalog(string materialId)
+        {
+            if (string.IsNullOrWhiteSpace(materialId)) return false;
+
+            Module.Material.MaterialJsonData cfg = Module.Material.MaterialCatalogLoader.GetById(materialId);
+            if (cfg == null) return false;
+
+            var seed = new CookMaterialSeedData
+            {
+                MaterialId = cfg.id,
+                MaterialName = cfg.name,
+                Count = 1
+            };
+            _drawPile.Add(createMaterial(seed));
+            return true;
+        }
+
+        private int countVegetableMaterialsInPot()
+        {
+            int count = 0;
+            for (int i = 0; i < _potEntries.Count; i++)
+            {
+                string category = _potEntries[i].Category;
+                if (category == "蔬菜") count++;
+            }
+
+            return count;
+        }
 
         private static string getSettleTip(CookRoundResultData result)
         {

@@ -36,6 +36,7 @@ namespace Common.Defines
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";
         public const string Config_ItemParamCatalog = "ItemParamCatalog";
         public const string Config_BlackjackDialogCatalog = "BlackjackDialogCatalog";
+        public const string Config_MagicBoxBuffCatalog = "MagicBoxBuffCatalog";
         public const string Config_ShopCatalog = "ShopCatalog";
         public const string Config_SoundCatalog = "Sound/SoundCatalog";
 
