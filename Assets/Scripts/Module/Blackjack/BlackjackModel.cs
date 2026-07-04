@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using Module.Item;
+using Module.MagicBoxBuff;
 using MVC.Model;
 using UnityEngine;
 
@@ -25,6 +26,8 @@ namespace Module.Blackjack
     {
         public const int DefaultItemSlotCount = 3;
         public const int BustLimit = 21;
+
+        public int EffectiveBustLimit => BustLimit + MagicBoxBuffManager.GetBustLimitBonus();
 
         private const int MinPoint = 1;
         private const int MaxPoint = 11;
@@ -47,7 +50,7 @@ namespace Module.Blackjack
         public int RevealedCount { get; private set; }
 
         // 是否爆牌（达到/超过 21）
-        public bool IsBusted => TotalPoint >= BustLimit;
+        public bool IsBusted => TotalPoint >= EffectiveBustLimit;
 
         // 牌是否已全部翻开
         public bool AllRevealed => RevealedCount >= CardCount;
@@ -171,7 +174,7 @@ namespace Module.Blackjack
         // 潘多拉钥匙：抽牌点数保证累计仍低于 21
         private int rollSafePoint()
         {
-            int maxSafe = BustLimit - 1 - TotalPoint;
+            int maxSafe = EffectiveBustLimit - 1 - TotalPoint;
             if (maxSafe < MinPoint)
                 return MinPoint;
 

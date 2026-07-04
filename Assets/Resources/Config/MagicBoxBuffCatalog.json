@@ -1,0 +1,78 @@
+{
+  "pickCandidateCount": 3,
+  "buffs": [
+    {
+      "id": "BUFF_SCORE_SILVER",
+      "name": "计分校准",
+      "rarity": "silver",
+      "category": "计分类",
+      "effectType": "add_round_score_flat",
+      "effectTarget": "roundFinalScore",
+      "description": "本回合最终分+3。",
+      "durationType": "per_round",
+      "baseWeight": 70,
+      "sortOrder": 190,
+      "stackable": false,
+      "roundScoreFlatBonus": 3
+    },
+    {
+      "id": "BUFF_SCORE_GOLD",
+      "name": "星级加算",
+      "rarity": "gold",
+      "category": "计分类",
+      "effectType": "add_per_vegetable_cap",
+      "effectTarget": "roundVegetableMaterials",
+      "description": "本回合每个蔬菜材料+1分，最多+6分。",
+      "durationType": "per_round",
+      "baseWeight": 25,
+      "sortOrder": 200,
+      "stackable": false,
+      "perVegetableBonus": 1,
+      "vegetableBonusCap": 6
+    },
+    {
+      "id": "BUFF_FIRE_SILVER",
+      "name": "小火护锅",
+      "rarity": "silver",
+      "category": "火候类",
+      "effectType": "modify_bust_limit",
+      "effectTarget": "magicBoxBlackjack",
+      "description": "本次魔盒21点爆牌阈值+2。",
+      "durationType": "magic_box_session",
+      "baseWeight": 70,
+      "sortOrder": 40,
+      "stackable": false,
+      "bustLimitDelta": 2
+    },
+    {
+      "id": "BUFF_GUARD_SILVER",
+      "name": "天使底护",
+      "rarity": "silver",
+      "category": "保底类",
+      "effectType": "reduce_bust_penalty",
+      "effectTarget": "magicBoxBustPenalty",
+      "description": "本次21点爆牌惩罚减半。",
+      "durationType": "magic_box_session",
+      "baseWeight": 70,
+      "sortOrder": 100,
+      "stackable": false,
+      "bustPenaltyMultiplier": 0.5
+    },
+    {
+      "id": "BUFF_LUCK_GOLD",
+      "name": "幸运三选一",
+      "rarity": "gold",
+      "category": "幸运类",
+      "effectType": "pick_material_reward",
+      "effectTarget": "playerMaterialPool",
+      "description": "展示3份基础/流派材料，选择1张获得。",
+      "durationType": "immediate",
+      "baseWeight": 25,
+      "sortOrder": 80,
+      "stackable": false,
+      "materialChoiceCount": 3,
+      "materialPickCount": 1,
+      "materialPool": "basic_vegetable"
+    }
+  ]
+}

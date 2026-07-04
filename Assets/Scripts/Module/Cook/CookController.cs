@@ -205,6 +205,7 @@ namespace Module.Cook
             }
 
             ItemPassiveManager.BeginMagicBoxSession();
+            MagicBoxBuffManager.BeginMagicBoxSession();
             refreshCookView();
             ApplyControllerFunc(ControllerType.Blackjack, EventDefines.OpenBlackjackView);
         }
