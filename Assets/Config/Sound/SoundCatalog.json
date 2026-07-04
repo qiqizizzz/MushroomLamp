@@ -126,11 +126,11 @@
       "buttons": [
         {
           "path": "Bottom/Btn_Left",
-          "click": "sfx_box_change_1"
+          "click": "sfx_box_change"
         },
         {
           "path": "Bottom/Btn_Right",
-          "click": "sfx_box_change_1"
+          "click": "sfx_box_change"
         }
       ]
     },
