@@ -50,6 +50,10 @@ namespace Module.Cook
         public float CurrentScore { get; private set; }
         public int Coin { get; private set; }
         public float PreviewValue { get; private set; }
+        public float MaxRoundScore { get; private set; }
+        public int ResonanceCount { get; private set; }
+        public int AngelBlessCount { get; private set; }
+        public int DevilDealCount { get; private set; }
 
         // 小局关卡参数对外统一从 CookModel 取（内部走 LevelFlow），View 层不直接碰单例
         public int MaxTurn => LevelFlow.Instance.MaxTurn;
@@ -142,6 +146,10 @@ namespace Module.Cook
             TurnIndex = 1;
             CurrentScore = 0;
             Coin = 0;
+            MaxRoundScore = 0;
+            ResonanceCount = 0;
+            AngelBlessCount = 0;
+            DevilDealCount = 0;
 
             _potTrayCapacity = Mathf.Max(1, LevelFlow.Instance.PotTrayCapacity);
             _handCount = LevelFlow.Instance.HandCount > 0 ? LevelFlow.Instance.HandCount : HAND_COUNT;
@@ -425,6 +433,12 @@ namespace Module.Cook
             CookRoundResultData result = calculateRoundResult(true);
             CurrentScore += result.RoundScore - result.PenaltyScore;
             Coin += result.CoinReward;
+            MaxRoundScore = Mathf.Max(MaxRoundScore, result.FinalScore);
+            ResonanceCount += result.ComboCount;
+            if (result.IsAngelRescued)
+                AngelBlessCount++;
+            if (result.IsOverHeat || result.DevilRisk > 0)
+                DevilDealCount++;
             LastRoundResult = result;
             _potEntries.Clear();
 
@@ -515,6 +529,7 @@ namespace Module.Cook
 
             IsMagicBoxUsed = true;
             LastMagicBoxEffect = CookMagicBoxEffectType.None;
+            DevilDealCount++;
             LastTip = "魔盒已开启";
             refreshMagicBoxStatusText();
             return true;
