@@ -29,7 +29,6 @@ namespace Module.Cook
     {
         private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
         private const string POT_TRAY_PLUS_SPRITE = "Art/CookView/Pot/加号";
-        private const float POT_TRAY_PLUS_WIDTH = 28f;
 
         private static Sprite S_PotTrayPlusSprite;
         private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
@@ -616,7 +615,7 @@ namespace Module.Cook
             {
                 GameObject trayObj = new GameObject($"Tray_{i}", typeof(RectTransform));
                 trayObj.transform.SetParent(_potTrayRoot, false);
-                setupPotTraySlotLayout(trayObj);
+                setupPotTraySlotLayout(trayObj, capacity);
                 Transform trayTf = trayObj.transform;
 
                 CookPotTrayItem trayItem = trayTf.GetComponent<CookPotTrayItem>();
@@ -627,7 +626,7 @@ namespace Module.Cook
                 _potTrayItems[i] = trayItem;
 
                 if (i < capacity - 1)
-                    createPotTrayPlus(i);
+                    createPotTrayPlus(i, capacity);
             }
         }
 
@@ -638,32 +637,33 @@ namespace Module.Cook
             if (layoutGroup == null)
                 layoutGroup = _potTrayRoot.gameObject.AddComponent<HorizontalLayoutGroup>();
 
-            layoutGroup.padding = new RectOffset(28, 28, 18, 18);
+            layoutGroup.padding = new RectOffset(8, 8, 8, 8);
             layoutGroup.childAlignment = TextAnchor.MiddleCenter;
-            layoutGroup.spacing = 8f;
+            layoutGroup.spacing = 0f;
             layoutGroup.childControlWidth = true;
             layoutGroup.childControlHeight = true;
-            layoutGroup.childForceExpandWidth = true;
-            layoutGroup.childForceExpandHeight = true;
+            layoutGroup.childForceExpandWidth = false;
+            layoutGroup.childForceExpandHeight = false;
         }
 
         // 配置单个暂存槽在 LayoutGroup 中的尺寸约束
-        private static void setupPotTraySlotLayout(GameObject trayObj)
+        private static void setupPotTraySlotLayout(GameObject trayObj, int capacity)
         {
             LayoutElement layoutElement = trayObj.GetComponent<LayoutElement>();
             if (layoutElement == null)
                 layoutElement = trayObj.AddComponent<LayoutElement>();
 
-            layoutElement.minWidth = 58f;
-            layoutElement.minHeight = 58f;
-            layoutElement.preferredWidth = 78f;
-            layoutElement.preferredHeight = 78f;
-            layoutElement.flexibleWidth = 1f;
-            layoutElement.flexibleHeight = 1f;
+            float slotSize = getPotTraySlotSize(capacity);
+            layoutElement.minWidth = slotSize;
+            layoutElement.minHeight = slotSize;
+            layoutElement.preferredWidth = slotSize;
+            layoutElement.preferredHeight = slotSize;
+            layoutElement.flexibleWidth = 0f;
+            layoutElement.flexibleHeight = 0f;
         }
 
         // 创建暂存槽之间的加号分隔
-        private void createPotTrayPlus(int index)
+        private void createPotTrayPlus(int index, int capacity)
         {
             GameObject plusObj = new GameObject($"Img_Plus_{index}", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
             plusObj.transform.SetParent(_potTrayRoot, false);
@@ -675,9 +675,37 @@ namespace Module.Cook
             image.raycastTarget = false;
 
             LayoutElement layoutElement = plusObj.GetComponent<LayoutElement>();
-            layoutElement.minWidth = POT_TRAY_PLUS_WIDTH;
-            layoutElement.preferredWidth = POT_TRAY_PLUS_WIDTH;
+            Vector2 plusSize = getPotTrayPlusSize(capacity);
+            layoutElement.minWidth = plusSize.x;
+            layoutElement.minHeight = plusSize.y;
+            layoutElement.preferredWidth = plusSize.x;
+            layoutElement.preferredHeight = plusSize.y;
             layoutElement.flexibleWidth = 0f;
+            layoutElement.flexibleHeight = 0f;
+        }
+
+        // 根据暂存槽数量计算框尺寸，避免 4/5 格超出锅区域
+        private static float getPotTraySlotSize(int capacity)
+        {
+            if (capacity >= 5)
+                return 56f;
+
+            if (capacity >= 4)
+                return 72f;
+
+            return 88f;
+        }
+
+        // 根据暂存槽数量计算加号尺寸，数量越多越紧凑
+        private static Vector2 getPotTrayPlusSize(int capacity)
+        {
+            if (capacity >= 5)
+                return new Vector2(18f, 34f);
+
+            if (capacity >= 4)
+                return new Vector2(22f, 40f);
+
+            return new Vector2(26f, 42f);
         }
 
         // 初始化暂停确认弹窗

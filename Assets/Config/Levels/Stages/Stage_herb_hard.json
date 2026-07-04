@@ -4,7 +4,7 @@
       "stageId": "herb_hard_1",
       "displayName": "第一小局",
       "turnCount": 5,
-      "potTrayCapacity": 3,
+      "potTrayCapacity": 4,
       "targetMin": 18,
       "targetMax": 22,
       "handCount": 5,

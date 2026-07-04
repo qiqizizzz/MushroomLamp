@@ -197,7 +197,7 @@ namespace Module.View
 
             setupRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
             setupRect(_imgFlash.rectTransform, Vector2.zero, Vector2.one);
-            setupRect(_imgIcon.rectTransform, new Vector2(0.18f, 0.28f), new Vector2(0.82f, 0.85f));
+            setupRect(_imgIcon.rectTransform, new Vector2(0.08f, 0.1f), new Vector2(0.92f, 0.92f));
 
             _imgBackground.sprite = S_TraySlotSprite ??= ArtAssetLoader.LoadSprite(TRAY_SLOT_SPRITE, false);
             _imgBackground.color = _imgBackground.sprite == null ? Color.clear : _emptyColor;

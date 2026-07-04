@@ -53,6 +53,8 @@ namespace Module.Level
         // 开始一个大局（在 SelectBox 点开始时调用），定位到第一小局
         public void Begin(string boxId, string boxName, SelectDifficulty difficulty, IEnumerable<CookMaterialSeedData> materials)
         {
+            LevelConfigLoader.ClearCache();
+
             BoxId = boxId;
             BoxName = boxName;
             Difficulty = difficulty;
@@ -224,7 +226,7 @@ namespace Module.Level
                 _ => 18
             };
             TargetMax = TargetMin + (difficulty == SelectDifficulty.Hard ? 3 : 4);
-            PotTrayCapacity = 3;
+            PotTrayCapacity = difficulty == SelectDifficulty.Hard ? 4 : 3;
             HandCount = 6;
             AngelRescueCount = difficulty == SelectDifficulty.Hard ? 1 : 2;
         }
