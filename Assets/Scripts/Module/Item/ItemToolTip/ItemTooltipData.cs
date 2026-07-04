@@ -7,8 +7,11 @@
 */
 
 using System.Collections.Generic;
+using Common;
 using Module.Cook;
 using Module.Material;
+using Module.Player;
+using Module.Shop;
 using UnityEngine;
 
 namespace Module.Item
@@ -25,8 +28,18 @@ namespace Module.Item
         public const string FIELD_EFFECT = "Effect";
         public const string FIELD_MULTIPLIER = "Multiplier";
         public const string FIELD_PROCESS_RESULT = "ProcessResult";
+        public const string FIELD_SHOP_CATEGORY = "ShopCategory";
+        public const string FIELD_SHOP_RARITY = "ShopRarity";
+        public const string FIELD_SHOP_EFFECT = "ShopEffect";
+        public const string FIELD_SHOP_TRIGGER = "ShopTrigger";
+        public const string FIELD_SHOP_DURATION = "ShopDuration";
+        public const string FIELD_SHOP_RESET_RULE = "ShopResetRule";
+        public const string FIELD_SHOP_STACKABLE = "ShopStackable";
+        public const string FIELD_SHOP_BOX_COUNT = "ShopBoxCount";
+        public const string FIELD_SHOP_BOX_PICK_COUNT = "ShopBoxPickCount";
         private const string EMPTY_TEXT = "无";
 
+        public ItemTooltipMode Mode;
         public string Name;
         public string Subtitle;
         public string PriceText;
@@ -46,7 +59,8 @@ namespace Module.Item
                 Name = config?.name ?? "未知材料",
                 Icon = material?.Icon,
                 Subtitle = buildSubtitle(config),
-                Desc = config?.desc
+                Desc = config?.desc,
+                Mode = mode
             };
 
             if (mode != ItemTooltipMode.Cook && config != null)
@@ -56,6 +70,29 @@ namespace Module.Item
             addBasicFields(data, material, config);
             data.ProcessText = string.Empty;
             data.EffectText = string.Empty;
+            return data;
+        }
+
+        // 从商店槽位构建 Tooltip 展示数据
+        public static ItemTooltipData FromShopSlot(ShopSlotData slotData)
+        {
+            if (slotData == null)
+                return null;
+
+            ItemTooltipData data = new ItemTooltipData
+            {
+                Mode = ItemTooltipMode.Shop,
+                Name = string.IsNullOrWhiteSpace(slotData.name) ? "未知商品" : slotData.name,
+                Desc = slotData.description,
+                PriceText = $"价格 {slotData.price}",
+                Icon = ArtAssetLoader.LoadSprite(slotData.iconPath, logOnFail: false)
+            };
+
+            if (slotData.isBox)
+                addShopBoxFields(data, slotData);
+            else
+                addShopItemFields(data, slotData);
+
             return data;
         }
 
@@ -123,6 +160,88 @@ namespace Module.Item
             data.AddField(FIELD_EFFECT, "效果", buildEffectSummary(config));
             data.AddField(FIELD_MULTIPLIER, "倍率", formatOptionalText(config.multiplierParam));
             data.AddField(FIELD_PROCESS_RESULT, "加工结果", formatOptionalText(config.processResult));
+        }
+
+        // 添加普通商品字段
+        private static void addShopItemFields(ItemTooltipData data, ShopSlotData slotData)
+        {
+            ItemParamJsonData config = ShopCatalog.GetItemConfig(slotData.id);
+            if (config == null)
+            {
+                data.AddField(FIELD_SHOP_CATEGORY, "商品类型", "道具");
+                return;
+            }
+
+            data.Subtitle = buildShopSubtitle(config);
+            data.Desc = string.IsNullOrWhiteSpace(config.description) ? data.Desc : config.description;
+            data.AddField(FIELD_SHOP_CATEGORY, "类别", formatOptionalText(config.itemCategory));
+            data.AddField(FIELD_SHOP_RARITY, "稀有度", formatRarity(config.rarity));
+            data.AddField(FIELD_SHOP_EFFECT, "效果参数", buildShopEffectSummary(config));
+            data.AddField(FIELD_SHOP_TRIGGER, "触发方式", formatOptionalText(config.triggerType));
+            data.AddField(FIELD_SHOP_DURATION, "持续时间", formatOptionalText(config.durationType));
+            data.AddField(FIELD_SHOP_RESET_RULE, "重置规则", formatOptionalText(config.resetRule));
+            data.AddField(FIELD_SHOP_STACKABLE, "叠加规则", config.stackable ? "可叠加" : "不可叠加");
+        }
+
+        // 添加材料箱商品字段
+        private static void addShopBoxFields(ItemTooltipData data, ShopSlotData slotData)
+        {
+            ShopBoxCatalogEntryJson entry = ShopCatalog.GetShopEntry(slotData.id);
+            ShopBoxPoolJsonConfig pool = ShopCatalog.LoadBoxPoolByBoxId(slotData.id);
+            int materialCount = pool?.materialIds == null ? 0 : pool.materialIds.Length;
+
+            data.Subtitle = "材料箱";
+            if (!string.IsNullOrWhiteSpace(entry?.description))
+                data.Desc = entry.description;
+
+            data.AddField(FIELD_SHOP_CATEGORY, "商品类型", "材料箱");
+            data.AddField(FIELD_SHOP_BOX_COUNT, "材料池", materialCount > 0 ? $"{materialCount} 种材料" : EMPTY_TEXT);
+            if (entry != null && (entry.minMaterialCount > 0 || entry.maxMaterialCount > 0))
+                data.AddField(FIELD_SHOP_BOX_PICK_COUNT, "可选数量", buildBoxPickCount(entry));
+        }
+
+        // 构建商品副标题
+        private static string buildShopSubtitle(ItemParamJsonData config)
+        {
+            List<string> parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(config.rarity)) parts.Add(formatRarity(config.rarity));
+            if (!string.IsNullOrWhiteSpace(config.itemCategory)) parts.Add(config.itemCategory);
+            return string.Join(" / ", parts);
+        }
+
+        // 构建商品效果字段
+        private static string buildShopEffectSummary(ItemParamJsonData config)
+        {
+            List<string> parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(config.effectType)) parts.Add(config.effectType);
+            if (!string.IsNullOrWhiteSpace(config.effectTarget)) parts.Add(config.effectTarget);
+            parts.Add(config.effectValue.ToString("0.##"));
+            return parts.Count > 0 ? string.Join(" / ", parts) : EMPTY_TEXT;
+        }
+
+        // 格式化材料箱抽取数量
+        private static string buildBoxPickCount(ShopBoxCatalogEntryJson entry)
+        {
+            if (entry.minMaterialCount > 0 && entry.maxMaterialCount > 0 && entry.minMaterialCount != entry.maxMaterialCount)
+                return $"{entry.minMaterialCount}-{entry.maxMaterialCount}";
+
+            int count = Mathf.Max(entry.minMaterialCount, entry.maxMaterialCount);
+            return count > 0 ? count.ToString() : EMPTY_TEXT;
+        }
+
+        // 格式化稀有度展示文本
+        private static string formatRarity(string rarity)
+        {
+            if (string.IsNullOrWhiteSpace(rarity)) return EMPTY_TEXT;
+
+            return rarity switch
+            {
+                "common" => "普通",
+                "rare" => "稀有",
+                "epic" => "史诗",
+                "legendary" => "传说",
+                _ => rarity
+            };
         }
 
         // 构建效果变量展示文本

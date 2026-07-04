@@ -1,9 +1,16 @@
+/*
+* ┌──────────────────────────────────┐
+* │  描    述: 商店商品目录，负责随机货架与配置查询
+* │  类    名: ShopCatalog.cs
+* │  创    建: By qiqizizzz
+* └──────────────────────────────────┘
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common;
 using Common.Defines;
-using Module.Player;
 using Module.Player;
 using Module.Select;
 using UnityEngine;
@@ -61,6 +68,21 @@ namespace Module.Shop
         {
             EnsureLoaded();
             return PickItems(count);
+        }
+
+        // 根据商品 ID 获取道具配置
+        public static ItemParamJsonData GetItemConfig(string itemId)
+        {
+            EnsureLoaded();
+            if (_itemConfig?.items == null || string.IsNullOrWhiteSpace(itemId)) return null;
+
+            foreach (ItemParamJsonData item in _itemConfig.items)
+            {
+                if (item != null && item.id == itemId)
+                    return item;
+            }
+
+            return null;
         }
 
         public static ShopBoxCatalogEntryJson GetShopEntry(string boxId)

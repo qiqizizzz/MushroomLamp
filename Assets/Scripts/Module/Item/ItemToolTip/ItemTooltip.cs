@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using Module.Cook;
+using Module.Shop;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -19,18 +20,24 @@ namespace Module.Item
     public class ItemTooltip : BaseItem
     {
         private readonly Dictionary<string, TooltipFieldRow> _fixedFieldRows = new();
-        private readonly List<TooltipFieldRow> _extraFieldRows = new();
+        private readonly List<TooltipFieldRow> _extraMaterialFieldRows = new();
+        private readonly List<TooltipFieldRow> _extraShopFieldRows = new();
         private readonly List<TooltipTagSlot> _tagSlots = new();
 
         private RectTransform _rectTransform;
+        private GameObject _materialSection;
+        private GameObject _shopSection;
         private Transform _tagRoot;
-        private Transform _rowRoot;
-        private RectTransform _descBlock;
+        private Transform _materialRowRoot;
+        private Transform _shopRowRoot;
+        private RectTransform _materialDescBlock;
+        private RectTransform _shopDescBlock;
         private Image _imgIcon;
         private TextMeshProUGUI _txtName;
         private TextMeshProUGUI _txtSubtitle;
         private TextMeshProUGUI _txtPrice;
-        private TextMeshProUGUI _txtDesc;
+        private TextMeshProUGUI _txtMaterialDesc;
+        private TextMeshProUGUI _txtShopDesc;
         private GameObject _tagTemplate;
         private bool _isInitialized;
 
@@ -46,6 +53,12 @@ namespace Module.Item
             Bind(ItemTooltipData.FromMaterial(material, mode));
         }
 
+        // 绑定商店商品数据
+        public void Bind(ShopSlotData slotData)
+        {
+            Bind(ItemTooltipData.FromShopSlot(slotData));
+        }
+
         // 绑定通用详情数据
         public void Bind(ItemTooltipData data)
         {
@@ -58,13 +71,15 @@ namespace Module.Item
                 return;
             }
 
+            bool isShop = data.Mode == ItemTooltipMode.Shop;
+            setSectionVisible(isShop);
             setText(_txtName, string.IsNullOrWhiteSpace(data.Name) ? "未知材料" : data.Name);
             bindText(_txtSubtitle, data.Subtitle);
             bindText(_txtPrice, data.PriceText);
             bindIcon(data.Icon);
-            bindTags(data.Tags);
-            bindFields(data.Fields);
-            bindBlock(_descBlock, _txtDesc, data.Desc);
+            bindTags(isShop ? null : data.Tags);
+            bindFields(data.Fields, isShop);
+            bindDesc(data.Desc, isShop);
             SetVisible(true);
         }
 
@@ -118,15 +133,20 @@ namespace Module.Item
             if (_isInitialized) return;
 
             _rectTransform = GetComponent<RectTransform>();
-            _imgIcon = Find<Image>("Content/Header/Img_Icon");
-            _txtName = Find<TextMeshProUGUI>("Content/Header/TitleGroup/Txt_Name");
-            _txtSubtitle = Find<TextMeshProUGUI>("Content/Header/TitleGroup/Txt_Subtitle");
-            _txtPrice = Find<TextMeshProUGUI>("Content/Header/Txt_Price");
-            _tagRoot = Find<Transform>("Content/TagRoot");
-            _rowRoot = Find<Transform>("Content/RowRoot");
-            _descBlock = Find<RectTransform>("Content/DescBlock");
-            _txtDesc = Find<TextMeshProUGUI>("Content/DescBlock/Txt_Desc");
-            _tagTemplate = Find("Content/TagRoot/Tag_Template");
+            _imgIcon = findOptional<Image>("Content/Header/Img_Icon");
+            _txtName = findOptional<TextMeshProUGUI>("Content/Header/TitleGroup/Txt_Name");
+            _txtSubtitle = findOptional<TextMeshProUGUI>("Content/Header/TitleGroup/Txt_Subtitle");
+            _txtPrice = findOptional<TextMeshProUGUI>("Content/Header/Txt_Price");
+            _materialSection = findOptionalGameObject("Content/MaterialSection");
+            _shopSection = findOptionalGameObject("Content/ShopSection");
+            _tagRoot = findOptional<Transform>("Content/MaterialSection/TagRoot") ?? findOptional<Transform>("Content/TagRoot");
+            _materialRowRoot = findOptional<Transform>("Content/MaterialSection/RowRoot") ?? findOptional<Transform>("Content/RowRoot");
+            _shopRowRoot = findOptional<Transform>("Content/ShopSection/RowRoot");
+            _materialDescBlock = findOptional<RectTransform>("Content/MaterialSection/DescBlock") ?? findOptional<RectTransform>("Content/DescBlock");
+            _shopDescBlock = findOptional<RectTransform>("Content/ShopSection/DescBlock");
+            _txtMaterialDesc = findOptional<TextMeshProUGUI>("Content/MaterialSection/DescBlock/Txt_Desc") ?? findOptional<TextMeshProUGUI>("Content/DescBlock/Txt_Desc");
+            _txtShopDesc = findOptional<TextMeshProUGUI>("Content/ShopSection/DescBlock/Txt_Desc");
+            _tagTemplate = _tagRoot == null ? null : _tagRoot.Find("Tag_Template")?.gameObject;
 
             collectTagSlots();
             collectFieldRows();
@@ -157,53 +177,64 @@ namespace Module.Item
         private void collectFieldRows()
         {
             _fixedFieldRows.Clear();
-            _extraFieldRows.Clear();
+            _extraMaterialFieldRows.Clear();
+            _extraShopFieldRows.Clear();
 
-            addFixedFieldRow(ItemTooltipData.FIELD_BASIC_SCORE, "Field_BasicScore");
-            addFixedFieldRow(ItemTooltipData.FIELD_STATE, "Field_State");
-            addFixedFieldRow(ItemTooltipData.FIELD_COOK_PROGRESS, "Field_CookProgress");
-            addFixedFieldRow(ItemTooltipData.FIELD_CAN_PROCESS, "Field_CanProcess");
-            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_METHOD, "Field_ProcessMethod");
-            addFixedFieldRow(ItemTooltipData.FIELD_TRIGGER_CONDITION, "Field_TriggerCondition");
-            addFixedFieldRow(ItemTooltipData.FIELD_EFFECT, "Field_Effect");
-            addFixedFieldRow(ItemTooltipData.FIELD_MULTIPLIER, "Field_Multiplier");
-            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_RESULT, "Field_ProcessResult");
-            collectExtraFieldRows();
+            addFixedFieldRow(ItemTooltipData.FIELD_BASIC_SCORE, "Field_BasicScore", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_STATE, "Field_State", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_COOK_PROGRESS, "Field_CookProgress", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_CAN_PROCESS, "Field_CanProcess", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_METHOD, "Field_ProcessMethod", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_TRIGGER_CONDITION, "Field_TriggerCondition", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_EFFECT, "Field_Effect", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_MULTIPLIER, "Field_Multiplier", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_RESULT, "Field_ProcessResult", _materialRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_CATEGORY, "Field_Category", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_RARITY, "Field_Rarity", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_EFFECT, "Field_Effect", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_TRIGGER, "Field_Trigger", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_DURATION, "Field_Duration", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_RESET_RULE, "Field_ResetRule", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_STACKABLE, "Field_Stackable", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_BOX_COUNT, "Field_BoxCount", _shopRowRoot);
+            addFixedFieldRow(ItemTooltipData.FIELD_SHOP_BOX_PICK_COUNT, "Field_BoxPickCount", _shopRowRoot);
+            collectExtraFieldRows(_materialRowRoot, _extraMaterialFieldRows);
+            collectExtraFieldRows(_shopRowRoot, _extraShopFieldRows);
         }
 
         // 注册固定字段行
-        private void addFixedFieldRow(string fieldKey, string rowName)
+        private void addFixedFieldRow(string fieldKey, string rowName, Transform rowRoot)
         {
-            TooltipFieldRow row = findFieldRow(rowName);
+            TooltipFieldRow row = findFieldRow(rowName, rowRoot);
             if (row.Root != null)
                 _fixedFieldRows[fieldKey] = row;
         }
 
         // 收集额外字段行占位，不在运行时创建新行
-        private void collectExtraFieldRows()
+        private void collectExtraFieldRows(Transform rowRoot, List<TooltipFieldRow> rows)
         {
-            if (_rowRoot == null) return;
+            if (rowRoot == null) return;
 
-            for (int i = 0; i < _rowRoot.childCount; i++)
+            for (int i = 0; i < rowRoot.childCount; i++)
             {
-                Transform child = _rowRoot.GetChild(i);
+                Transform child = rowRoot.GetChild(i);
                 if (!child.name.StartsWith("FieldRow_") || child.name == "FieldRow_Template")
                     continue;
 
-                _extraFieldRows.Add(createFieldRow(child));
+                rows.Add(createFieldRow(child));
             }
 
-            Transform template = _rowRoot.Find("FieldRow_Template");
+            Transform template = rowRoot.Find("FieldRow_Template");
             if (template != null)
                 template.gameObject.SetActive(false);
         }
 
         // 查找字段行节点
-        private TooltipFieldRow findFieldRow(string rowName)
+        private TooltipFieldRow findFieldRow(string rowName, Transform rowRoot)
         {
-            if (_rowRoot == null) return TooltipFieldRow.Empty;
+            if (rowRoot == null) return TooltipFieldRow.Empty;
 
-            Transform row = _rowRoot.Find(rowName);
+            Transform row = rowRoot.Find(rowName);
             return row != null ? createFieldRow(row) : TooltipFieldRow.Empty;
         }
 
@@ -227,8 +258,14 @@ namespace Module.Item
             foreach (TooltipFieldRow row in _fixedFieldRows.Values)
                 row.SetVisible(false);
 
-            for (int i = 0; i < _extraFieldRows.Count; i++)
-                _extraFieldRows[i].SetVisible(false);
+            for (int i = 0; i < _extraMaterialFieldRows.Count; i++)
+                _extraMaterialFieldRows[i].SetVisible(false);
+
+            for (int i = 0; i < _extraShopFieldRows.Count; i++)
+                _extraShopFieldRows[i].SetVisible(false);
+
+            bindBlock(_materialDescBlock, _txtMaterialDesc, string.Empty);
+            bindBlock(_shopDescBlock, _txtShopDesc, string.Empty);
         }
 
         // 绑定图标显示
@@ -257,9 +294,11 @@ namespace Module.Item
         }
 
         // 绑定字段行
-        private void bindFields(IReadOnlyList<ItemTooltipFieldData> fields)
+        private void bindFields(IReadOnlyList<ItemTooltipFieldData> fields, bool isShop)
         {
             int extraIndex = 0;
+            Transform rowRoot = isShop ? _shopRowRoot : _materialRowRoot;
+            List<TooltipFieldRow> extraRows = isShop ? _extraShopFieldRows : _extraMaterialFieldRows;
             for (int i = 0; fields != null && i < fields.Count; i++)
             {
                 ItemTooltipFieldData field = fields[i];
@@ -271,28 +310,52 @@ namespace Module.Item
                     continue;
                 }
 
-                if (extraIndex >= _extraFieldRows.Count) continue;
+                if (extraIndex >= extraRows.Count) continue;
 
-                _extraFieldRows[extraIndex].Bind(field.Label, field.Value);
+                extraRows[extraIndex].Bind(field.Label, field.Value);
                 extraIndex++;
             }
 
-            if (_rowRoot != null)
-                _rowRoot.gameObject.SetActive(hasVisibleFieldRow());
+            if (rowRoot != null)
+                rowRoot.gameObject.SetActive(hasVisibleFieldRow(extraRows));
         }
 
         // 判断是否存在可见字段行
-        private bool hasVisibleFieldRow()
+        private bool hasVisibleFieldRow(List<TooltipFieldRow> extraRows)
         {
             foreach (TooltipFieldRow row in _fixedFieldRows.Values)
                 if (row.IsVisible)
                     return true;
 
-            for (int i = 0; i < _extraFieldRows.Count; i++)
-                if (_extraFieldRows[i].IsVisible)
+            for (int i = 0; i < extraRows.Count; i++)
+                if (extraRows[i].IsVisible)
                     return true;
 
             return false;
+        }
+
+        // 切换材料字段区与商品字段区
+        private void setSectionVisible(bool isShop)
+        {
+            if (_materialSection != null)
+                _materialSection.SetActive(!isShop);
+
+            if (_shopSection != null)
+                _shopSection.SetActive(isShop);
+        }
+
+        // 绑定当前模式的描述块
+        private void bindDesc(string value, bool isShop)
+        {
+            if (isShop && _shopDescBlock != null)
+            {
+                bindBlock(_materialDescBlock, _txtMaterialDesc, string.Empty);
+                bindBlock(_shopDescBlock, _txtShopDesc, value);
+                return;
+            }
+
+            bindBlock(_shopDescBlock, _txtShopDesc, string.Empty);
+            bindBlock(_materialDescBlock, _txtMaterialDesc, value);
         }
 
         // 绑定可选文本
@@ -321,6 +384,20 @@ namespace Module.Item
         {
             if (text != null)
                 text.text = value;
+        }
+
+        // 查找可选节点，避免兼容旧预制体时输出误导日志
+        private T findOptional<T>(string path) where T : Component
+        {
+            Transform target = transform.Find(path);
+            return target != null ? target.GetComponent<T>() : null;
+        }
+
+        // 查找可选物体节点
+        private GameObject findOptionalGameObject(string path)
+        {
+            Transform target = transform.Find(path);
+            return target != null ? target.gameObject : null;
         }
 
         // 根据鼠标位置选择详情框显示方向，底部材料默认往上弹

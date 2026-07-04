@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Common;
 using Common.Defines;
 using Common.UI;
+using Module.Item;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -19,6 +20,10 @@ namespace Module.Shop
 {
     public class ShopView : BaseView
     {
+        private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
+
+        private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
+
         private TextMeshProUGUI _txtGold;
         private TextMeshProUGUI _txtTitle;
         private TextMeshProUGUI _txtSubtitle;
@@ -32,6 +37,9 @@ namespace Module.Shop
 
         private readonly List<Transform> _boxSlots = new();
         private readonly List<Transform> _itemSlots = new();
+        private ItemTooltip _itemTooltip;
+        private object _itemTooltipOwner;
+        private RectTransform _tooltipCanvasRect;
 
         // 预制体设计参考图（Img_Background 下），运行时隐藏并复用 sprite
         private Sprite _boxSprite;
@@ -100,9 +108,29 @@ namespace Module.Shop
             else _fontTemplate = UIFontHelper.JingnanFont;
         }
 
+        public override void Close(params object[] args)
+        {
+            HideShopTooltip();
+            base.Close(args);
+        }
+
+        // 销毁界面时同步清理挂在全局 Canvas 下的详情浮层
+        protected override void OnDestroy()
+        {
+            if (_itemTooltip != null)
+            {
+                Destroy(_itemTooltip.gameObject);
+                _itemTooltip = null;
+            }
+
+            base.OnDestroy();
+        }
+
         public void Refresh(ShopModel model)
         {
             if (model == null) return;
+            HideShopTooltip();
+
             if (_txtGold != null) _txtGold.text = model.Gold.ToString();
             if (_txtTitle != null) _txtTitle.text = "黑猫夜市";
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
@@ -206,7 +234,7 @@ namespace Module.Shop
 
                 var binder = obj.GetComponent<ShopSlotBinder>();
                 if (binder != null)
-                    binder.Bind(data[i], onBuySlot);
+                    binder.Bind(data[i], onBuySlot, this);
             }
         }
 
@@ -240,7 +268,7 @@ namespace Module.Shop
                 rootRt.rect.height > 1f ? rootRt.rect.height : 240f);
 
             var binder = root.GetComponent<ShopBoxSlotBinder>();
-            binder.Bind(data, iconPath, _boxSprite, _fontTemplate, onBuySlot);
+            binder.Bind(data, iconPath, _boxSprite, _fontTemplate, onBuySlot, this);
         }
 
         private void applyBoxSprite(Image target)
@@ -292,6 +320,62 @@ namespace Module.Shop
         {
             for (int c = slot.childCount - 1; c >= 0; c--)
                 Destroy(slot.GetChild(c).gameObject);
+        }
+
+        // 显示商店商品详情浮层
+        public void ShowShopTooltip(object owner, ShopSlotData slotData, Vector2 screenPosition)
+        {
+            if (slotData == null) return;
+            if (!ensureItemTooltip()) return;
+
+            _itemTooltipOwner = owner;
+            _itemTooltip.transform.SetAsLastSibling();
+            _itemTooltip.Bind(slotData);
+            MoveShopTooltip(screenPosition);
+        }
+
+        // 跟随鼠标移动商店商品详情浮层
+        public void MoveShopTooltip(Vector2 screenPosition)
+        {
+            if (_itemTooltip == null) return;
+
+            _itemTooltip.SetScreenPosition(screenPosition, _tooltipCanvasRect, S_TooltipOffset);
+        }
+
+        // 隐藏商店商品详情浮层；传入 owner 时仅关闭当前来源
+        public void HideShopTooltip(object owner = null)
+        {
+            if (owner != null && _itemTooltipOwner != owner)
+                return;
+
+            _itemTooltipOwner = null;
+            if (_itemTooltip != null)
+                _itemTooltip.Hide();
+        }
+
+        // 确保商店商品详情浮层已经实例化到场景 Canvas
+        private bool ensureItemTooltip()
+        {
+            if (_itemTooltip != null)
+                return true;
+
+            Transform parent = GameApp.ViewManager?.canvasTf ?? transform;
+            GameObject tooltipObj = ResManager.Instantiate(ITEM_TOOLTIP_PATH, parent);
+            if (tooltipObj == null) return false;
+
+            _itemTooltip = tooltipObj.GetComponent<ItemTooltip>();
+            if (_itemTooltip == null)
+                _itemTooltip = tooltipObj.AddComponent<ItemTooltip>();
+
+            tooltipObj.name = "ItemTooltip";
+            tooltipObj.transform.SetAsLastSibling();
+            _tooltipCanvasRect = parent as RectTransform;
+            if (_tooltipCanvasRect == null)
+                _tooltipCanvasRect = tooltipObj.GetComponentInParent<Canvas>()?.transform as RectTransform;
+
+            _itemTooltip.SetFontAsset(_fontTemplate);
+            _itemTooltip.Hide();
+            return true;
         }
 
         private void onBuySlot(ShopSlotData slotData) => ApplyFunc("Shop.BuyItem", slotData);

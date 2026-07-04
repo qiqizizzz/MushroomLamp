@@ -1,6 +1,13 @@
+/*
+* ┌──────────────────────────────────┐
+* │  描    述: 商店材料箱槽位绑定器，负责刷新箱子图标、价格与详情入口
+* │  类    名: ShopBoxSlotBinder.cs
+* │  创    建: By qiqizizzz
+* └──────────────────────────────────┘
+*/
+
 using System;
 using Common;
-using Common.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +27,8 @@ namespace Module.Shop
             string boxIconPath,
             Sprite fallbackSprite,
             TMP_FontAsset font,
-            Action<ShopSlotData> onBuy = null)
+            Action<ShopSlotData> onBuy = null,
+            ShopView view = null)
         {
             if (data == null) return;
             ensureReferences();
@@ -41,6 +49,7 @@ namespace Module.Shop
 
             if (hoverScale != null)
             {
+                hoverScale.BindTooltip(view, data);
                 hoverScale.SetInteractable(!data.isPurchased);
                 if (imgIcon != null)
                 {
@@ -52,6 +61,7 @@ namespace Module.Shop
             bindBuyButton(data, onBuy);
         }
 
+        // 确保预制体引用已经绑定
         private void ensureReferences()
         {
             if (imgIcon == null)
@@ -70,6 +80,7 @@ namespace Module.Shop
                 hoverScale = GetComponent<ShopHoverScaleItem>();
         }
 
+        // 绑定槽位购买按钮
         private void bindBuyButton(ShopSlotData data, Action<ShopSlotData> onBuy)
         {
             Button btn = GetComponent<Button>();

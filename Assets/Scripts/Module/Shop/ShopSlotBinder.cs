@@ -1,3 +1,11 @@
+/*
+* ┌──────────────────────────────────┐
+* │  描    述: 商店道具槽位绑定器，负责刷新道具图标、价格与详情入口
+* │  类    名: ShopSlotBinder.cs
+* │  创    建: By qiqizizzz
+* └──────────────────────────────────┘
+*/
+
 using System;
 using Common;
 using TMPro;
@@ -14,7 +22,8 @@ namespace Module.Shop
         [SerializeField] private TextMeshProUGUI txtDesc;
         [SerializeField] private ShopHoverScaleItem hoverScale;
 
-        public void Bind(ShopSlotData data, Action<ShopSlotData> onBuy = null)
+        // 绑定商店道具槽位显示与交互
+        public void Bind(ShopSlotData data, Action<ShopSlotData> onBuy = null, ShopView view = null)
         {
             if (data == null) return;
 
@@ -33,6 +42,7 @@ namespace Module.Shop
 
             if (hoverScale != null)
             {
+                hoverScale.BindTooltip(view, data);
                 hoverScale.SetInteractable(!data.isPurchased);
                 RectTransform hitRt = imgIcon != null ? imgIcon.rectTransform : transform as RectTransform;
                 if (hitRt != null)
@@ -45,6 +55,7 @@ namespace Module.Shop
             bindBuyButton(data, onBuy);
         }
 
+        // 确保预制体引用已经绑定
         private void ensureReferences()
         {
             if (imgIcon == null)
@@ -77,7 +88,7 @@ namespace Module.Shop
                 hoverScale = gameObject.AddComponent<ShopHoverScaleItem>();
         }
 
-        // 整个卡槽即购买按钮：绑根节点上的 Button
+        // 整个卡槽即购买按钮，绑定根节点上的 Button
         private void bindBuyButton(ShopSlotData data, Action<ShopSlotData> onBuy)
         {
             Button btn = GetComponent<Button>();
