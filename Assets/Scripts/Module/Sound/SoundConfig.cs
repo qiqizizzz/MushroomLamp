@@ -41,6 +41,7 @@ namespace Sound
         public string id;
         public string path;
         public float volume = 1f;
+        public bool breakable;
     }
 
     [Serializable]
@@ -77,5 +78,6 @@ namespace Sound
         public string Id;
         public string Path;
         public float VolumeScale;
+        public bool Breakable;
     }
 }
