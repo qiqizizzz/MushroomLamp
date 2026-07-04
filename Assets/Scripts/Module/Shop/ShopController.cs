@@ -69,7 +69,7 @@ namespace Module.Shop
                 {
                     mode = ConfirmModel.Mode.ConfirmOnly,
                     title = "金币不足",
-                    message = $"刷新货架需要 {RefreshCost} 金币\n当前金币 {PlayerDataManager.Instance.Money}。",
+                    message = $"刷新货架需要{RefreshCost}金币\n\n当前金币{PlayerDataManager.Instance.Money}。",
                     confirmText = "知道了"
                 });
                 return;
@@ -88,7 +88,7 @@ namespace Module.Shop
                 {
                     mode = ConfirmModel.Mode.ConfirmOnly,
                     title = "无法回收",
-                    message = "本次商店已经回收过一次了。\n继续前进后，下次进入商店会刷新回收机会。",
+                    message = "本次商店已经回收过一次了。\n\n继续前进后，下次进入商店会刷新回收机会。",
                     confirmText = "知道了"
                 });
                 return;
@@ -129,7 +129,7 @@ namespace Module.Shop
                 {
                     mode = ConfirmModel.Mode.ConfirmOnly,
                     title = "金币不足",
-                    message = $"购买「{slotData.name}」需要 {slotData.price} 金币\n当前金币 {_shopModel.Gold}，差 {slotData.price - _shopModel.Gold} 枚。",
+                    message = $"购买\"{slotData.name}\"需要{slotData.price}金币\n\n当前金币{_shopModel.Gold}，差{slotData.price - _shopModel.Gold}枚。",
                     confirmText = "知道了"
                 });
                 return;
@@ -155,7 +155,7 @@ namespace Module.Shop
                             {
                                 mode = ConfirmModel.Mode.ConfirmOnly,
                                 title = "无法购买",
-                                message = $"你已经拥有「{slotData.name}」，该道具不可重复购买。",
+                                message = $"你已经拥有\"{slotData.name}\"，该道具不可重复购买。",
                                 confirmText = "知道了"
                             });
                             return;
@@ -180,11 +180,10 @@ namespace Module.Shop
             int remain = PlayerDataManager.Instance.Money - slotData.price;
             if (slotData.isBox)
             {
-                return $"购买「{slotData.name}」材料箱\n" +
-                       $"花费 {slotData.price} 金币，剩余 {remain} 金币。\n";
+                return $"购买\"{slotData.name}\"材料箱\n\n花费{slotData.price}金币，剩余{remain}金币。";
             }
 
-            return $"购买「{slotData.name}」\n{slotData.description}\n花费 {slotData.price} 金币，剩余 {remain} 金币。";
+            return $"购买\"{slotData.name}\"\n\n{slotData.description}\n\n花费{slotData.price}金币，剩余{remain}金币。";
         }
 
         private void openStoreAfterBoxPurchase(ShopSlotData slotData)
