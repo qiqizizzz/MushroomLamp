@@ -87,8 +87,10 @@ namespace Module.Blackjack
             if (_txtBottom != null)
                 _txtBottom.text = $"累计点数：{model.TotalPoint} / {BlackjackModel.BustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
 
-            if (_bubbleLeft != null) _bubbleLeft.text = model.IsBusted ? "嘿嘿，爆了吧！" : "再翻一张试试？";
-            if (_bubbleRight != null) _bubbleRight.text = model.IsBusted ? "唉，别贪心呀…" : "见好就收哦~";
+            if (_bubbleLeft != null)
+                _bubbleLeft.text = BlackjackDialogCatalogLoader.GetDevilText(model.IsBusted);
+            if (_bubbleRight != null)
+                _bubbleRight.text = BlackjackDialogCatalogLoader.GetAngelText(model.IsBusted);
         }
 
         // ---------------- 道具按钮 ----------------

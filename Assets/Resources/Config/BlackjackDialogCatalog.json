@@ -1,0 +1,10 @@
+{
+  "devil": {
+    "normalText": "再翻一张试试？",
+    "bustedText": "嘿嘿，爆了吧！"
+  },
+  "angel": {
+    "normalText": "见好就收哦~",
+    "bustedText": "唉，别贪心呀…"
+  }
+}
