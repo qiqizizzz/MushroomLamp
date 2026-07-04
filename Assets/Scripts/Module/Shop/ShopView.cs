@@ -108,11 +108,11 @@ namespace Module.Shop
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
             if (_txtInfo != null)
             {
-                _txtInfo.text = "本轮补给\n" +
-                                "上排：购买材料箱，进入选卡界面挑选卡牌\n" +
-                                "下排：购买恢复类道具\n\n" +
-                                $"当前金币：{model.Gold}\n" +
-                                $"回收机会：{(model.CanRecycle ? "可用" : "已使用")}\n\n" +
+                _txtInfo.text = "本轮补给\n\n" +
+                                "上排: 购买材料箱，进入选卡界面挑选卡牌\n\n" +
+                                "下排: 购买道具\n\n" +
+                                $"当前金币:{model.Gold}\n\n" +
+                                $"回收机会:{(model.CanRecycle ? "可用" : "已使用")}\n\n" +
                                 "购箱后可免费选卡加入牌组";
             }
 
