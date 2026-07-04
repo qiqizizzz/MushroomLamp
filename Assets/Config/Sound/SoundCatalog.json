@@ -87,6 +87,11 @@
       "volume": 1.0
     },
     {
+      "id": "sfx_ingame_select",
+      "path": "Effects/InGameSelect",
+      "volume": 1.0
+    },
+    {
       "id": "sfx_ingame_put_in_right_place",
       "path": "Effects/Ingame_PutInRightPlace",
       "volume": 1.0
@@ -126,11 +131,13 @@
       "buttons": [
         {
           "path": "Bottom/Btn_Left",
-          "click": "sfx_box_change"
+          "click": "sfx_box_change",
+          "hover": ""
         },
         {
           "path": "Bottom/Btn_Right",
-          "click": "sfx_box_change"
+          "click": "sfx_box_change",
+          "hover": ""
         }
       ]
     },
