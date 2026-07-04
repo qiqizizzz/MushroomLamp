@@ -1,6 +1,6 @@
 /*
 * ┌──────────────────────────────────┐
-* │  描    述: 通用道具详情浮层，负责按字段数量伸缩展示材料信息
+* │  描    述: 通用道具详情浮层，负责绑定预制体节点并刷新材料信息
 * │  类    名: ItemTooltip.cs
 * │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
@@ -15,45 +15,28 @@ using UnityEngine.UI;
 
 namespace Module.Item
 {
-    // 通用道具详情浮层，支持简单材料与复杂材料按字段数量自动伸缩
+    // 通用道具详情浮层，只负责填充数据与控制字段显隐
     public class ItemTooltip : BaseItem
     {
-        private const int TOOLTIP_SORTING_ORDER = 5000;
-        private const float CONTENT_PADDING_X = 14f;
-        private const float CONTENT_PADDING_Y = 14f;
-        private const float FIELD_ROW_SPACING = 8f;
-        private const float TEXT_BLOCK_PADDING_X = 8f;
-        private const float TEXT_BLOCK_PADDING_Y = 6f;
-
-        [SerializeField] private float TooltipWidth = 380f;
-        [SerializeField] private float RowLabelWidth = 96f;
-
-        private readonly List<TextMeshProUGUI> _tagTexts = new();
-        private readonly List<GameObject> _dynamicFieldRows = new();
         private readonly Dictionary<string, TooltipFieldRow> _fixedFieldRows = new();
+        private readonly List<TooltipFieldRow> _extraFieldRows = new();
+        private readonly List<TooltipTagSlot> _tagSlots = new();
 
         private RectTransform _rectTransform;
-        private RectTransform _contentRoot;
-        private RectTransform _headerRoot;
-        private RectTransform _titleRoot;
-        private RectTransform _tagRoot;
-        private RectTransform _rowRoot;
+        private Transform _tagRoot;
+        private Transform _rowRoot;
         private RectTransform _descBlock;
-        private Canvas _canvas;
-        private CanvasGroup _canvasGroup;
-        private Image _imgBackground;
         private Image _imgIcon;
         private TextMeshProUGUI _txtName;
         private TextMeshProUGUI _txtSubtitle;
         private TextMeshProUGUI _txtPrice;
         private TextMeshProUGUI _txtDesc;
         private GameObject _tagTemplate;
-        private GameObject _fieldRowTemplate;
-        private TMP_FontAsset _fontAsset;
+        private bool _isInitialized;
 
         protected override void OnAwake()
         {
-            ensureHierarchy();
+            bindPrefabReferences();
             SetVisible(false);
         }
 
@@ -66,8 +49,8 @@ namespace Module.Item
         // 绑定通用详情数据
         public void Bind(ItemTooltipData data)
         {
-            ensureHierarchy();
-            clearDynamicContent();
+            bindPrefabReferences();
+            hideDynamicSections();
 
             if (data == null)
             {
@@ -75,39 +58,27 @@ namespace Module.Item
                 return;
             }
 
-            _txtName.text = string.IsNullOrWhiteSpace(data.Name) ? "未知材料" : data.Name;
-            _txtSubtitle.text = data.Subtitle ?? string.Empty;
-            _txtSubtitle.gameObject.SetActive(!string.IsNullOrWhiteSpace(_txtSubtitle.text));
-            _txtPrice.text = data.PriceText ?? string.Empty;
-            _txtPrice.gameObject.SetActive(!string.IsNullOrWhiteSpace(_txtPrice.text));
-
-            _imgIcon.sprite = data.Icon;
-            _imgIcon.enabled = data.Icon != null;
-
+            setText(_txtName, string.IsNullOrWhiteSpace(data.Name) ? "未知材料" : data.Name);
+            bindText(_txtSubtitle, data.Subtitle);
+            bindText(_txtPrice, data.PriceText);
+            bindIcon(data.Icon);
             bindTags(data.Tags);
             bindFields(data.Fields);
             bindBlock(_descBlock, _txtDesc, data.Desc);
             SetVisible(true);
-            Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
-            refreshDynamicLayoutSizes();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_rowRoot);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
-            clampHeight();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRoot);
         }
 
-        // 设置详情浮层字体
+        // 保留外部调用入口，字体由预制体自身配置
         public void SetFontAsset(TMP_FontAsset fontAsset)
         {
-            _fontAsset = fontAsset;
-            applyFontAsset();
         }
 
         // 设置 Tooltip 屏幕位置，并自动限制在画布内部
         public void SetScreenPosition(Vector2 screenPosition, RectTransform canvasRect, Vector2 offset)
         {
-            ensureHierarchy();
+            bindPrefabReferences();
+            if (_rectTransform == null) return;
+
             if (canvasRect == null)
             {
                 _rectTransform.position = screenPosition + offset;
@@ -135,115 +106,221 @@ namespace Module.Item
             SetVisible(false);
         }
 
-        // 设置显示状态，保持根物体激活以便后续悬停可以立刻重新显示
         public override void SetVisible(bool isVisible)
         {
-            if (!gameObject.activeSelf)
-                gameObject.SetActive(true);
-
-            ensureHierarchy();
-            _canvasGroup.alpha = isVisible ? 1f : 0f;
-            _canvasGroup.interactable = false;
-            _canvasGroup.blocksRaycasts = false;
+            if (gameObject.activeSelf != isVisible)
+                gameObject.SetActive(isVisible);
         }
 
-        // 确保基础 UI 层级存在
-        private void ensureHierarchy()
+        // 绑定预制体内已有节点
+        private void bindPrefabReferences()
         {
+            if (_isInitialized) return;
+
             _rectTransform = GetComponent<RectTransform>();
-            if (_rectTransform == null)
-                _rectTransform = gameObject.AddComponent<RectTransform>();
+            _imgIcon = Find<Image>("Content/Header/Img_Icon");
+            _txtName = Find<TextMeshProUGUI>("Content/Header/TitleGroup/Txt_Name");
+            _txtSubtitle = Find<TextMeshProUGUI>("Content/Header/TitleGroup/Txt_Subtitle");
+            _txtPrice = Find<TextMeshProUGUI>("Content/Header/Txt_Price");
+            _tagRoot = Find<Transform>("Content/TagRoot");
+            _rowRoot = Find<Transform>("Content/RowRoot");
+            _descBlock = Find<RectTransform>("Content/DescBlock");
+            _txtDesc = Find<TextMeshProUGUI>("Content/DescBlock/Txt_Desc");
+            _tagTemplate = Find("Content/TagRoot/Tag_Template");
 
-            _rectTransform.sizeDelta = new Vector2(TooltipWidth, _rectTransform.sizeDelta.y <= 0 ? 240f : _rectTransform.sizeDelta.y);
-            _rectTransform.anchorMin = new Vector2(0f, 1f);
-            _rectTransform.anchorMax = new Vector2(0f, 1f);
-            _rectTransform.pivot = new Vector2(0f, 1f);
-
-            _imgBackground = GetComponent<Image>();
-            if (_imgBackground == null)
-                _imgBackground = gameObject.AddComponent<Image>();
-
-            _imgBackground.color = new Color(0.18f, 0.13f, 0.10f, 0.94f);
-            _imgBackground.raycastTarget = false;
-
-            _canvas = GetComponent<Canvas>();
-            if (_canvas == null)
-                _canvas = gameObject.AddComponent<Canvas>();
-
-            _canvas.overrideSorting = true;
-            _canvas.sortingOrder = TOOLTIP_SORTING_ORDER;
-
-            _canvasGroup = GetComponent<CanvasGroup>();
-            if (_canvasGroup == null)
-                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
-
-            _canvasGroup.interactable = false;
-            _canvasGroup.blocksRaycasts = false;
-
-            _contentRoot = getOrCreateRect("Content", transform);
-            setupTopLeft(_contentRoot, new Vector2(CONTENT_PADDING_X, -CONTENT_PADDING_Y), new Vector2(getContentWidth(), 0f));
-            setupVerticalLayout(_contentRoot.gameObject, 8f, TextAnchor.UpperLeft);
-            ensureFitter(_contentRoot.gameObject);
-
-            createHeader();
-            createTagRoot();
-            createRowRoot();
-            createTextBlocks();
+            collectTagSlots();
+            collectFieldRows();
+            _isInitialized = true;
         }
 
-        // 创建标题区
-        private void createHeader()
+        // 收集预制体中预留的标签显示位
+        private void collectTagSlots()
         {
-            _headerRoot = getOrCreateRect("Header", _contentRoot);
-            setupHorizontalLayout(_headerRoot.gameObject, 10f, TextAnchor.MiddleLeft);
-            setLayout(_headerRoot.gameObject, getContentWidth(), 58f, getContentWidth(), 58f);
+            _tagSlots.Clear();
+            if (_tagRoot == null) return;
 
-            _imgIcon = getOrCreateImage("Img_Icon", _headerRoot, new Color(0.92f, 0.83f, 0.66f, 1f));
-            setLayout(_imgIcon.gameObject, 54f, 54f, 54f, 54f);
-            _imgIcon.preserveAspect = true;
-            _imgIcon.raycastTarget = false;
+            for (int i = 0; i < _tagRoot.childCount; i++)
+            {
+                Transform child = _tagRoot.GetChild(i);
+                if (child.name == "Tag_Template")
+                    continue;
 
-            _titleRoot = getOrCreateRect("TitleGroup", _headerRoot);
-            setupVerticalLayout(_titleRoot.gameObject, 2f, TextAnchor.MiddleLeft);
-            setFlexibleLayout(_titleRoot.gameObject);
+                TextMeshProUGUI label = child.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+                _tagSlots.Add(new TooltipTagSlot(child.gameObject, label));
+            }
 
-            _txtName = getOrCreateText("Txt_Name", _titleRoot, 24f, new Color(1f, 0.91f, 0.72f, 1f), TextAlignmentOptions.Left);
-            _txtName.fontStyle = FontStyles.Bold;
-
-            _txtSubtitle = getOrCreateText("Txt_Subtitle", _titleRoot, 16f, new Color(0.82f, 0.72f, 0.58f, 1f), TextAlignmentOptions.Left);
-            _txtPrice = getOrCreateText("Txt_Price", _headerRoot, 18f, new Color(1f, 0.79f, 0.36f, 1f), TextAlignmentOptions.Right);
-            setLayout(_txtPrice.gameObject, 72f, 24f, 72f, 24f);
+            if (_tagTemplate != null)
+                _tagTemplate.SetActive(false);
         }
 
-        // 创建标签容器
-        private void createTagRoot()
+        // 收集预制体中预留的字段行
+        private void collectFieldRows()
         {
-            _tagRoot = getOrCreateRect("TagRoot", _contentRoot);
-            HorizontalLayoutGroup layout = setupHorizontalLayout(_tagRoot.gameObject, 6f, TextAnchor.UpperLeft);
-            layout.childControlWidth = false;
-            layout.childForceExpandWidth = false;
-            setLayout(_tagRoot.gameObject, getContentWidth(), 28f, getContentWidth(), 28f);
-            ContentSizeFitter fitter = ensureFitter(_tagRoot.gameObject);
-            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            _fixedFieldRows.Clear();
+            _extraFieldRows.Clear();
 
-            _tagTemplate = getOrCreateTagTemplate();
+            addFixedFieldRow(ItemTooltipData.FIELD_BASIC_SCORE, "Field_BasicScore");
+            addFixedFieldRow(ItemTooltipData.FIELD_STATE, "Field_State");
+            addFixedFieldRow(ItemTooltipData.FIELD_COOK_PROGRESS, "Field_CookProgress");
+            addFixedFieldRow(ItemTooltipData.FIELD_CAN_PROCESS, "Field_CanProcess");
+            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_METHOD, "Field_ProcessMethod");
+            addFixedFieldRow(ItemTooltipData.FIELD_TRIGGER_CONDITION, "Field_TriggerCondition");
+            addFixedFieldRow(ItemTooltipData.FIELD_EFFECT, "Field_Effect");
+            addFixedFieldRow(ItemTooltipData.FIELD_MULTIPLIER, "Field_Multiplier");
+            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_RESULT, "Field_ProcessResult");
+            collectExtraFieldRows();
         }
 
-        // 创建字段行容器
-        private void createRowRoot()
+        // 注册固定字段行
+        private void addFixedFieldRow(string fieldKey, string rowName)
         {
-            _rowRoot = getOrCreateRect("RowRoot", _contentRoot);
-            setupVerticalLayout(_rowRoot.gameObject, 2f, TextAnchor.UpperLeft);
-            ensureFitter(_rowRoot.gameObject);
-            _fieldRowTemplate = createFieldRow("FieldRow_Template", string.Empty, string.Empty);
-            _fieldRowTemplate.SetActive(false);
-            ensureFixedFieldRows();
+            TooltipFieldRow row = findFieldRow(rowName);
+            if (row.Root != null)
+                _fixedFieldRows[fieldKey] = row;
         }
 
-        // 创建描述文本块
-        private void createTextBlocks()
+        // 收集额外字段行占位，不在运行时创建新行
+        private void collectExtraFieldRows()
         {
-            _descBlock = createTextBlock("DescBlock", "Txt_Desc", out _txtDesc);
+            if (_rowRoot == null) return;
+
+            for (int i = 0; i < _rowRoot.childCount; i++)
+            {
+                Transform child = _rowRoot.GetChild(i);
+                if (!child.name.StartsWith("FieldRow_") || child.name == "FieldRow_Template")
+                    continue;
+
+                _extraFieldRows.Add(createFieldRow(child));
+            }
+
+            Transform template = _rowRoot.Find("FieldRow_Template");
+            if (template != null)
+                template.gameObject.SetActive(false);
+        }
+
+        // 查找字段行节点
+        private TooltipFieldRow findFieldRow(string rowName)
+        {
+            if (_rowRoot == null) return TooltipFieldRow.Empty;
+
+            Transform row = _rowRoot.Find(rowName);
+            return row != null ? createFieldRow(row) : TooltipFieldRow.Empty;
+        }
+
+        // 创建字段行引用
+        private static TooltipFieldRow createFieldRow(Transform row)
+        {
+            TextMeshProUGUI labelText = row.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI valueText = row.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
+            return new TooltipFieldRow(row.gameObject, labelText, valueText);
+        }
+
+        // 隐藏本次绑定前的可选区域
+        private void hideDynamicSections()
+        {
+            if (_tagTemplate != null)
+                _tagTemplate.SetActive(false);
+
+            for (int i = 0; i < _tagSlots.Count; i++)
+                _tagSlots[i].SetVisible(false);
+
+            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
+                row.SetVisible(false);
+
+            for (int i = 0; i < _extraFieldRows.Count; i++)
+                _extraFieldRows[i].SetVisible(false);
+        }
+
+        // 绑定图标显示
+        private void bindIcon(Sprite icon)
+        {
+            if (_imgIcon == null) return;
+
+            _imgIcon.sprite = icon;
+            _imgIcon.gameObject.SetActive(icon != null);
+        }
+
+        // 绑定标签文本
+        private void bindTags(IReadOnlyList<string> tags)
+        {
+            int visibleCount = 0;
+            for (int i = 0; tags != null && i < tags.Count && visibleCount < _tagSlots.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(tags[i])) continue;
+
+                _tagSlots[visibleCount].Bind(tags[i]);
+                visibleCount++;
+            }
+
+            if (_tagRoot != null)
+                _tagRoot.gameObject.SetActive(visibleCount > 0);
+        }
+
+        // 绑定字段行
+        private void bindFields(IReadOnlyList<ItemTooltipFieldData> fields)
+        {
+            int extraIndex = 0;
+            for (int i = 0; fields != null && i < fields.Count; i++)
+            {
+                ItemTooltipFieldData field = fields[i];
+                if (field == null || string.IsNullOrWhiteSpace(field.Value)) continue;
+
+                if (!string.IsNullOrEmpty(field.Key) && _fixedFieldRows.TryGetValue(field.Key, out TooltipFieldRow fixedRow))
+                {
+                    fixedRow.Bind(field.Label, field.Value);
+                    continue;
+                }
+
+                if (extraIndex >= _extraFieldRows.Count) continue;
+
+                _extraFieldRows[extraIndex].Bind(field.Label, field.Value);
+                extraIndex++;
+            }
+
+            if (_rowRoot != null)
+                _rowRoot.gameObject.SetActive(hasVisibleFieldRow());
+        }
+
+        // 判断是否存在可见字段行
+        private bool hasVisibleFieldRow()
+        {
+            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
+                if (row.IsVisible)
+                    return true;
+
+            for (int i = 0; i < _extraFieldRows.Count; i++)
+                if (_extraFieldRows[i].IsVisible)
+                    return true;
+
+            return false;
+        }
+
+        // 绑定可选文本
+        private static void bindText(TextMeshProUGUI text, string value)
+        {
+            bool visible = !string.IsNullOrWhiteSpace(value);
+            if (text == null) return;
+
+            text.text = visible ? value : string.Empty;
+            text.gameObject.SetActive(visible);
+        }
+
+        // 绑定可选文本块
+        private static void bindBlock(RectTransform block, TextMeshProUGUI text, string value)
+        {
+            bool visible = !string.IsNullOrWhiteSpace(value);
+            if (text != null)
+                text.text = visible ? value : string.Empty;
+
+            if (block != null)
+                block.gameObject.SetActive(visible);
+        }
+
+        // 设置文本内容
+        private static void setText(TextMeshProUGUI text, string value)
+        {
+            if (text != null)
+                text.text = value;
         }
 
         // 根据鼠标位置选择详情框显示方向，底部材料默认往上弹
@@ -260,564 +337,8 @@ namespace Module.Item
             return new Vector2(Mathf.Abs(fallbackOffset.x), verticalOffset);
         }
 
-        // 获取内容区固定宽度
-        private float getContentWidth()
-        {
-            return Mathf.Max(1f, TooltipWidth - CONTENT_PADDING_X * 2f);
-        }
-
-        // 创建文本块
-        private RectTransform createTextBlock(string blockName, string textName, out TextMeshProUGUI text)
-        {
-            RectTransform block = getOrCreateRect(blockName, _contentRoot);
-            Image image = block.GetComponent<Image>();
-            if (image != null)
-                image.enabled = false;
-
-            removeVerticalLayout(block.gameObject);
-            removeFitter(block.gameObject);
-            setLayout(block.gameObject, getContentWidth(), 32f, getContentWidth(), 32f);
-
-            text = getOrCreateText(textName, block, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.TopLeft);
-            setupTextBlockTextRect(text.rectTransform, getTextBlockTextWidth(), 20f);
-            return block;
-        }
-
-        // 获取或创建标签模板，运行时复制模板生成动态标签
-        private GameObject getOrCreateTagTemplate()
-        {
-            RectTransform tagRoot = getOrCreateRect("Tag_Template", _tagRoot);
-            Image image = tagRoot.GetComponent<Image>();
-            if (image == null)
-                image = tagRoot.gameObject.AddComponent<Image>();
-
-            image.color = new Color(0.67f, 0.43f, 0.26f, 0.85f);
-            image.raycastTarget = false;
-            setLayout(tagRoot.gameObject, -1f, 28f, -1f, 28f);
-
-            TextMeshProUGUI text = getOrCreateText("Txt_Label", tagRoot, 15f, new Color(1f, 0.89f, 0.68f, 1f), TextAlignmentOptions.Center);
-            text.text = string.Empty;
-            text.enableWordWrapping = false;
-            setPadding(text.rectTransform, 10f, 2f);
-            tagRoot.gameObject.SetActive(false);
-            return tagRoot.gameObject;
-        }
-
-        // 确保策划字段在预制体内有固定行
-        private void ensureFixedFieldRows()
-        {
-            _fixedFieldRows.Clear();
-            addFixedFieldRow(ItemTooltipData.FIELD_BASIC_SCORE, "Field_BasicScore", "基础分值");
-            addFixedFieldRow(ItemTooltipData.FIELD_STATE, "Field_State", "状态");
-            addFixedFieldRow(ItemTooltipData.FIELD_COOK_PROGRESS, "Field_CookProgress", "熟度");
-            addFixedFieldRow(ItemTooltipData.FIELD_CAN_PROCESS, "Field_CanProcess", "是否可加工");
-            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_METHOD, "Field_ProcessMethod", "加工方式");
-            addFixedFieldRow(ItemTooltipData.FIELD_TRIGGER_CONDITION, "Field_TriggerCondition", "触发条件");
-            addFixedFieldRow(ItemTooltipData.FIELD_EFFECT, "Field_Effect", "效果");
-            addFixedFieldRow(ItemTooltipData.FIELD_MULTIPLIER, "Field_Multiplier", "倍率");
-            addFixedFieldRow(ItemTooltipData.FIELD_PROCESS_RESULT, "Field_ProcessResult", "加工结果");
-        }
-
-        // 注册固定字段行
-        private void addFixedFieldRow(string fieldKey, string rowName, string fallbackLabel)
-        {
-            Transform existingRow = _rowRoot.Find(rowName);
-            GameObject row = existingRow != null ? existingRow.gameObject : createFieldRow(rowName, fallbackLabel, string.Empty);
-            TextMeshProUGUI labelText = row.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
-            TextMeshProUGUI valueText = row.transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
-            if (labelText == null || valueText == null)
-            {
-                row = createFieldRow(rowName, fallbackLabel, string.Empty);
-                labelText = row.transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>();
-                valueText = row.transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>();
-            }
-
-            if (existingRow == null)
-                row.SetActive(true);
-
-            _fixedFieldRows[fieldKey] = new TooltipFieldRow(row, labelText, valueText);
-        }
-
-        // 绑定标签
-        private void bindTags(IReadOnlyList<string> tags)
-        {
-            for (int i = 0; tags != null && i < tags.Count; i++)
-            {
-                if (string.IsNullOrWhiteSpace(tags[i])) continue;
-
-                TextMeshProUGUI tagText = createTagText(tags[i]);
-                _tagTexts.Add(tagText);
-            }
-
-            _tagRoot.gameObject.SetActive(_tagTexts.Count > 0);
-        }
-
-        // 绑定字段行
-        private void bindFields(IReadOnlyList<ItemTooltipFieldData> fields)
-        {
-            hideFixedFieldRows();
-
-            for (int i = 0; fields != null && i < fields.Count; i++)
-            {
-                ItemTooltipFieldData field = fields[i];
-                if (field == null || string.IsNullOrWhiteSpace(field.Value)) continue;
-
-                if (!string.IsNullOrEmpty(field.Key) && _fixedFieldRows.TryGetValue(field.Key, out TooltipFieldRow fixedRow))
-                {
-                    fixedRow.Bind(field.Label, field.Value);
-                    continue;
-                }
-
-                GameObject row = createFieldRow($"FieldRow_{_dynamicFieldRows.Count}", field.Label, field.Value);
-                row.SetActive(true);
-                _dynamicFieldRows.Add(row);
-            }
-
-            _rowRoot.gameObject.SetActive(hasVisibleFixedRow() || _dynamicFieldRows.Count > 0);
-        }
-
-        // 隐藏固定字段行，等待本次绑定重新填值
-        private void hideFixedFieldRows()
-        {
-            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
-                row.SetVisible(false);
-        }
-
-        // 判断是否存在已显示的固定字段行
-        private bool hasVisibleFixedRow()
-        {
-            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
-                if (row.Root != null && row.Root.activeSelf)
-                    return true;
-
-            return false;
-        }
-
-        // 绑定可选文本块
-        private static void bindBlock(RectTransform block, TextMeshProUGUI text, string value)
-        {
-            bool visible = !string.IsNullOrWhiteSpace(value);
-            block.gameObject.SetActive(visible);
-            if (visible)
-                text.text = value;
-        }
-
-        // 创建标签文本
-        private TextMeshProUGUI createTagText(string tag)
-        {
-            GameObject tagObj = _tagTemplate != null
-                ? Instantiate(_tagTemplate, _tagRoot, false)
-                : getOrCreateRect($"Tag_{_tagTexts.Count}", _tagRoot).gameObject;
-            tagObj.name = $"Tag_{_tagTexts.Count}";
-            tagObj.SetActive(true);
-
-            RectTransform tagRoot = tagObj.GetComponent<RectTransform>();
-            Image image = tagRoot.GetComponent<Image>();
-            if (image == null)
-                image = tagRoot.gameObject.AddComponent<Image>();
-
-            image.color = new Color(0.67f, 0.43f, 0.26f, 0.85f);
-            image.raycastTarget = false;
-            setLayout(tagRoot.gameObject, -1f, 28f, -1f, 28f);
-
-            TextMeshProUGUI text = getOrCreateText("Txt_Label", tagRoot, 15f, new Color(1f, 0.89f, 0.68f, 1f), TextAlignmentOptions.Center);
-            text.text = tag;
-            text.enableWordWrapping = false;
-            setPadding(text.rectTransform, 10f, 2f);
-            return text;
-        }
-
-        // 创建字段行
-        private GameObject createFieldRow(string rowName, string label, string value)
-        {
-            RectTransform row = getOrCreateRect(rowName, _rowRoot);
-            setupHorizontalLayout(row.gameObject, FIELD_ROW_SPACING, TextAnchor.UpperLeft);
-            removeFitter(row.gameObject);
-            setLayout(row.gameObject, getContentWidth(), 24f, getContentWidth(), 24f);
-
-            TextMeshProUGUI labelText = getOrCreateText("Txt_Label", row, 15f, new Color(0.74f, 0.62f, 0.48f, 1f), TextAlignmentOptions.TopLeft);
-            labelText.text = label;
-            setLayout(labelText.gameObject, RowLabelWidth, 24f, RowLabelWidth, -1f);
-
-            TextMeshProUGUI valueText = getOrCreateText("Txt_Value", row, 16f, new Color(0.94f, 0.86f, 0.73f, 1f), TextAlignmentOptions.TopLeft);
-            valueText.text = value;
-            setPreferredFlexibleLayout(valueText.gameObject, getFieldValueWidth(), 24f, getFieldValueWidth(), -1f);
-            return row.gameObject;
-        }
-
-        // 清理动态内容
-        private void clearDynamicContent()
-        {
-            for (int i = 0; i < _tagTexts.Count; i++)
-                if (_tagTexts[i] != null)
-                    destroyDynamicObject(_tagTexts[i].transform.parent != null ? _tagTexts[i].transform.parent.gameObject : _tagTexts[i].gameObject);
-
-            _tagTexts.Clear();
-
-            for (int i = 0; i < _dynamicFieldRows.Count; i++)
-                if (_dynamicFieldRows[i] != null)
-                    destroyDynamicObject(_dynamicFieldRows[i]);
-
-            _dynamicFieldRows.Clear();
-            clearPreviewTags();
-            clearPreviewDynamicRows();
-        }
-
-        // 清理预制体中用于预览的标签节点
-        private void clearPreviewTags()
-        {
-            if (_tagRoot == null) return;
-
-            for (int i = _tagRoot.childCount - 1; i >= 0; i--)
-            {
-                Transform child = _tagRoot.GetChild(i);
-                if (child.name.StartsWith("Tag_") && child.name != "Tag_Template")
-                    destroyDynamicObject(child.gameObject);
-            }
-        }
-
-        // 清理预制体中可能残留的动态字段行
-        private void clearPreviewDynamicRows()
-        {
-            if (_rowRoot == null) return;
-
-            for (int i = _rowRoot.childCount - 1; i >= 0; i--)
-            {
-                Transform child = _rowRoot.GetChild(i);
-                if (child.name.StartsWith("FieldRow_") && child.name != "FieldRow_Template")
-                    destroyDynamicObject(child.gameObject);
-            }
-        }
-
-        // 根据动态内容刷新高度
-        private void clampHeight()
-        {
-            float preferredHeight = LayoutUtility.GetPreferredHeight(_contentRoot);
-            float contentHeight = Mathf.Max(160f, preferredHeight + CONTENT_PADDING_Y * 2f);
-            _rectTransform.sizeDelta = new Vector2(TooltipWidth, contentHeight);
-            _contentRoot.sizeDelta = new Vector2(getContentWidth(), preferredHeight);
-        }
-
-        // 刷新动态文本块与字段行尺寸
-        private void refreshDynamicLayoutSizes()
-        {
-            refreshFieldRowSizes();
-            refreshTextBlockSize(_descBlock, _txtDesc);
-        }
-
-        // 刷新字段行高度，避免多行字段压住下一行
-        private void refreshFieldRowSizes()
-        {
-            foreach (TooltipFieldRow row in _fixedFieldRows.Values)
-                refreshFieldRowSize(row.Root, row.LabelText, row.ValueText);
-
-            for (int i = 0; i < _dynamicFieldRows.Count; i++)
-                if (_dynamicFieldRows[i] != null)
-                    refreshFieldRowSize(_dynamicFieldRows[i],
-                        _dynamicFieldRows[i].transform.Find("Txt_Label")?.GetComponent<TextMeshProUGUI>(),
-                        _dynamicFieldRows[i].transform.Find("Txt_Value")?.GetComponent<TextMeshProUGUI>());
-        }
-
-        // 刷新单个字段行高度
-        private void refreshFieldRowSize(GameObject row, TextMeshProUGUI labelText, TextMeshProUGUI valueText)
-        {
-            if (row == null || !row.activeSelf || labelText == null || valueText == null) return;
-
-            float labelHeight = getPreferredTextHeight(labelText, RowLabelWidth);
-            float valueHeight = getPreferredTextHeight(valueText, getFieldValueWidth());
-            float rowHeight = Mathf.Ceil(Mathf.Max(24f, labelHeight, valueHeight));
-            setLayout(row, getContentWidth(), rowHeight, getContentWidth(), rowHeight);
-            setLayout(labelText.gameObject, RowLabelWidth, rowHeight, RowLabelWidth, rowHeight);
-            setPreferredFlexibleLayout(valueText.gameObject, getFieldValueWidth(), rowHeight, getFieldValueWidth(), rowHeight);
-        }
-
-        // 刷新大段文本块高度
-        private void refreshTextBlockSize(RectTransform block, TextMeshProUGUI text)
-        {
-            if (block == null || text == null || !block.gameObject.activeSelf) return;
-
-            float textWidth = getTextBlockTextWidth();
-            float textHeight = getPreferredTextHeight(text, textWidth);
-            float blockHeight = Mathf.Ceil(Mathf.Max(28f, textHeight + TEXT_BLOCK_PADDING_Y * 2f + 2f));
-            setLayout(block.gameObject, getContentWidth(), blockHeight, getContentWidth(), blockHeight);
-            setRectSize(block, getContentWidth(), blockHeight);
-            setupTextBlockTextRect(text.rectTransform, textWidth, Mathf.Max(1f, blockHeight - TEXT_BLOCK_PADDING_Y * 2f));
-        }
-
-        // 获取字段值文本宽度
-        private float getFieldValueWidth()
-        {
-            return Mathf.Max(1f, getContentWidth() - RowLabelWidth - FIELD_ROW_SPACING);
-        }
-
-        // 获取文本块内部文字宽度
-        private float getTextBlockTextWidth()
-        {
-            return Mathf.Max(1f, getContentWidth() - TEXT_BLOCK_PADDING_X * 2f);
-        }
-
-        // 获取 TMP 文本在指定宽度下的首选高度
-        private static float getPreferredTextHeight(TextMeshProUGUI text, float width)
-        {
-            if (text == null || string.IsNullOrWhiteSpace(text.text))
-                return 0f;
-
-            text.enableAutoSizing = false;
-            text.enableWordWrapping = true;
-            text.overflowMode = TextOverflowModes.Overflow;
-            text.ForceMeshUpdate();
-            Vector2 preferredValues = text.GetPreferredValues(text.text, width, Mathf.Infinity);
-            return Mathf.Max(preferredValues.y, getEstimatedWrappedTextHeight(text, width));
-        }
-
-        // 估算中文长句换行高度，兜住 TMP 字体 fallback 导致的首选高度偏小
-        private static float getEstimatedWrappedTextHeight(TextMeshProUGUI text, float width)
-        {
-            string value = text.text;
-            if (string.IsNullOrWhiteSpace(value))
-                return 0f;
-
-            float lineHeight = Mathf.Max(1f, text.fontSize * 1.2f);
-            float fullWidthCharCount = Mathf.Max(1f, width / Mathf.Max(1f, text.fontSize));
-            string[] lines = value.Split('\n');
-            int lineCount = 0;
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                float weightedLength = getWeightedTextLength(lines[i]);
-                lineCount += Mathf.Max(1, Mathf.CeilToInt(weightedLength / fullWidthCharCount));
-            }
-
-            return lineHeight * lineCount;
-        }
-
-        // 统计文本显示宽度权重，中文按全角，英文数字按半角估算
-        private static float getWeightedTextLength(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return 0f;
-
-            float length = 0f;
-            for (int i = 0; i < value.Length; i++)
-            {
-                char c = value[i];
-                if (char.IsWhiteSpace(c))
-                {
-                    length += 0.35f;
-                    continue;
-                }
-
-                length += c <= 127 ? 0.6f : 1f;
-            }
-
-            return length;
-        }
-
-        // 移除动态节点并从布局树摘除，避免同一帧重复绑定时旧节点影响布局
-        private static void destroyDynamicObject(GameObject target)
-        {
-            if (target == null) return;
-
-            target.transform.SetParent(null, false);
-            Destroy(target);
-        }
-
-        // 将当前字体应用到所有已存在文本
-        private void applyFontAsset()
-        {
-            if (_fontAsset == null) return;
-
-            TextMeshProUGUI[] texts = GetComponentsInChildren<TextMeshProUGUI>(true);
-            for (int i = 0; i < texts.Length; i++)
-                texts[i].font = _fontAsset;
-        }
-
-        // 获取或创建 RectTransform 节点
-        private static RectTransform getOrCreateRect(string childName, Transform parent)
-        {
-            Transform child = parent.Find(childName);
-            if (child == null)
-            {
-                GameObject childObj = new GameObject(childName, typeof(RectTransform));
-                childObj.transform.SetParent(parent, false);
-                child = childObj.transform;
-            }
-
-            RectTransform rectTransform = child.GetComponent<RectTransform>();
-            if (rectTransform == null)
-                rectTransform = child.gameObject.AddComponent<RectTransform>();
-
-            return rectTransform;
-        }
-
-        // 获取或创建 Image 节点
-        private static Image getOrCreateImage(string childName, Transform parent, Color color)
-        {
-            RectTransform rectTransform = getOrCreateRect(childName, parent);
-            Image image = rectTransform.GetComponent<Image>();
-            if (image == null)
-                image = rectTransform.gameObject.AddComponent<Image>();
-
-            image.color = color;
-            return image;
-        }
-
-        // 获取或创建文本节点
-        private TextMeshProUGUI getOrCreateText(string childName, Transform parent, float fontSize, Color color, TextAlignmentOptions alignment)
-        {
-            RectTransform rectTransform = getOrCreateRect(childName, parent);
-            TextMeshProUGUI text = rectTransform.GetComponent<TextMeshProUGUI>();
-            if (text == null)
-                text = rectTransform.gameObject.AddComponent<TextMeshProUGUI>();
-
-            if (_fontAsset != null)
-                text.font = _fontAsset;
-
-            text.fontSize = fontSize;
-            text.color = color;
-            text.alignment = alignment;
-            text.enableWordWrapping = true;
-            text.enableAutoSizing = false;
-            text.overflowMode = TextOverflowModes.Overflow;
-            text.raycastTarget = false;
-            return text;
-        }
-
-        // 设置左上角固定布局
-        private static void setupTopLeft(RectTransform rectTransform, Vector2 anchoredPosition, Vector2 sizeDelta)
-        {
-            rectTransform.anchorMin = new Vector2(0f, 1f);
-            rectTransform.anchorMax = new Vector2(0f, 1f);
-            rectTransform.pivot = new Vector2(0f, 1f);
-            rectTransform.anchoredPosition = anchoredPosition;
-            rectTransform.sizeDelta = sizeDelta;
-        }
-
-        // 设置文本内边距
-        private static void setPadding(RectTransform rectTransform, float horizontal, float vertical)
-        {
-            rectTransform.anchorMin = Vector2.zero;
-            rectTransform.anchorMax = Vector2.one;
-            rectTransform.offsetMin = new Vector2(horizontal, vertical);
-            rectTransform.offsetMax = new Vector2(-horizontal, -vertical);
-        }
-
-        // 固定说明块文本区域，避免 Stretch 子节点被父级高度压缩
-        private static void setupTextBlockTextRect(RectTransform rectTransform, float width, float height)
-        {
-            rectTransform.anchorMin = new Vector2(0f, 1f);
-            rectTransform.anchorMax = new Vector2(0f, 1f);
-            rectTransform.pivot = new Vector2(0f, 1f);
-            rectTransform.anchoredPosition = new Vector2(TEXT_BLOCK_PADDING_X, -TEXT_BLOCK_PADDING_Y);
-            rectTransform.sizeDelta = new Vector2(width, height);
-        }
-
-        // 立即同步 RectTransform 尺寸，避免等待布局系统刷新时出现单行高度底图
-        private static void setRectSize(RectTransform rectTransform, float width, float height)
-        {
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-        }
-
-        // 设置垂直布局
-        private static VerticalLayoutGroup setupVerticalLayout(GameObject target, float spacing, TextAnchor childAlignment)
-        {
-            VerticalLayoutGroup layout = target.GetComponent<VerticalLayoutGroup>();
-            if (layout == null)
-                layout = target.AddComponent<VerticalLayoutGroup>();
-
-            layout.childAlignment = childAlignment;
-            layout.spacing = spacing;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-            return layout;
-        }
-
-        // 设置水平布局
-        private static HorizontalLayoutGroup setupHorizontalLayout(GameObject target, float spacing, TextAnchor childAlignment)
-        {
-            HorizontalLayoutGroup layout = target.GetComponent<HorizontalLayoutGroup>();
-            if (layout == null)
-                layout = target.AddComponent<HorizontalLayoutGroup>();
-
-            layout.childAlignment = childAlignment;
-            layout.spacing = spacing;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-            return layout;
-        }
-
-        // 确保自适应尺寸组件
-        private static ContentSizeFitter ensureFitter(GameObject target)
-        {
-            ContentSizeFitter fitter = target.GetComponent<ContentSizeFitter>();
-            if (fitter == null)
-                fitter = target.AddComponent<ContentSizeFitter>();
-
-            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            return fitter;
-        }
-
-        // 移除受父级 LayoutGroup 管理的自适应尺寸组件
-        private static void removeFitter(GameObject target)
-        {
-            ContentSizeFitter fitter = target.GetComponent<ContentSizeFitter>();
-            if (fitter != null)
-            {
-                fitter.enabled = false;
-                Destroy(fitter);
-            }
-        }
-
-        // 移除文本块内部的垂直布局，避免文本高度被压缩
-        private static void removeVerticalLayout(GameObject target)
-        {
-            VerticalLayoutGroup layout = target.GetComponent<VerticalLayoutGroup>();
-            if (layout != null)
-            {
-                layout.enabled = false;
-                Destroy(layout);
-            }
-        }
-
-        // 设置固定布局尺寸
-        private static void setLayout(GameObject target, float minWidth, float minHeight, float preferredWidth, float preferredHeight)
-        {
-            LayoutElement layout = target.GetComponent<LayoutElement>();
-            if (layout == null)
-                layout = target.AddComponent<LayoutElement>();
-
-            layout.minWidth = minWidth;
-            layout.minHeight = minHeight;
-            layout.preferredWidth = preferredWidth;
-            layout.preferredHeight = preferredHeight;
-        }
-
-        // 设置弹性布局
-        private static void setFlexibleLayout(GameObject target)
-        {
-            LayoutElement layout = target.GetComponent<LayoutElement>();
-            if (layout == null)
-                layout = target.AddComponent<LayoutElement>();
-
-            layout.flexibleWidth = 1f;
-        }
-
-        // 设置带宽高约束的弹性布局
-        private static void setPreferredFlexibleLayout(GameObject target, float minWidth, float minHeight, float preferredWidth, float preferredHeight)
-        {
-            setLayout(target, minWidth, minHeight, preferredWidth, preferredHeight);
-            LayoutElement layout = target.GetComponent<LayoutElement>();
-            layout.flexibleWidth = 1f;
-        }
-
         // 解析画布相机
-        private Camera resolveCanvasCamera(RectTransform canvasRect)
+        private static Camera resolveCanvasCamera(RectTransform canvasRect)
         {
             Canvas canvas = canvasRect.GetComponentInParent<Canvas>();
             if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
@@ -829,25 +350,29 @@ namespace Module.Item
         // 固定字段行引用
         private class TooltipFieldRow
         {
+            public static readonly TooltipFieldRow Empty = new TooltipFieldRow(null, null, null);
+
             public readonly GameObject Root;
-            public readonly TextMeshProUGUI LabelText;
-            public readonly TextMeshProUGUI ValueText;
+            private readonly TextMeshProUGUI _labelText;
+            private readonly TextMeshProUGUI _valueText;
+
+            public bool IsVisible => Root != null && Root.activeSelf;
 
             public TooltipFieldRow(GameObject root, TextMeshProUGUI labelText, TextMeshProUGUI valueText)
             {
                 Root = root;
-                LabelText = labelText;
-                ValueText = valueText;
+                _labelText = labelText;
+                _valueText = valueText;
             }
 
             // 更新字段行文本
             public void Bind(string label, string value)
             {
-                if (LabelText != null)
-                    LabelText.text = label;
+                if (_labelText != null)
+                    _labelText.text = label;
 
-                if (ValueText != null)
-                    ValueText.text = value;
+                if (_valueText != null)
+                    _valueText.text = value;
 
                 SetVisible(true);
             }
@@ -859,6 +384,34 @@ namespace Module.Item
                     Root.SetActive(isVisible);
             }
         }
-    }
 
+        // 标签显示位引用
+        private class TooltipTagSlot
+        {
+            private readonly GameObject _root;
+            private readonly TextMeshProUGUI _labelText;
+
+            public TooltipTagSlot(GameObject root, TextMeshProUGUI labelText)
+            {
+                _root = root;
+                _labelText = labelText;
+            }
+
+            // 更新标签文本
+            public void Bind(string value)
+            {
+                if (_labelText != null)
+                    _labelText.text = value;
+
+                SetVisible(true);
+            }
+
+            // 设置标签显示状态
+            public void SetVisible(bool isVisible)
+            {
+                if (_root != null)
+                    _root.SetActive(isVisible);
+            }
+        }
+    }
 }
