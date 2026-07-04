@@ -52,6 +52,8 @@ namespace Common.Defines
         public const string Art_MainMenuStartHover = "Art/MainMenuView/开始游戏_点击";
         public const string Art_MainMenuSettingsHover = "Art/MainMenuView/设置_点击";
         public const string Art_MainMenuExitHover = "Art/MainMenuView/退出_点击";
+        public const string Art_SummaryNextRoundHover = "Art/SummaryView/BtnNextRoundHover";
+        public const string Art_SummaryBackHomeHover = "Art/SummaryView/BtnBackHomeHover";
         public const string Font_SourceHanSansSdf = "Fonts/siyuan/SourceHanSansSC-Normal SDF";
     }
 }

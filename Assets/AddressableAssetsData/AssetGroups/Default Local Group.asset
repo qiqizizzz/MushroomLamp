@@ -592,6 +592,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c10c2c46e21105c42a81b190e627139a
+    m_Address: Art/SummaryView/BtnNextRoundHover
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: de389ca3aa0389645a450f1b63907392
+    m_Address: Art/SummaryView/BtnBackHomeHover
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 3486431c0b0f71549adccf8a6955c090, type: 2}
   m_SchemaSet:
