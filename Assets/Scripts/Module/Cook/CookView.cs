@@ -28,6 +28,10 @@ namespace Module.Cook
     public class CookView : BaseView
     {
         private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
+        private const string POT_TRAY_PLUS_SPRITE = "Art/CookView/Pot/加号";
+        private const float POT_TRAY_PLUS_WIDTH = 28f;
+
+        private static Sprite S_PotTrayPlusSprite;
         private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
 
         private TextMeshProUGUI _txtTurn;
@@ -50,7 +54,6 @@ namespace Module.Cook
         private Transform _potArea;
 
         private TextMeshProUGUI _txtMagicBox;
-        private Image _imgPotBody;
         private Button _btnSetting;
         private Button _btnUndo;
         private Button _btnClear;
@@ -162,7 +165,6 @@ namespace Module.Cook
             initHandArea();
             initProcessArea();
             initPotArea();
-            initPotVisual();
             initPauseDialog();
             initHandFlyNodes();
         }
@@ -352,7 +354,10 @@ namespace Module.Cook
             }
 
             if (_btnSubmitTray != null)
-                _btnSubmitTray.gameObject.SetActive(cookModel.IsPotTrayFull);
+            {
+                _btnSubmitTray.gameObject.SetActive(true);
+                _btnSubmitTray.interactable = cookModel.IsPotTrayFull;
+            }
         }
 
         // 尝试将材料放入法阵槽位
@@ -583,7 +588,8 @@ namespace Module.Cook
             {
                 _btnSubmitTray.onClick.RemoveAllListeners();
                 _btnSubmitTray.onClick.AddListener(() => ApplyFunc(EventDefines.CookSubmitPotTray));
-                _btnSubmitTray.gameObject.SetActive(false);
+                _btnSubmitTray.gameObject.SetActive(true);
+                _btnSubmitTray.interactable = false;
             }
         }
 
@@ -603,11 +609,14 @@ namespace Module.Cook
         {
             if (_potTrayRoot == null) return;
 
+            setupPotTrayLayout();
+
             _potTrayItems = new CookPotTrayItem[capacity];
             for (int i = 0; i < capacity; i++)
             {
                 GameObject trayObj = new GameObject($"Tray_{i}", typeof(RectTransform));
                 trayObj.transform.SetParent(_potTrayRoot, false);
+                setupPotTraySlotLayout(trayObj);
                 Transform trayTf = trayObj.transform;
 
                 CookPotTrayItem trayItem = trayTf.GetComponent<CookPotTrayItem>();
@@ -616,38 +625,59 @@ namespace Module.Cook
 
                 trayItem.Init(this, i);
                 _potTrayItems[i] = trayItem;
+
+                if (i < capacity - 1)
+                    createPotTrayPlus(i);
             }
         }
 
-        // 初始化锅的临时视觉占位
-        private void initPotVisual()
+        // 配置暂存槽横向布局
+        private void setupPotTrayLayout()
         {
-            if (_potArea == null) return;
+            HorizontalLayoutGroup layoutGroup = _potTrayRoot.GetComponent<HorizontalLayoutGroup>();
+            if (layoutGroup == null)
+                layoutGroup = _potTrayRoot.gameObject.AddComponent<HorizontalLayoutGroup>();
 
-            Transform potBodyTf = _potArea.Find("Img_PotBody");
-            if (potBodyTf == null)
-            {
-                GameObject potBodyObj = new GameObject("Img_PotBody", typeof(RectTransform));
-                potBodyObj.transform.SetParent(_potArea, false);
-                potBodyTf = potBodyObj.transform;
-            }
+            layoutGroup.padding = new RectOffset(28, 28, 18, 18);
+            layoutGroup.childAlignment = TextAnchor.MiddleCenter;
+            layoutGroup.spacing = 8f;
+            layoutGroup.childControlWidth = true;
+            layoutGroup.childControlHeight = true;
+            layoutGroup.childForceExpandWidth = true;
+            layoutGroup.childForceExpandHeight = true;
+        }
 
-            _imgPotBody = potBodyTf.GetComponent<Image>();
-            if (_imgPotBody == null)
-                _imgPotBody = potBodyTf.gameObject.AddComponent<Image>();
+        // 配置单个暂存槽在 LayoutGroup 中的尺寸约束
+        private static void setupPotTraySlotLayout(GameObject trayObj)
+        {
+            LayoutElement layoutElement = trayObj.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+                layoutElement = trayObj.AddComponent<LayoutElement>();
 
-            _imgPotBody.color = new Color(0.95f, 0.5f, 0.16f, 0.9f);
-            _imgPotBody.raycastTarget = false;
+            layoutElement.minWidth = 58f;
+            layoutElement.minHeight = 58f;
+            layoutElement.preferredWidth = 78f;
+            layoutElement.preferredHeight = 78f;
+            layoutElement.flexibleWidth = 1f;
+            layoutElement.flexibleHeight = 1f;
+        }
 
-            if (potBodyTf is RectTransform rectTransform)
-            {
-                rectTransform.anchorMin = new Vector2(0.16f, 0.18f);
-                rectTransform.anchorMax = new Vector2(0.84f, 0.78f);
-                rectTransform.offsetMin = Vector2.zero;
-                rectTransform.offsetMax = Vector2.zero;
-            }
+        // 创建暂存槽之间的加号分隔
+        private void createPotTrayPlus(int index)
+        {
+            GameObject plusObj = new GameObject($"Img_Plus_{index}", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+            plusObj.transform.SetParent(_potTrayRoot, false);
 
-            _imgPotBody.transform.SetAsFirstSibling();
+            Image image = plusObj.GetComponent<Image>();
+            image.sprite = S_PotTrayPlusSprite ??= ArtAssetLoader.LoadSprite(POT_TRAY_PLUS_SPRITE, false);
+            image.color = image.sprite == null ? Color.clear : Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+
+            LayoutElement layoutElement = plusObj.GetComponent<LayoutElement>();
+            layoutElement.minWidth = POT_TRAY_PLUS_WIDTH;
+            layoutElement.preferredWidth = POT_TRAY_PLUS_WIDTH;
+            layoutElement.flexibleWidth = 0f;
         }
 
         // 初始化暂停确认弹窗
@@ -1319,6 +1349,12 @@ namespace Module.Cook
         }
 
         // 显示底部操作提示
+        public void ShowTip(string tip)
+        {
+            showTip(tip);
+        }
+
+        // 刷新底部操作提示
         private void showTip(string tip)
         {
             if (_txtTip != null)

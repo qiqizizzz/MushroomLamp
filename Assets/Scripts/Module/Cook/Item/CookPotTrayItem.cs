@@ -7,9 +7,9 @@
 */
 
 using DG.Tweening;
+using Common;
 using Module.Cook;
 using MVC.View;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,9 +21,12 @@ namespace Module.View
         IDropHandler, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        private readonly Color _emptyColor = new Color(0.90f, 0.74f, 0.50f, 0.85f);
-        private readonly Color _highlightColor = new Color(0.99f, 0.90f, 0.42f, 1f);
-        private readonly Color _occupiedColor = new Color(0.80f, 0.56f, 0.34f, 1f);
+        private const string TRAY_SLOT_SPRITE = "Art/CookView/Pot/摆放小框";
+
+        private static Sprite S_TraySlotSprite;
+
+        private readonly Color _emptyColor = Color.white;
+        private readonly Color _highlightColor = new Color(1f, 0.94f, 0.66f, 1f);
 
         private CookView _view;
         private int _trayIndex;
@@ -35,8 +38,6 @@ namespace Module.View
         private Image _imgBackground;
         private Image _imgFlash;
         private Image _imgIcon;
-        private TextMeshProUGUI _txtName;
-        private TextMeshProUGUI _txtScore;
         private GameObject _dragIconObject;
         private RectTransform _dragIconRect;
 
@@ -52,7 +53,6 @@ namespace Module.View
         {
             _view = view;
             _trayIndex = trayIndex;
-            applyFont(view == null ? null : view.GetFontAsset());
         }
 
         // 绑定暂存槽材料；isFull=整个 PotTray 已集满
@@ -69,27 +69,13 @@ namespace Module.View
                 _imgIcon.enabled = material?.Icon != null;
             }
 
-            if (_txtName != null)
-                _txtName.text = material?.Config?.name ?? "空";
-
             if (_imgBackground != null)
-                _imgBackground.color = _hasMaterial ? _occupiedColor : _emptyColor;
+                _imgBackground.color = _imgBackground.sprite == null ? Color.clear : _emptyColor;
 
             if (isFull && _hasMaterial)
-            {
                 startFlash();
-                if (_txtScore != null)
-                {
-                    _txtScore.gameObject.SetActive(true);
-                    _txtScore.text = $"+{trayPreviewScore:0.#}";
-                }
-            }
             else
-            {
                 stopFlash();
-                if (_txtScore != null)
-                    _txtScore.gameObject.SetActive(false);
-            }
         }
 
         private void startFlash()
@@ -123,6 +109,13 @@ namespace Module.View
             _view?.HideItemTooltip();
             if (_view == null || eventData.pointerDrag == null) return;
 
+            CookMaterialItem materialItem = eventData.pointerDrag.GetComponent<CookMaterialItem>();
+            if (materialItem != null)
+            {
+                _view.ShowTip("先把材料放入法阵并结束回合煮过后，再拖入锅中");
+                return;
+            }
+
             // 来自法阵槽：移到暂存槽
             CookSlotItem slotItem = eventData.pointerDrag.GetComponent<CookSlotItem>();
             if (slotItem != null && slotItem.HasMaterial)
@@ -144,7 +137,7 @@ namespace Module.View
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (_imgBackground != null && !_hasMaterial)
-                _imgBackground.color = _highlightColor;
+                _imgBackground.color = _imgBackground.sprite == null ? Color.clear : _highlightColor;
 
             if (_hasMaterial && _materialData != null)
                 _view?.ShowItemTooltip(_materialData, eventData);
@@ -159,7 +152,7 @@ namespace Module.View
         public void OnPointerExit(PointerEventData eventData)
         {
             if (_imgBackground != null && !_hasMaterial)
-                _imgBackground.color = _emptyColor;
+                _imgBackground.color = _imgBackground.sprite == null ? Color.clear : _emptyColor;
 
             _view?.HideItemTooltip();
         }
@@ -200,21 +193,23 @@ namespace Module.View
             _imgBackground = getOrCreateImage("Img_Background", _emptyColor);
             _imgFlash = getOrCreateImage("Img_Flash", new Color(1f, 0.95f, 0.3f, 0f));
             _imgIcon = getOrCreateImage("Img_Icon", Color.white);
-            _txtName = getOrCreateText("Txt_Name", 18);
-            _txtScore = getOrCreateText("Txt_Score", 22);
-
-            _txtScore.color = new Color(0.1f, 0.55f, 0.1f, 1f);
-            _txtScore.fontStyle = FontStyles.Bold;
+            removeGeneratedPlaceholderTexts();
 
             setupRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
             setupRect(_imgFlash.rectTransform, Vector2.zero, Vector2.one);
             setupRect(_imgIcon.rectTransform, new Vector2(0.18f, 0.28f), new Vector2(0.82f, 0.85f));
-            setupRect(_txtName.rectTransform, new Vector2(0.05f, 0.02f), new Vector2(0.95f, 0.24f));
-            setupRect(_txtScore.rectTransform, new Vector2(0.05f, 0.74f), new Vector2(0.95f, 0.98f));
 
+            _imgBackground.sprite = S_TraySlotSprite ??= ArtAssetLoader.LoadSprite(TRAY_SLOT_SPRITE, false);
+            _imgBackground.color = _imgBackground.sprite == null ? Color.clear : _emptyColor;
+            _imgBackground.type = Image.Type.Simple;
+            _imgBackground.preserveAspect = true;
+            _imgBackground.raycastTarget = true;
             _imgFlash.raycastTarget = false;
             _imgFlash.gameObject.SetActive(false);
-            _txtScore.gameObject.SetActive(false);
+            _imgIcon.preserveAspect = true;
+            _imgIcon.raycastTarget = false;
+            _imgBackground.transform.SetAsFirstSibling();
+            _imgIcon.transform.SetAsLastSibling();
         }
 
         private Image getOrCreateImage(string childName, Color color)
@@ -236,34 +231,6 @@ namespace Module.View
                 image.raycastTarget = false;
 
             return image;
-        }
-
-        private TextMeshProUGUI getOrCreateText(string childName, float fontSize)
-        {
-            Transform child = transform.Find(childName);
-            if (child == null)
-            {
-                GameObject obj = new GameObject(childName, typeof(RectTransform));
-                obj.transform.SetParent(transform, false);
-                child = obj.transform;
-            }
-
-            TextMeshProUGUI text = child.GetComponent<TextMeshProUGUI>();
-            if (text == null)
-                text = child.gameObject.AddComponent<TextMeshProUGUI>();
-
-            text.fontSize = fontSize;
-            text.alignment = TextAlignmentOptions.Center;
-            text.color = new Color(0.16f, 0.09f, 0.05f, 1f);
-            text.enableWordWrapping = false;
-            text.raycastTarget = false;
-            return text;
-        }
-
-        private void applyFont(TMP_FontAsset fontAsset)
-        {
-            if (fontAsset != null && _txtName != null)
-                _txtName.font = fontAsset;
         }
 
         private void createDragIcon(Sprite sprite)
@@ -322,8 +289,6 @@ namespace Module.View
         {
             if (_imgIcon != null && _imgIcon.sprite != null)
                 _imgIcon.enabled = isVisible;
-            if (_txtName != null)
-                _txtName.enabled = isVisible;
         }
 
         private static void setupRect(RectTransform rt, Vector2 anchorMin, Vector2 anchorMax)
@@ -333,6 +298,25 @@ namespace Module.View
             rt.anchorMax = anchorMax;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
+        }
+
+        // 清理旧版本自动生成的暂存槽文字占位
+        private void removeGeneratedPlaceholderTexts()
+        {
+            removeChildIfExists("Txt_Name");
+            removeChildIfExists("Txt_Score");
+        }
+
+        // 删除指定子节点，兼容运行时与编辑态初始化
+        private void removeChildIfExists(string childName)
+        {
+            Transform child = transform.Find(childName);
+            if (child == null) return;
+
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
         }
     }
 }

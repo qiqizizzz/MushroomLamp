@@ -17,63 +17,43 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 5adb6627149c7334b94573b6f1cbd12e
   m_SerializeEntries:
-  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
-    m_Address: Art/ShopView/材料箱样本
+  - m_GUID: 041955b8ed99e3e4ea215b6621aff6a2
+    m_Address: "Art/CookView/\u5C0F\u5929\u4F7F"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 633f5b55cf74e634b8fa378548d44825
-    m_Address: Art/ShopView/IMG_9172
+  - m_GUID: 04adf33bb83889c47a3a4e4510048740
+    m_Address: "Art/StoreView/\u80CC\u5305\u5C55\u5F00ui"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1defe2d95bfff96468f88af3cc1f0f09
-    m_Address: Art/SelectBoxView/IMG_9170
+  - m_GUID: 06392d292acdd9e4aa71c122f2aace28
+    m_Address: "Art/SelectBoxView/\u53F3\u6ED1\u52A8"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7dc8f32c7033d1a4098aa1e02d21ad43
-    m_Address: Art/ShopView/IMG_9173
+  - m_GUID: 08da418fcf1d4ff4c812794c12e19ef6
+    m_Address: "Art/CookView/\u7814\u78E8\u68D2"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 36f72817d068ea44db82aa7886879b94
-    m_Address: Art/SelectBoxView/IMG_9171
+  - m_GUID: 095aa4258a2caed4ba375878cecd9ccc
+    m_Address: "Art/CookView/\u65B9\u6846"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c2678f104d7680c439a06d6edc9a77ec
-    m_Address: Art/SelectBoxView/IMG_9176
+  - m_GUID: 0ae622f1604e2404cb22e03784289fad
+    m_Address: "Art/ShopView/\u9884\u89C8"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b77e2572ea429c9428bb0834286efe1a
-    m_Address: Art/SelectBoxView/IMG_9177
+  - m_GUID: 0b588101771c9c14787457ffeff29846
+    m_Address: "Art/CookView/\u80CC\u666F"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 18cbbeac9260cb448b6f9fdbd0c067c8
-    m_Address: Art/MainMenuView/开始游戏_点击
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 523a99d99c6b4874a85f9d419f5721f5
-    m_Address: Art/MainMenuView/设置_点击
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f5ffe36ca0388024699172f86ced6b7e
-    m_Address: Art/MainMenuView/退出_点击
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
-    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b7c4e2f1a3567890abcdef1234567890
-    m_Address: ShopCatalog
+  - m_GUID: 0db6f33abb364a2449048afa23b6f7e4
+    m_Address: "Art/SelectBoxView/\u56F0\u96BE\u9009\u62E9\u754C\u9762"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -87,8 +67,33 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16572148e42c47fa9448425714db67ed
+    m_Address: "Art/RecycleView/\u6750\u6599\u4ECB\u7ECDui"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 18cbbeac9260cb448b6f9fdbd0c067c8
+    m_Address: "Art/MainMenuView/\u5F00\u59CB\u6E38\u620F_\u70B9\u51FB"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1b17189176ac28d46bd20d6f8e8d10c2
     m_Address: Levels/LevelCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cc046238fd24fda815aabdeed4d7753
+    m_Address: "Art/BlackjackView/\u6251\u514B\u724C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d741c631ef7cc24aa5bebd72713975d
+    m_Address: Fonts/siyuan/SourceHanSansSC-Normal SDF
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1defe2d95bfff96468f88af3cc1f0f09
+    m_Address: Art/SelectBoxView/IMG_9170
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -102,8 +107,58 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25af57485fc7488fa6009c33dbb161b5
+    m_Address: "Art/RecycleView/\u80CC\u5305\u5185\u9053\u5177\u6837\u672C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2692d2ac8943de247b0517b22952ce22
+    m_Address: Art/BG_img/bg_SelectView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26e68737be0e5fe4fb6865eb9741a168
+    m_Address: "Art/CookView/\u653E\u7F6E"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2898968468b6402790d36a1b2b446054
+    m_Address: "Art/RecycleView/\u8FD4\u56DE"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2bba94d04925f3e4db1bacf28e610beb
     m_Address: Levels/Stages/Stage_mineral_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30a0a598d8765fe4d8ba6563e5bc5909
+    m_Address: "Art/StoreView/\u5C0F\u5929\u4F7F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36f72817d068ea44db82aa7886879b94
+    m_Address: Art/SelectBoxView/IMG_9171
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 37d7b96d0d1357e499b494b9955f1b94
+    m_Address: "Art/StoreView/\u8FD4\u56DE"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 383683da7a9d42d8a16d79b0815dc676
+    m_Address: "Art/RecycleView/\u80CC\u5305"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3afabd35c035a6f4bb0c2dd2c956c782
+    m_Address: Art/SelectBoxView/5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3e4571bfa77f31e47bbb504804732588
+    m_Address: "Art/SelectBoxView/\u6750\u6599\u7BB1\u56FE\u6807\uFF08\u52A8\u7269\u7EC4\uFF09"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -112,8 +167,53 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48a8ce10cc5fad94baa3753300e3cf00
+    m_Address: "Art/MainMenuView/\u8BBE\u7F6E_\u9ED8\u8BA4"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ed8e68cdf851ff4aaf1e4c3fa215551
+    m_Address: "Art/CookView/\u6258\u76D8"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51d2429cbec4d344aaf3cca6c96675b3
+    m_Address: "Art/CookView/\u9884\u89C8"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 523a99d99c6b4874a85f9d419f5721f5
+    m_Address: "Art/MainMenuView/\u8BBE\u7F6E_\u70B9\u51FB"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 53d5f6dbba04b2441aadba23d4585180
+    m_Address: "Art/CookView/Pot/\u52A0\u53F7"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5541095182bb65c4fa1be606d0fc796b
+    m_Address: Art/SelectBoxView/6
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 557b20f8471ef1c43afb285aa89d2ff0
     m_Address: Sound/SoundCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5800117594255e94180fecf94c8a415c
+    m_Address: "Art/MainMenuView/\u5F00\u59CB\u6E38\u620F_\u9ED8\u8BA4"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59b94ee5eeed4307b1619d06dc9c5140
+    m_Address: "Art/RecycleView/\u56DE\u6536\u6876"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59d5b15ad81b44749a45742c0d2340a9
+    m_Address: "Art/CookView/\u9053\u5177\u6837\u672C"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -122,8 +222,63 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62eaff77f5e369c42ae774d69f828dff
+    m_Address: "Art/StoreView/\u80CC\u5305\u5185\u9053\u5177\u6837\u672C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 633f5b55cf74e634b8fa378548d44825
+    m_Address: Art/ShopView/IMG_9172
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6374ef9ad6b8f5546904143bc0dbbc87
+    m_Address: "Art/SelectBoxView/\u8FD4\u56DE"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64d93a6f6d524f14ba78116b3a53b692
+    m_Address: Art/Spine/01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 658c529fb98d0494e892f6f416969bd8
     m_Address: Levels/Stages/Stage_spice_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67ca62478c9a3b846b2ab7c0b6dac195
+    m_Address: "Art/StoreView/\u6750\u6599\u7BB1"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 69d0ad7005d2d6c4dbc7923d777ae878
+    m_Address: Art/Spine/AngelPuppy/Angel Puppy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c660f8702ec5b341869d6db66fae60e
+    m_Address: "Art/CookView/\u9B54\u6CD5\u9635\uFF08\u7A7A\u767D\uFF09"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6dd418255208d4a408ee3393cd548921
+    m_Address: "Art/MainMenuView/\u56FE\u9274_\u672A\u89E3\u9501"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6eb389ca9fc818d4f896abe5f1f0cb09
+    m_Address: "Art/ShopView/\u4E4C\u9E26"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 71d0005710ab45040a12afa42c6d824d
+    m_Address: "Art/StoreView/\u9053\u5177\u6837\u672C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 743151f34354b3d478ccbddd48c0cd4a
+    m_Address: "Art/CookView/\u5927\u5706"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -132,8 +287,53 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7af057d348aa4374fa079e01cc46fd40
+    m_Address: "Art/CookView/\u9505\u70DF\u96FE"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7b1ce7a1b0a6e11419159cca0aaa1c84
+    m_Address: Art/Spine/DevilPuppy/Devilish puppy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dc8f32c7033d1a4098aa1e02d21ad43
+    m_Address: Art/ShopView/IMG_9173
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 86cc1dbdc6145be49a6a8b8aaf676d9a
+    m_Address: "Art/StoreView/\u80CC\u5305"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 883e506add4955741b565df676bb88a6
+    m_Address: "Art/StoreView/\u5206\u6570\u663E\u793Aui"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 890d89df3dfa1484c96f16ce38674b23
+    m_Address: "Art/CookView/\u9505"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c7ffc9ee61ece94daf9f1c243f3b008
+    m_Address: "Art/CookView/\u9505\u67B6\u5B50"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8db7fa5cd5ae01247a3abe0c94e630e3
     m_Address: SelectBoxCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e202cefd89085f4487acd384902e42d
+    m_Address: "Art/ShopView/\u9053\u5177\u6837\u672C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 910e66dcbad249c69b7d8e5800c6f1aa
+    m_Address: "Art/BlackjackView/\u9B54\u76D2"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -142,8 +342,43 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9670fa87c35e70b44bf7bb4fdd0646be
+    m_Address: "Art/StoreView/\u94B1\u5E01\u663E\u793Aui"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9883d83410cec83418df30aadf690d08
+    m_Address: "Art/SelectBoxView/\u6750\u6599\u8BF4\u660E\u754C\u9762"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d60321163f701843b668a8250c8f897
+    m_Address: "Art/CookView/\u5C0F\u5706"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dd0ae803d924abfa5ba6fbcebd015fd
+    m_Address: "Art/RecycleView/\u80CC\u666F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f95436171a8b014a958981fd65eb251
+    m_Address: "Art/CookView/\u8BA1\u5206\u5668"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9fa1367fa70f16046aa4f74cd1211c44
     m_Address: Levels/Stages/Stage_spice_easy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a02b0679523b574458327e83c3e3ca35
+    m_Address: "Art/SelectBoxView/\u5DE6\u6ED1\u52A8"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a12dd1de2ec2fa0449490debf89edbdf
+    m_Address: "Art/ShopView/\u6750\u6599\u7BB1\u6837\u672C"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -152,8 +387,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a54e75d9607e799478ec856f5edb4ca5
+    m_Address: "Art/ShopView/\u544A\u793A\u724C"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a8897fc2e1572a5408802743b119e67a
     m_Address: Art/Card_img/pumpkin
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a965b610e30c8f54baab19e4775d932e
+    m_Address: Art/SelectBoxView/4
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -162,8 +407,73 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aad8859a62badf344a064ce62ba88f8f
+    m_Address: "Art/MainMenuView/\u9000\u51FA_\u9ED8\u8BA4"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: adb593bf4f07d504699f6a308c3bff23
+    m_Address: "Art/StoreView/\u6750\u6599\u4ECB\u7ECDui"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: adcc6ea3ebac46c6b0f25b02ac32cdb3
+    m_Address: "Art/BlackjackView/\u80CC\u666F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ae1e18bf3d11ad447be66ab52ad4a52d
+    m_Address: Art/SelectBoxView/2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ae418352e96c56041a735676e2e25f05
     m_Address: Levels/Stages/Stage_mineral_easy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af9f381f021006245ac435a5892d5a75
+    m_Address: "Art/ShopView/\u80CC\u666F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b11059d15fff6e841aaa8aa73c57afc4
+    m_Address: "Art/SelectBoxView/\u6750\u6599\u7BB1\uFF08\u52A8\u7269\u7EC4\uFF09"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6644c1adf1978942ba2d1bb754f580f
+    m_Address: "Art/SelectBoxView/\u80CC\u666F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b77e2572ea429c9428bb0834286efe1a
+    m_Address: Art/SelectBoxView/IMG_9177
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7c4e2f1a3567890abcdef1234567890
+    m_Address: ShopCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be1fb4f2b28337641ac1c1811590cd44
+    m_Address: Art/BG_img/bg_mainmenu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bff334a3bb6bd6844a0a0ba9011bd742
+    m_Address: "Art/SelectBoxView/\u6750\u6599\u7BB1\u56FE\u6807\uFF08\u690D\u7269\u7EC4\uFF09"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c10c2c46e21105c42a81b190e627139a
+    m_Address: Art/SummaryView/BtnNextRoundHover
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2678f104d7680c439a06d6edc9a77ec
+    m_Address: Art/SelectBoxView/IMG_9176
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -177,398 +487,38 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d4337ac6d5238ea41be595efcc50e3c5
-    m_Address: MaterialCatalog
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: db62ccc3d4f32da43bb07aed1327f368
-    m_Address: Levels/Stages/Stage_herb_hard
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e4a346a59365930429d805a697a01188
-    m_Address: Art/Card_img/carrot
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ede89e5c428248d4ea6abedb863c9498
-    m_Address: Art/Card_img/mushroom
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f4e4cfbbede447746b0beac2ffa665ef
-    m_Address: Art/BG_img/bg_selectView
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2692d2ac8943de247b0517b22952ce22
-    m_Address: Art/BG_img/bg_SelectView
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: be1fb4f2b28337641ac1c1811590cd44
-    m_Address: Art/BG_img/bg_mainmenu
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f32ce367e15f40b98634592e94dd60e6
-    m_Address: Art/BlackjackView/对话框
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dd984bacee094f89a3387702235723a7
-    m_Address: Art/BlackjackView/小天使
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ee777d7b88254e478521ad8bd277b348
-    m_Address: Art/BlackjackView/小恶魔
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1cc046238fd24fda815aabdeed4d7753
-    m_Address: Art/BlackjackView/扑克牌
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: adcc6ea3ebac46c6b0f25b02ac32cdb3
-    m_Address: Art/BlackjackView/背景
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 910e66dcbad249c69b7d8e5800c6f1aa
-    m_Address: Art/BlackjackView/魔盒
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 743151f34354b3d478ccbddd48c0cd4a
-    m_Address: Art/CookView/大圆
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9d60321163f701843b668a8250c8f897
-    m_Address: Art/CookView/小圆
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 095aa4258a2caed4ba375878cecd9ccc
-    m_Address: Art/CookView/方框
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 041955b8ed99e3e4ea215b6621aff6a2
-    m_Address: Art/CookView/小天使
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cd802ae8e3046824a8c3a45ba8655608
-    m_Address: Art/CookView/小恶魔
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4ed8e68cdf851ff4aaf1e4c3fa215551
-    m_Address: Art/CookView/托盘
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 26e68737be0e5fe4fb6865eb9741a168
-    m_Address: Art/CookView/放置
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 08da418fcf1d4ff4c812794c12e19ef6
-    m_Address: Art/CookView/研磨棒
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ff1545c01310c7642b5649ceddda4c9e
-    m_Address: Art/CookView/研磨碗
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0b588101771c9c14787457ffeff29846
-    m_Address: Art/CookView/背景
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9f95436171a8b014a958981fd65eb251
-    m_Address: Art/CookView/计分器
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 59d5b15ad81b44749a45742c0d2340a9
-    m_Address: Art/CookView/道具样本
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 890d89df3dfa1484c96f16ce38674b23
-    m_Address: Art/CookView/锅
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8c7ffc9ee61ece94daf9f1c243f3b008
-    m_Address: Art/CookView/锅架子
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7af057d348aa4374fa079e01cc46fd40
-    m_Address: Art/CookView/锅烟雾
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 51d2429cbec4d344aaf3cca6c96675b3
-    m_Address: Art/CookView/预览
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d64cdbe8906f2b84481e2ac4e0255e45
-    m_Address: Art/CookView/魔法阵
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6c660f8702ec5b341869d6db66fae60e
-    m_Address: Art/CookView/魔法阵（空白）
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: edada0ee324563540841bfd90be34590
-    m_Address: Art/CookView/魔盒
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6dd418255208d4a408ee3393cd548921
-    m_Address: Art/MainMenuView/图鉴_未解锁
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5800117594255e94180fecf94c8a415c
-    m_Address: Art/MainMenuView/开始游戏_默认
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 48a8ce10cc5fad94baa3753300e3cf00
-    m_Address: Art/MainMenuView/设置_默认
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: aad8859a62badf344a064ce62ba88f8f
-    m_Address: Art/MainMenuView/退出_默认
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 06392d292acdd9e4aa71c122f2aace28
-    m_Address: Art/SelectBoxView/右滑动
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0db6f33abb364a2449048afa23b6f7e4
-    m_Address: Art/SelectBoxView/困难选择界面
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c881a5531908b294bb9bbab9cb140247
-    m_Address: Art/SelectBoxView/小天使
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a02b0679523b574458327e83c3e3ca35
-    m_Address: Art/SelectBoxView/左滑动
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bff334a3bb6bd6844a0a0ba9011bd742
-    m_Address: Art/SelectBoxView/材料箱图标（植物组）
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: da05969d2fbeb16488eed684e67614ce
-    m_Address: Art/SelectBoxView/材料箱（植物组）
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b11059d15fff6e841aaa8aa73c57afc4
-    m_Address: Art/SelectBoxView/材料箱（动物组）
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3e4571bfa77f31e47bbb504804732588
-    m_Address: Art/SelectBoxView/材料箱图标（动物组）
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9883d83410cec83418df30aadf690d08
-    m_Address: Art/SelectBoxView/材料说明界面
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b6644c1adf1978942ba2d1bb754f580f
-    m_Address: Art/SelectBoxView/背景
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6374ef9ad6b8f5546904143bc0dbbc87
-    m_Address: Art/SelectBoxView/返回
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6eb389ca9fc818d4f896abe5f1f0cb09
-    m_Address: Art/ShopView/乌鸦
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a54e75d9607e799478ec856f5edb4ca5
-    m_Address: Art/ShopView/告示牌
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cdab1bbcb922c484fb887bf72a6f81c1
-    m_Address: Art/ShopView/回收桶
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: af9f381f021006245ac435a5892d5a75
-    m_Address: Art/ShopView/背景
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8e202cefd89085f4487acd384902e42d
-    m_Address: Art/ShopView/道具样本
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0ae622f1604e2404cb22e03784289fad
-    m_Address: Art/ShopView/预览
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 64d93a6f6d524f14ba78116b3a53b692
-    m_Address: Art/Spine/01
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 69d0ad7005d2d6c4dbc7923d777ae878
-    m_Address: Art/Spine/AngelPuppy/Angel Puppy
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f8e7d6c5b4a39281706f5e4d3c2b1a09
-    m_Address: Art/Spine/CookPageAngel/CookPageAngel
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c7e8f9a0b1d234567890abcd12345678
     m_Address: Art/Spine/CookPageDevil/CookPageDevil
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7b1ce7a1b0a6e11419159cca0aaa1c84
-    m_Address: Art/Spine/DevilPuppy/Devilish puppy
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 883e506add4955741b565df676bb88a6
-    m_Address: Art/StoreView/分数显示ui
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 30a0a598d8765fe4d8ba6563e5bc5909
-    m_Address: Art/StoreView/小天使
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: adb593bf4f07d504699f6a308c3bff23
-    m_Address: Art/StoreView/材料介绍ui
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 67ca62478c9a3b846b2ab7c0b6dac195
-    m_Address: Art/StoreView/材料箱
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 86cc1dbdc6145be49a6a8b8aaf676d9a
-    m_Address: Art/StoreView/背包
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 62eaff77f5e369c42ae774d69f828dff
-    m_Address: Art/StoreView/背包内道具样本
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 04adf33bb83889c47a3a4e4510048740
-    m_Address: Art/StoreView/背包展开ui
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f2f8dba699806b942bf0cebd33e379ce
-    m_Address: Art/StoreView/背景
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 37d7b96d0d1357e499b494b9955f1b94
-    m_Address: Art/StoreView/返回
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 71d0005710ab45040a12afa42c6d824d
-    m_Address: Art/StoreView/道具样本
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9670fa87c35e70b44bf7bb4fdd0646be
-    m_Address: Art/StoreView/钱币显示ui
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 59b94ee5eeed4307b1619d06dc9c5140
-    m_Address: Art/RecycleView/回收桶
+  - m_GUID: c881a5531908b294bb9bbab9cb140247
+    m_Address: "Art/SelectBoxView/\u5C0F\u5929\u4F7F"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ca931041386c43f5b72bfb5e5acd69ee
-    m_Address: Art/RecycleView/小恶魔
+    m_Address: "Art/RecycleView/\u5C0F\u6076\u9B54"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 16572148e42c47fa9448425714db67ed
-    m_Address: Art/RecycleView/材料介绍ui
+  - m_GUID: cd802ae8e3046824a8c3a45ba8655608
+    m_Address: "Art/CookView/\u5C0F\u6076\u9B54"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 383683da7a9d42d8a16d79b0815dc676
-    m_Address: Art/RecycleView/背包
+  - m_GUID: cdab1bbcb922c484fb887bf72a6f81c1
+    m_Address: "Art/ShopView/\u56DE\u6536\u6876"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 25af57485fc7488fa6009c33dbb161b5
-    m_Address: Art/RecycleView/背包内道具样本
+  - m_GUID: d4337ac6d5238ea41be595efcc50e3c5
+    m_Address: MaterialCatalog
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d836596a1d584254b52a64cf56882eff
-    m_Address: Art/RecycleView/背包展开ui
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9dd0ae803d924abfa5ba6fbcebd015fd
-    m_Address: Art/RecycleView/背景
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2898968468b6402790d36a1b2b446054
-    m_Address: Art/RecycleView/返回
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fd624e28f2b92c74b9d9a59607adaa8f
-    m_Address: Art/SelectBoxView/1
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ae1e18bf3d11ad447be66ab52ad4a52d
-    m_Address: Art/SelectBoxView/2
+  - m_GUID: d64cdbe8906f2b84481e2ac4e0255e45
+    m_Address: "Art/CookView/\u9B54\u6CD5\u9635"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -577,28 +527,88 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a965b610e30c8f54baab19e4775d932e
-    m_Address: Art/SelectBoxView/4
+  - m_GUID: d836596a1d584254b52a64cf56882eff
+    m_Address: "Art/RecycleView/\u80CC\u5305\u5C55\u5F00ui"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3afabd35c035a6f4bb0c2dd2c956c782
-    m_Address: Art/SelectBoxView/5
+  - m_GUID: da05969d2fbeb16488eed684e67614ce
+    m_Address: "Art/SelectBoxView/\u6750\u6599\u7BB1\uFF08\u690D\u7269\u7EC4\uFF09"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5541095182bb65c4fa1be606d0fc796b
-    m_Address: Art/SelectBoxView/6
+  - m_GUID: db62ccc3d4f32da43bb07aed1327f368
+    m_Address: Levels/Stages/Stage_herb_hard
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c10c2c46e21105c42a81b190e627139a
-    m_Address: Art/SummaryView/BtnNextRoundHover
+  - m_GUID: dd984bacee094f89a3387702235723a7
+    m_Address: "Art/BlackjackView/\u5C0F\u5929\u4F7F"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: de389ca3aa0389645a450f1b63907392
     m_Address: Art/SummaryView/BtnBackHomeHover
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e4a346a59365930429d805a697a01188
+    m_Address: Art/Card_img/carrot
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e7e7b3cfdb496774f9f6e92033fac8f0
+    m_Address: "Art/CookView/Pot/\u6446\u653E\u5C0F\u6846"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: edada0ee324563540841bfd90be34590
+    m_Address: "Art/CookView/\u9B54\u76D2"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ede89e5c428248d4ea6abedb863c9498
+    m_Address: Art/Card_img/mushroom
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee777d7b88254e478521ad8bd277b348
+    m_Address: "Art/BlackjackView/\u5C0F\u6076\u9B54"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2f8dba699806b942bf0cebd33e379ce
+    m_Address: "Art/StoreView/\u80CC\u666F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f32ce367e15f40b98634592e94dd60e6
+    m_Address: "Art/BlackjackView/\u5BF9\u8BDD\u6846"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4e4cfbbede447746b0beac2ffa665ef
+    m_Address: Art/BG_img/bg_selectView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5ffe36ca0388024699172f86ced6b7e
+    m_Address: "Art/MainMenuView/\u9000\u51FA_\u70B9\u51FB"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8e7d6c5b4a39281706f5e4d3c2b1a09
+    m_Address: Art/Spine/CookPageAngel/CookPageAngel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd624e28f2b92c74b9d9a59607adaa8f
+    m_Address: Art/SelectBoxView/1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff1545c01310c7642b5649ceddda4c9e
+    m_Address: "Art/CookView/\u7814\u78E8\u7897"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
