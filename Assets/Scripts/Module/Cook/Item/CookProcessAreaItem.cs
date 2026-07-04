@@ -15,11 +15,8 @@ using UnityEngine.UI;
 namespace Module.Cook
 {
     // 烹饪加工区 UI 项，负责接收材料拖拽并触发研磨
-    public class CookProcessAreaItem : BaseItem, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+    public class CookProcessAreaItem : BaseItem, IDropHandler
     {
-        private readonly Color _idleColor = new Color(0.24f, 0.18f, 0.29f, 0.88f);
-        private readonly Color _highlightColor = new Color(0.43f, 0.29f, 0.52f, 0.96f);
-
         private CookView _view;
         private Image _imgBackground;
 
@@ -34,7 +31,12 @@ namespace Module.Cook
             _view = view;
             _imgBackground ??= GetComponent<Image>();
             if (_imgBackground != null)
-                _imgBackground.color = _idleColor;
+            {
+                Color clearColor = _imgBackground.color;
+                clearColor.a = 0f;
+                _imgBackground.color = clearColor;
+                _imgBackground.raycastTarget = true;
+            }
         }
 
         public void OnDrop(PointerEventData eventData)
@@ -46,18 +48,6 @@ namespace Module.Cook
 
             if (_view.TryProcessMaterial(materialItem))
                 materialItem.AcceptDropAndDestroy();
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (_imgBackground != null)
-                _imgBackground.color = _highlightColor;
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            if (_imgBackground != null)
-                _imgBackground.color = _idleColor;
         }
     }
 }
