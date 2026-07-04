@@ -164,8 +164,7 @@ namespace Module.Shop
             if (slotData.isBox)
             {
                 return $"购买「{slotData.name}」材料箱\n" +
-                       $"花费 {slotData.price} 金币，剩余 {remain} 金币。\n" +
-                       "购买后将进入选卡界面，从三张卡牌中选择一张加入牌组。";
+                       $"花费 {slotData.price} 金币，剩余 {remain} 金币。\n";
             }
 
             return $"购买「{slotData.name}」\n花费 {slotData.price} 金币，剩余 {remain} 金币。";
