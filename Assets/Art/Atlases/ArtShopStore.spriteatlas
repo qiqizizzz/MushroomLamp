@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ArtShopStore
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: WebGL
+      m_MaxTextureSize: 4096
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 1
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 633f5b55cf74e634b8fa378548d44825, type: 3}
+    - {fileID: 2800000, guid: 7dc8f32c7033d1a4098aa1e02d21ad43, type: 3}
+    - {fileID: 2800000, guid: 6eb389ca9fc818d4f896abe5f1f0cb09, type: 3}
+    - {fileID: 2800000, guid: e0a740363f37391449c29bc800835c29, type: 3}
+    - {fileID: 2800000, guid: b78cbf14e5c05764f93bbfae3517d28d, type: 3}
+    - {fileID: 2800000, guid: 883e506add4955741b565df676bb88a6, type: 3}
+    - {fileID: 2800000, guid: f02580d3d54d1674c9fb77d3dc6da3c7, type: 3}
+    - {fileID: 2800000, guid: a54e75d9607e799478ec856f5edb4ca5, type: 3}
+    - {fileID: 2800000, guid: cdab1bbcb922c484fb887bf72a6f81c1, type: 3}
+    - {fileID: 2800000, guid: 30a0a598d8765fe4d8ba6563e5bc5909, type: 3}
+    - {fileID: 2800000, guid: 83b16ee56301aa843babaf3741ed4590, type: 3}
+    - {fileID: 2800000, guid: adb593bf4f07d504699f6a308c3bff23, type: 3}
+    - {fileID: 2800000, guid: 5ec4fe196a254324980970943f97de2b, type: 3}
+    - {fileID: 2800000, guid: 67ca62478c9a3b846b2ab7c0b6dac195, type: 3}
+    - {fileID: 2800000, guid: a12dd1de2ec2fa0449490debf89edbdf, type: 3}
+    - {fileID: 2800000, guid: 86cc1dbdc6145be49a6a8b8aaf676d9a, type: 3}
+    - {fileID: 2800000, guid: 62eaff77f5e369c42ae774d69f828dff, type: 3}
+    - {fileID: 2800000, guid: 04adf33bb83889c47a3a4e4510048740, type: 3}
+    - {fileID: 2800000, guid: 37d7b96d0d1357e499b494b9955f1b94, type: 3}
+    - {fileID: 2800000, guid: f6e6d6db4d59d1b48acdca4314202a7c, type: 3}
+    - {fileID: 2800000, guid: 71d0005710ab45040a12afa42c6d824d, type: 3}
+    - {fileID: 2800000, guid: 8e202cefd89085f4487acd384902e42d, type: 3}
+    - {fileID: 2800000, guid: 9670fa87c35e70b44bf7bb4fdd0646be, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: ArtShopStore
+  m_IsVariant: 0
