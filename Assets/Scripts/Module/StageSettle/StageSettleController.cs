@@ -7,8 +7,11 @@
 */
 
 using Common.Defines;
+using Module.Level;
+using Module.Player;
 using MVC;
 using MVC.Controller;
+using MVC.View;
 
 namespace Module.StageSettle
 {
@@ -49,7 +52,36 @@ namespace Module.StageSettle
         private void onOpen(object[] args)
         {
             _currentData = args != null && args.Length > 0 ? args[0] as StageSettleData : null;
-            GameApp.ViewManager.Open(ViewType.StageSettleView, args);
+            grantStageReward(_currentData);
+            GameApp.ViewManager.Open(ViewType.StageSettleView, _currentData);
+            refreshStageSettleView();
+        }
+
+        // 小局结算界面已打开时直接刷新展示数据
+        private void refreshStageSettleView()
+        {
+            IBaseView view = GameApp.ViewManager.GetView(ViewType.StageSettleView);
+            if (view is StageSettleView stageSettleView)
+                stageSettleView.Refresh(_currentData);
+        }
+
+        // 记录小局结算并把本局金币发放到玩家数据
+        private static void grantStageReward(StageSettleData data)
+        {
+            if (data == null) return;
+
+            bool isFirstRecord = LevelFlow.Instance.RecordStageResult(
+                data.StageIndex,
+                data.TurnCount,
+                data.CurrentScore,
+                data.Coin,
+                data.MaxRoundScore,
+                data.ResonanceCount,
+                data.AngelBlessCount,
+                data.DevilDealCount);
+
+            if (isFirstRecord)
+                PlayerDataManager.Instance.AddMoney(data.Coin);
         }
 
         // 右下角按钮：根据数据决定去商店还是最终结算

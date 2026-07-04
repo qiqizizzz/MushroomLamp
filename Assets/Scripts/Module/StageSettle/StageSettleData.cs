@@ -20,6 +20,10 @@ namespace Module.StageSettle
         public int TargetMax;
         public float CurrentScore;
         public int Coin;
+        public float MaxRoundScore;
+        public int ResonanceCount;
+        public int AngelBlessCount;
+        public int DevilDealCount;
         public bool IsTargetReached;
         public bool IsFinalStage;
 

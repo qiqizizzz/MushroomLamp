@@ -281,6 +281,10 @@ namespace Module.Cook
                 TargetMax = levelFlow.TargetMax,
                 CurrentScore = cookModel.CurrentScore,
                 Coin = cookModel.Coin,
+                MaxRoundScore = cookModel.MaxRoundScore,
+                ResonanceCount = cookModel.ResonanceCount,
+                AngelBlessCount = cookModel.AngelBlessCount,
+                DevilDealCount = cookModel.DevilDealCount,
                 IsTargetReached = cookModel.IsStageTargetReached,
                 IsFinalStage = levelFlow.IsLastStage
             };

@@ -45,9 +45,26 @@ namespace Module.Level
         public int HandCount { get; private set; }
         // 当前小局剩余天使救援次数
         public int AngelRescueCount { get; private set; }
+        // 已完成小局累计得分
+        public float TotalScore { get; private set; }
+        // 已完成小局累计金币
+        public int TotalCoinEarned { get; private set; }
+        // 已完成小局累计回合数
+        public int TotalTurnCount { get; private set; }
+        // 已记录的小局数量
+        public int CompletedStageCount { get; private set; }
+        // 全局最高单次投锅得分
+        public float MaxRoundScore { get; private set; }
+        // 全局累计共鸣次数
+        public int ResonanceCount { get; private set; }
+        // 全局累计天使祝福次数
+        public int AngelBlessCount { get; private set; }
+        // 全局累计恶魔交易次数
+        public int DevilDealCount { get; private set; }
 
         // 缓存当前箱子的材料种子（小局推进时沿用同一箱材料，不依赖 SelectBox）
         private readonly List<CookMaterialSeedData> _materials = new();
+        private readonly HashSet<int> _recordedStageIndexes = new();
 
         public bool HasFlow => !string.IsNullOrEmpty(BoxId) && StageCount > 0;
         public bool IsLastStage => HasStageConfig && StageCount > 0 && StageIndex >= StageCount - 1;
@@ -66,10 +83,37 @@ namespace Module.Level
             if (materials != null)
                 _materials.AddRange(materials);
 
+            resetRunSummary();
+
             // 用 boxId 找大局，读该难度的小局总数
             LevelEntryJsonData level = findLevel(boxId);
             StageCount = level != null ? LevelConfigLoader.GetStageCount(level, difficulty) : 0;
             refreshCurrentStageConfig();
+        }
+
+        // 记录一个已完成小局的结算数据，返回是否首次记录
+        public bool RecordStageResult(
+            int stageIndex,
+            int turnCount,
+            float score,
+            int coin,
+            float maxRoundScore,
+            int resonanceCount,
+            int angelBlessCount,
+            int devilDealCount)
+        {
+            if (!_recordedStageIndexes.Add(stageIndex)) return false;
+
+            CompletedStageCount++;
+            TotalTurnCount += turnCount;
+            TotalScore += score;
+            TotalCoinEarned += coin;
+            if (maxRoundScore > MaxRoundScore)
+                MaxRoundScore = maxRoundScore;
+            ResonanceCount += resonanceCount;
+            AngelBlessCount += angelBlessCount;
+            DevilDealCount += devilDealCount;
+            return true;
         }
 
         // 商店购买材料箱后，替换当前大局绑定的箱子与材料池（小局进度不变）
@@ -257,6 +301,20 @@ namespace Module.Level
             PotTrayCapacity = difficulty == SelectDifficulty.Hard ? 4 : 3;
             HandCount = 6;
             AngelRescueCount = difficulty == SelectDifficulty.Hard ? 1 : 2;
+        }
+
+        // 重置当前大局的最终结算累计数据
+        private void resetRunSummary()
+        {
+            TotalScore = 0;
+            TotalCoinEarned = 0;
+            TotalTurnCount = 0;
+            CompletedStageCount = 0;
+            MaxRoundScore = 0;
+            ResonanceCount = 0;
+            AngelBlessCount = 0;
+            DevilDealCount = 0;
+            _recordedStageIndexes.Clear();
         }
 
         private static LevelEntryJsonData findLevel(string boxId)
