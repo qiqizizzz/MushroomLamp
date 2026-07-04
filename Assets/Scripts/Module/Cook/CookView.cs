@@ -43,6 +43,7 @@ namespace Module.Cook
 
         private Image _imgHeatFill;
         private Image _imgHeatPreview;
+        private Image _imgHeatBackground;
         private Tweener _heatPreviewTween;
         private Transform _slotRoot;
         private Transform _handArea;
@@ -117,21 +118,27 @@ namespace Module.Cook
 
             _imgHeatFill = Find<Image>("Left/HeatBar/Img_Fill");
             _imgHeatPreview = Find<Image>("Left/HeatBar/Img_HeatPreview");
+            _imgHeatBackground = Find<Image>("Left/HeatBar/Img_Background");
+            if (_imgHeatBackground != null)
+            {
+                _imgHeatBackground.raycastTarget = false;
+                _imgHeatBackground.gameObject.SetActive(false);
+            }
             if (_imgHeatFill != null)
             {
+                setupHeatBarImage(_imgHeatFill);
                 RectTransform fillRt = _imgHeatFill.rectTransform;
                 fillRt.anchorMin = new Vector2(fillRt.anchorMin.x, 0f);
                 fillRt.anchorMax = new Vector2(fillRt.anchorMax.x, 0f);
-                fillRt.offsetMin = Vector2.zero;
-                fillRt.offsetMax = Vector2.zero;
+                resetHeatBarVerticalOffset(fillRt);
             }
             if (_imgHeatPreview != null)
             {
+                setupHeatBarImage(_imgHeatPreview);
                 RectTransform previewRt = _imgHeatPreview.rectTransform;
-                previewRt.anchorMin = new Vector2(0f, 0f);
-                previewRt.anchorMax = new Vector2(1f, 0f);
-                previewRt.offsetMin = Vector2.zero;
-                previewRt.offsetMax = Vector2.zero;
+                previewRt.anchorMin = new Vector2(previewRt.anchorMin.x, 0f);
+                previewRt.anchorMax = new Vector2(previewRt.anchorMax.x, 0f);
+                resetHeatBarVerticalOffset(previewRt);
             }
             _slotRoot = Find<Transform>("Center/Grid");
             _handArea = Find<Transform>("Bottom/HandScroll");
@@ -804,8 +811,7 @@ namespace Module.Cook
                 RectTransform fillRt = _imgHeatFill.rectTransform;
                 fillRt.anchorMin = new Vector2(fillRt.anchorMin.x, 0f);
                 fillRt.anchorMax = new Vector2(fillRt.anchorMax.x, fillRatio);
-                fillRt.offsetMin = Vector2.zero;
-                fillRt.offsetMax = Vector2.zero;
+                resetHeatBarVerticalOffset(fillRt);
                 _imgHeatFill.color = cookModel.CurrentScore > cookModel.TargetMax
                     ? new Color(0.92f, 0.23f, 0.16f, 1f)
                     : new Color(0.98f, 0.62f, 0.22f, 1f);
@@ -819,8 +825,7 @@ namespace Module.Cook
                         RectTransform previewRt = _imgHeatPreview.rectTransform;
                         previewRt.anchorMin = new Vector2(previewRt.anchorMin.x, fillRatio);
                         previewRt.anchorMax = new Vector2(previewRt.anchorMax.x, Mathf.Clamp01(fillRatio + previewRatio));
-                        previewRt.offsetMin = Vector2.zero;
-                        previewRt.offsetMax = Vector2.zero;
+                        resetHeatBarVerticalOffset(previewRt);
 
                         _heatPreviewTween?.Kill();
                         _imgHeatPreview.color = new Color(1f, 0.92f, 0.3f, 0f);
@@ -837,9 +842,24 @@ namespace Module.Cook
                         RectTransform previewRt = _imgHeatPreview.rectTransform;
                         previewRt.anchorMin = new Vector2(previewRt.anchorMin.x, 0f);
                         previewRt.anchorMax = new Vector2(previewRt.anchorMax.x, 0f);
+                        resetHeatBarVerticalOffset(previewRt);
                     }
                 }
             }
+        }
+
+        // 初始化温度条图像，避免遮挡素材文字和拖拽操作
+        private void setupHeatBarImage(Image image)
+        {
+            image.raycastTarget = false;
+            image.type = Image.Type.Simple;
+        }
+
+        // 重置温度条纵向边距，保留预制体的横向布局
+        private void resetHeatBarVerticalOffset(RectTransform rectTransform)
+        {
+            rectTransform.offsetMin = new Vector2(rectTransform.offsetMin.x, 0f);
+            rectTransform.offsetMax = new Vector2(rectTransform.offsetMax.x, 0f);
         }
 
         private void refreshSlots(CookModel cookModel)
