@@ -697,24 +697,24 @@ namespace Module.Cook
         private static float getPotTraySlotSize(int capacity)
         {
             if (capacity >= 5)
-                return 56f;
+                return 64f;
 
             if (capacity >= 4)
-                return 72f;
+                return 82f;
 
-            return 88f;
+            return 96f;
         }
 
         // 根据暂存槽数量计算加号尺寸，数量越多越紧凑
         private static Vector2 getPotTrayPlusSize(int capacity)
         {
             if (capacity >= 5)
-                return new Vector2(18f, 34f);
+                return new Vector2(28f, 44f);
 
             if (capacity >= 4)
-                return new Vector2(22f, 40f);
+                return new Vector2(32f, 50f);
 
-            return new Vector2(26f, 42f);
+            return new Vector2(36f, 54f);
         }
 
         // 初始化暂停确认弹窗

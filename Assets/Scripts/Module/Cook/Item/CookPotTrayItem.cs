@@ -24,6 +24,8 @@ namespace Module.View
         private const string TRAY_SLOT_SPRITE = "Art/CookView/Pot/摆放小框";
 
         private static Sprite S_TraySlotSprite;
+        private static readonly Vector2 S_TrayIconAnchorMin = new Vector2(0.02f, 0.04f);
+        private static readonly Vector2 S_TrayIconAnchorMax = new Vector2(0.98f, 0.96f);
 
         private readonly Color _emptyColor = Color.white;
         private readonly Color _highlightColor = new Color(1f, 0.94f, 0.66f, 1f);
@@ -197,7 +199,7 @@ namespace Module.View
 
             setupRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one);
             setupRect(_imgFlash.rectTransform, Vector2.zero, Vector2.one);
-            setupRect(_imgIcon.rectTransform, new Vector2(0.08f, 0.1f), new Vector2(0.92f, 0.92f));
+            setupRect(_imgIcon.rectTransform, S_TrayIconAnchorMin, S_TrayIconAnchorMax);
 
             _imgBackground.sprite = S_TraySlotSprite ??= ArtAssetLoader.LoadSprite(TRAY_SLOT_SPRITE, false);
             _imgBackground.color = _imgBackground.sprite == null ? Color.clear : _emptyColor;
@@ -247,7 +249,7 @@ namespace Module.View
             _dragIconRect = _dragIconObject.GetComponent<RectTransform>();
             _dragIconRect.sizeDelta = _imgIcon.rectTransform.rect.size;
             if (_dragIconRect.sizeDelta.sqrMagnitude <= 0f)
-                _dragIconRect.sizeDelta = new Vector2(80f, 80f);
+                _dragIconRect.sizeDelta = new Vector2(92f, 92f);
             _dragIconRect.localScale = Vector3.one;
 
             Image dragImage = _dragIconObject.GetComponent<Image>();
