@@ -8,11 +8,11 @@
 using System;
 using System.Collections.Generic;
 using Common;
-using Common.Defines;
 using Module.Material;
 using Module.Player;
 using Module.Shop;
 using MVC.Model;
+using UnityEngine;
 
 namespace Module.Store
 {
@@ -62,8 +62,6 @@ namespace Module.Store
 
         public int OverrideBagCount { get; private set; } = -1;
 
-        private CardParamCatalogJsonConfig _cardConfig;
-
         public void SetupForBox(StoreOpenContext context)
         {
             if (context == null || string.IsNullOrWhiteSpace(context.boxId))
@@ -93,7 +91,7 @@ namespace Module.Store
         public void RefreshBuySlots()
         {
             ClearBoxContext();
-            refreshBuySlotsFromPool(null);
+            refreshBuySlotsFromMaterialCatalog(-1);
         }
 
         // 从商店材料箱池随机抽 3 张材料供玩家三选一
@@ -132,69 +130,49 @@ namespace Module.Store
                     continue;
                 }
 
-                int price = overridePrice >= 0 ? overridePrice : meta.price;
-                BuySlots.Add(new StoreBuySlotData
-                {
-                    id = meta.id,
-                    name = meta.name,
-                    iconPath = meta.iconPath,
-                    description = string.IsNullOrEmpty(CurrentBoxName)
-                        ? meta.desc
-                        : $"来自「{CurrentBoxName}」\n{meta.desc}",
-                    price = price
-                });
+                addBuySlot(meta, overridePrice);
             }
         }
 
-        private void refreshBuySlotsFromPool(HashSet<string> iconFilter, int overridePrice = -1)
+        private void refreshBuySlotsFromMaterialCatalog(int overridePrice = -1)
         {
-            EnsureConfig();
             BuySlots.Clear();
 
-            var source = _cardConfig?.cards;
-            if (source == null || source.Length == 0) return;
-
-            var pool = new List<CardParamJsonData>();
-            foreach (CardParamJsonData data in source)
+            var pool = new List<MaterialJsonData>();
+            foreach (MaterialJsonData material in MaterialCatalogLoader.GetAll())
             {
-                if (data == null) continue;
-                if (iconFilter != null && iconFilter.Count > 0)
-                {
-                    if (string.IsNullOrEmpty(data.iconPath) || !iconFilter.Contains(data.iconPath))
-                        continue;
-                }
-                pool.Add(data);
-            }
-
-            if (pool.Count == 0)
-            {
-                foreach (CardParamJsonData data in source)
-                    if (data != null) pool.Add(data);
+                if (material != null && !string.IsNullOrWhiteSpace(material.id))
+                    pool.Add(material);
             }
 
             for (int i = 0; i < BuySlotCount && pool.Count > 0; i++)
             {
                 int index = UnityEngine.Random.Range(0, pool.Count);
-                CardParamJsonData data = pool[index];
+                MaterialJsonData meta = pool[index];
                 pool.RemoveAt(index);
-
-                int price = overridePrice >= 0 ? overridePrice : data.price;
-                BuySlots.Add(new StoreBuySlotData
-                {
-                    id = data.id,
-                    name = data.name,
-                    iconPath = data.iconPath,
-                    description = string.IsNullOrEmpty(CurrentBoxName)
-                        ? data.description
-                        : $"来自「{CurrentBoxName}」\n{data.description}",
-                    price = price
-                });
+                addBuySlot(meta, overridePrice);
             }
+        }
+
+        private void addBuySlot(MaterialJsonData meta, int overridePrice)
+        {
+            if (meta == null) return;
+
+            int price = overridePrice >= 0 ? overridePrice : meta.price;
+            BuySlots.Add(new StoreBuySlotData
+            {
+                id = meta.id,
+                name = meta.name,
+                iconPath = meta.iconPath,
+                description = string.IsNullOrEmpty(CurrentBoxName)
+                    ? meta.desc
+                    : $"来自「{CurrentBoxName}」\n{meta.desc}",
+                price = price
+            });
         }
 
         public void RefreshBag()
         {
-            EnsureConfig();
             BagEntries.Clear();
 
             if (OverrideBagCount > 0)
@@ -204,44 +182,29 @@ namespace Module.Store
             }
 
             foreach (PlayerCardState card in PlayerDataManager.Instance.GetAllCards())
-            {
                 fillBagEntryMeta(card.cardId, card.count);
-            }
         }
 
         private void fillBagEntryMeta(string id, int count)
         {
             MaterialJsonData material = MaterialCatalogLoader.GetById(id);
-            if (material != null)
-            {
-                BagEntries.Add(new StoreBagEntryData
-                {
-                    id = material.id,
-                    name = material.name,
-                    iconPath = material.iconPath,
-                    count = count
-                });
-                return;
-            }
-
-            CardParamJsonData meta = FindCardMeta(id);
             BagEntries.Add(new StoreBagEntryData
             {
                 id = id,
-                name = meta != null ? meta.name : id,
-                iconPath = meta != null ? meta.iconPath : string.Empty,
+                name = material != null ? material.name : id,
+                iconPath = material != null ? material.iconPath : string.Empty,
                 count = count
             });
         }
 
         private void BuildMockBag(int count)
         {
-            var source = _cardConfig?.cards;
+            IReadOnlyList<MaterialJsonData> source = MaterialCatalogLoader.GetAll();
             for (int i = 0; i < count; i++)
             {
-                if (source != null && source.Length > 0)
+                if (source != null && source.Count > 0)
                 {
-                    CardParamJsonData data = source[i % source.Length];
+                    MaterialJsonData data = source[i % source.Count];
                     BagEntries.Add(new StoreBagEntryData
                     {
                         id = data.id,
@@ -270,24 +233,6 @@ namespace Module.Store
             else
                 RefreshBuySlots();
             RefreshBag();
-        }
-
-        private CardParamJsonData FindCardMeta(string id)
-        {
-            var source = _cardConfig?.cards;
-            if (source == null || string.IsNullOrEmpty(id)) return null;
-
-            foreach (CardParamJsonData data in source)
-                if (data != null && data.id == id)
-                    return data;
-
-            return null;
-        }
-
-        private void EnsureConfig()
-        {
-            if (_cardConfig != null) return;
-            _cardConfig = JsonConfigLoader.LoadFromConfig<CardParamCatalogJsonConfig>(AddressDefines.Config_CardParamCatalog);
         }
     }
 }

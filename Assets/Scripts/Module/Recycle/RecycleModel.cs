@@ -8,8 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Common;
-using Common.Defines;
 using Module.Material;
 using Module.Player;
 using MVC.Model;
@@ -47,8 +45,6 @@ namespace Module.Recycle
         public readonly List<RecycleOfferData> Offers = new();
         public readonly List<RecycleInventoryEntryData> InventoryEntries = new();
 
-        private CardParamCatalogJsonConfig _cardConfig;
-
         public int Gold => PlayerDataManager.Instance.Money;
 
         // 刷新回收界面全部数据
@@ -85,17 +81,15 @@ namespace Module.Recycle
         public void RefreshInventory()
         {
             InventoryEntries.Clear();
-            EnsureCardConfig();
-
             foreach (PlayerCardState card in PlayerDataManager.Instance.GetAllCards())
             {
-                CardParamJsonData meta = findCardMeta(card.cardId);
+                MaterialJsonData meta = MaterialCatalogLoader.GetById(card.cardId);
                 InventoryEntries.Add(new RecycleInventoryEntryData
                 {
                     id = card.cardId,
                     name = meta != null ? meta.name : card.cardId,
                     iconPath = meta != null ? meta.iconPath : string.Empty,
-                    category = "卡牌",
+                    category = meta != null && !string.IsNullOrEmpty(meta.category) ? meta.category : "卡牌",
                     count = card.count,
                     isCard = true
                 });
@@ -145,24 +139,6 @@ namespace Module.Recycle
                 description = material.desc,
                 price = material.price
             };
-        }
-
-        private CardParamJsonData findCardMeta(string id)
-        {
-            CardParamJsonData[] cards = _cardConfig?.cards;
-            if (cards == null || string.IsNullOrEmpty(id)) return null;
-
-            foreach (CardParamJsonData card in cards)
-                if (card != null && card.id == id)
-                    return card;
-
-            return null;
-        }
-
-        private void EnsureCardConfig()
-        {
-            if (_cardConfig != null) return;
-            _cardConfig = JsonConfigLoader.LoadFromConfig<CardParamCatalogJsonConfig>(AddressDefines.Config_CardParamCatalog);
         }
     }
 }

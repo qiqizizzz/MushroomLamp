@@ -33,7 +33,6 @@ namespace Common.Defines
 
         // JSON 配置，对应 Assets/Config/（不含扩展名）
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";
-        public const string Config_CardParamCatalog = "CardParamCatalog";
         public const string Config_ItemParamCatalog = "ItemParamCatalog";
         public const string Config_ShopCatalog = "ShopCatalog";
         public const string Config_SoundCatalog = "Sound/SoundCatalog";
