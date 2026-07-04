@@ -95,6 +95,26 @@
       "id": "sfx_ingame_put_in_right_place",
       "path": "Effects/Ingame_PutInRightPlace",
       "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_1",
+      "path": "Effects/PokerCardFlipping_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_2",
+      "path": "Effects/PokerCardFlipping_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_3",
+      "path": "Effects/PokerCardFlipping_3",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_4",
+      "path": "Effects/PokerCardFlipping_4",
+      "volume": 1.0
     }
   ],
   "viewBindings": [
