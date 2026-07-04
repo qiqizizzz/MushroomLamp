@@ -7,11 +7,11 @@ using UnityEngine.UI;
 
 namespace Module.Shop
 {
-    // 材料箱货架槽：展示箱子图标 + 名称 + 价格，悬停时放大箱子图
+    // 材料箱货架槽：展示箱子图标 + 价格，悬停时放大箱子图
     public class ShopBoxSlotBinder : MonoBehaviour
     {
         [SerializeField] private Image imgIcon;
-        [SerializeField] private TextMeshProUGUI txtName;
+        [SerializeField] private Image imgPriceTag;
         [SerializeField] private TextMeshProUGUI txtPrice;
         [SerializeField] private ShopHoverScaleItem hoverScale;
 
@@ -24,11 +24,8 @@ namespace Module.Shop
         {
             if (data == null) return;
             ensureReferences();
+            ShopPriceRowHelper.ApplySlotLayout(transform, ref txtPrice, ref imgPriceTag, font);
 
-            UIFontHelper.ApplyChineseFont(txtName, font);
-            UIFontHelper.ApplyChineseFont(txtPrice, font);
-
-            if (txtName != null) txtName.text = data.name;
             if (txtPrice != null) txtPrice.text = data.price.ToString();
 
             if (imgIcon != null)
@@ -63,15 +60,9 @@ namespace Module.Shop
                 if (iconTf != null) imgIcon = iconTf.GetComponent<Image>();
             }
 
-            if (txtName == null)
-            {
-                Transform nameTf = transform.Find("Txt_Name");
-                if (nameTf != null) txtName = nameTf.GetComponent<TextMeshProUGUI>();
-            }
-
             if (txtPrice == null)
             {
-                Transform priceTf = transform.Find("Txt_Price");
+                Transform priceTf = transform.Find("PriceRow/Txt_Price") ?? transform.Find("Txt_Price");
                 if (priceTf != null) txtPrice = priceTf.GetComponent<TextMeshProUGUI>();
             }
 

@@ -226,8 +226,9 @@ namespace Module.Shop
             applyBoxSprite(icon);
             icon.raycastTarget = false;
 
-            TextMeshProUGUI nameText = createChildText(rootRt, "Txt_Name", new Vector2(0.5f, 0.22f), new Vector2(220f, 44f), 32);
-            TextMeshProUGUI priceText = createChildText(rootRt, "Txt_Price", new Vector2(0.5f, 0.06f), new Vector2(120f, 40f), 30);
+            RectTransform priceRowRt = ShopPriceRowHelper.CreatePriceRow(rootRt, new Vector2(0.5f, 0.06f), new Vector2(170f, 52f));
+            ShopPriceRowHelper.CreatePriceTag(priceRowRt);
+            TextMeshProUGUI priceText = ShopPriceRowHelper.CreatePriceText(priceRowRt, _fontTemplate, 30);
 
             hover.SetHitSize(rootRt.rect.width > 1f ? rootRt.rect.width : 200f,
                 rootRt.rect.height > 1f ? rootRt.rect.height : 240f);

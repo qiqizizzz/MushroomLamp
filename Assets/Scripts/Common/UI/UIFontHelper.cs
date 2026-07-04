@@ -1,6 +1,6 @@
 /*
 * ┌──────────────────────────────────┐
-* │  描    述: 项目 UI 中文字体加载（思源黑体 SDF）
+* │  描    述: 项目 UI 中文字体加载（荆南缘默体 SDF）
 * │  类    名: UIFontHelper.cs
 * │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
@@ -16,7 +16,7 @@ namespace Common.UI
     {
         private static TMP_FontAsset _sourceHanSans;
 
-        // Assets/Fonts/siyuan/SourceHanSansSC-Normal SDF.asset
+        // Assets/Resources/Fonts/jingnan/荆南缘默体 SDF.asset
         public static TMP_FontAsset SourceHanSans
         {
             get

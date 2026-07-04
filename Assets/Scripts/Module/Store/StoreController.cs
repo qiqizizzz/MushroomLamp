@@ -16,6 +16,7 @@ using Common.Defines;
 
 using Module.Confirm;
 
+using Module.Level;
 using Module.Player;
 
 using MVC;
@@ -191,6 +192,7 @@ namespace Module.Store
                     if (!freePick && !PlayerDataManager.Instance.SpendMoney(slot.price)) return;
 
                     PlayerDataManager.Instance.AddCard(slot.id);
+                    LevelFlow.Instance.AddMaterial(slot.id);
                     slot.isPurchased = true;
 
                     if (freePick)

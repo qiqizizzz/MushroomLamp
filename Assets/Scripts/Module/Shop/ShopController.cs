@@ -9,10 +9,8 @@
 using Common;
 using Common.Defines;
 using Module.Confirm;
-using Module.Cook;
 using Module.Level;
 using Module.Player;
-using Module.Select;
 using Module.Store;
 using MVC;
 using MVC.Controller;
@@ -151,10 +149,7 @@ namespace Module.Shop
                     RefreshView();
 
                     if (slotData.isBox)
-                    {
-                        applyPurchasedBox(slotData);
                         openStoreAfterBoxPurchase(slotData);
-                    }
                     else if (slotData.isCard)
                     {
                         PlayerDataManager.Instance.AddCard(slotData.id);
@@ -174,20 +169,6 @@ namespace Module.Shop
             }
 
             return $"购买「{slotData.name}」\n花费 {slotData.price} 金币，剩余 {remain} 金币。";
-        }
-
-        private static void applyPurchasedBox(ShopSlotData slotData)
-        {
-            SelectBoxCatalogEntry entry = ShopCatalog.GetBoxEntry(slotData.id);
-            if (entry == null)
-            {
-                QLog.Warning($"[{nameof(ShopController)}] 未找到材料箱配置：{slotData.id}");
-                return;
-            }
-
-            SelectBoxDetailJsonConfig detail = ShopCatalog.LoadBoxDetail(entry);
-            var materials = SelectBoxMaterialHelper.CollectMaterials(detail);
-            LevelFlow.Instance.SwitchBox(entry.id, entry.displayName, materials);
         }
 
         private void openStoreAfterBoxPurchase(ShopSlotData slotData)

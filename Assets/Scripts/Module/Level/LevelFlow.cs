@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections;
 using Common;
 using Module.Cook;
+using Module.Material;
 using Module.Select;
 
 namespace Module.Level
@@ -84,6 +85,31 @@ namespace Module.Level
                 _materials.AddRange(materials);
 
             QLog.Info($"[{nameof(LevelFlow)}] 切换材料箱：{BoxId} / {BoxName}，材料种类={_materials.Count}");
+        }
+
+        // 商店购箱三选一：将选中材料追加到当前大局材料池
+        public void AddMaterial(string materialId, int count = 1)
+        {
+            if (string.IsNullOrWhiteSpace(materialId) || count <= 0) return;
+
+            for (int i = 0; i < _materials.Count; i++)
+            {
+                CookMaterialSeedData seed = _materials[i];
+                if (seed == null || seed.MaterialId != materialId) continue;
+
+                seed.Count += count;
+                QLog.Info($"[{nameof(LevelFlow)}] 材料池追加：{materialId} x{count}（合计 {seed.Count}）");
+                return;
+            }
+
+            MaterialJsonData cfg = MaterialCatalogLoader.GetById(materialId);
+            _materials.Add(new CookMaterialSeedData
+            {
+                MaterialId = materialId,
+                MaterialName = cfg?.name ?? materialId,
+                Count = count
+            });
+            QLog.Info($"[{nameof(LevelFlow)}] 材料池新增：{materialId} x{count}");
         }
 
         // 推进到下一小局；返回 false 表示已是最后小局（无下一个）

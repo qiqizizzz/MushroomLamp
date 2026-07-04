@@ -40,6 +40,7 @@ namespace Common.Defines
 
         // Art 与字体（Resources 路径，相对 Resources/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
+        public const string Art_ShopPriceTag = "Art/ShopView/价格贴";
         public const string Art_ShopContinueHover = "Art/ShopView/IMG_9173";
         public const string Art_SelectBoxStartHover = "Art/SelectBoxView/IMG_9171";
         public const string Art_SelectBoxReturnHover = "Art/SelectBoxView/IMG_9177";
