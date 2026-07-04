@@ -1,0 +1,139 @@
+
+ShopCrow.png
+size: 731,332
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 391, 111
+  size: 159, 219
+  orig: 160, 219
+  offset: 0, 0
+  index: -1
+eye color
+  rotate: false
+  xy: 81, 2
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+eye sketch
+  rotate: false
+  xy: 690, 161
+  size: 28, 27
+  orig: 30, 29
+  offset: 1, 1
+  index: -1
+eyebrow
+  rotate: false
+  xy: 128, 15
+  size: 25, 11
+  orig: 26, 13
+  offset: 0, 1
+  index: -1
+eyelid
+  rotate: false
+  xy: 632, 6
+  size: 55, 50
+  orig: 55, 50
+  offset: 0, 0
+  index: -1
+left foot
+  rotate: false
+  xy: 107, 6
+  size: 19, 20
+  orig: 20, 22
+  offset: 1, 1
+  index: -1
+left foot behind
+  rotate: true
+  xy: 641, 131
+  size: 57, 47
+  orig: 57, 47
+  offset: 0, 0
+  index: -1
+left wing
+  rotate: true
+  xy: 391, 2
+  size: 107, 135
+  orig: 107, 135
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 632, 58
+  size: 89, 57
+  orig: 89, 58
+  offset: 0, 0
+  index: -1
+ornament
+  rotate: true
+  xy: 552, 117
+  size: 71, 87
+  orig: 71, 87
+  offset: 0, 0
+  index: -1
+pole
+  rotate: false
+  xy: 552, 190
+  size: 148, 140
+  orig: 149, 163
+  offset: 0, 0
+  index: -1
+right foot
+  rotate: false
+  xy: 2, 3
+  size: 40, 23
+  orig: 41, 23
+  offset: 0, 0
+  index: -1
+right foot behind
+  rotate: false
+  xy: 689, 3
+  size: 40, 53
+  orig: 40, 53
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 528, 5
+  size: 102, 104
+  orig: 102, 104
+  offset: 0, 0
+  index: -1
+x1
+  rotate: true
+  xy: 44, 3
+  size: 23, 35
+  orig: 24, 36
+  offset: 1, 1
+  index: -1
+x2
+  rotate: false
+  xy: 138, 6
+  size: 4, 7
+  orig: 7, 8
+  offset: 2, 1
+  index: -1
+x3
+  rotate: false
+  xy: 155, 6
+  size: 12, 20
+  orig: 14, 21
+  offset: 1, 1
+  index: -1
+x4
+  rotate: false
+  xy: 128, 3
+  size: 8, 10
+  orig: 9, 10
+  offset: 0, 0
+  index: -1
+图层 5
+  rotate: true
+  xy: 2, 28
+  size: 302, 387
+  orig: 302, 387
+  offset: 0, 0
+  index: -1
