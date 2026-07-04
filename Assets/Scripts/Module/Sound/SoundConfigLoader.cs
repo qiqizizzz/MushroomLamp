@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using Common;
 using Common.Defines;
+using UnityEngine;
 
 namespace Sound
 {
@@ -16,6 +17,7 @@ namespace Sound
     {
         private static SoundCatalogJsonConfig _catalog;
         private static Dictionary<string, SoundClipJsonData> _clipsById;
+        private static Dictionary<string, List<string>> _clipVariantsByBaseId;
         private static Dictionary<string, SoundBgmJsonData> _bgmsById;
         private static Dictionary<string, SoundViewBindingJsonData> _viewsByName;
 
@@ -35,19 +37,22 @@ namespace Sound
         {
             _catalog = null;
             _clipsById = null;
+            _clipVariantsByBaseId = null;
             _bgmsById = null;
             _viewsByName = null;
             LoadCatalog();
         }
 
-        // 查询音效（clips 表）
+        // 查询音效（clips 表）；id 无 _N 后缀时从同组变体中随机选取
         public static bool TryResolveClip(string id, out SoundClipResolveData result)
         {
             result = default;
             if (string.IsNullOrWhiteSpace(id)) return false;
 
             LoadCatalog();
-            if (_clipsById == null || !_clipsById.TryGetValue(id, out SoundClipJsonData clipData))
+            if (_clipsById == null) return false;
+
+            if (!tryGetClipData(id, out SoundClipJsonData clipData))
                 return false;
 
             if (string.IsNullOrWhiteSpace(clipData.path)) return false;
@@ -122,9 +127,26 @@ namespace Sound
             return null;
         }
 
+        private static bool tryGetClipData(string id, out SoundClipJsonData clipData)
+        {
+            clipData = null;
+            if (_clipsById.TryGetValue(id, out clipData))
+                return clipData != null;
+
+            if (_clipVariantsByBaseId == null
+                || !_clipVariantsByBaseId.TryGetValue(id, out List<string> variants)
+                || variants == null
+                || variants.Count == 0)
+                return false;
+
+            string pickedId = variants[Random.Range(0, variants.Count)];
+            return _clipsById.TryGetValue(pickedId, out clipData) && clipData != null;
+        }
+
         private static void buildIndex()
         {
             _clipsById = new Dictionary<string, SoundClipJsonData>();
+            _clipVariantsByBaseId = new Dictionary<string, List<string>>();
             SoundClipJsonData[] clips = _catalog?.clips;
             if (clips != null)
             {
@@ -132,6 +154,15 @@ namespace Sound
                 {
                     if (clip == null || string.IsNullOrWhiteSpace(clip.id)) continue;
                     _clipsById[clip.id] = clip;
+
+                    if (!tryGetVariantBaseId(clip.id, out string baseId)) continue;
+                    if (!_clipVariantsByBaseId.TryGetValue(baseId, out List<string> variants))
+                    {
+                        variants = new List<string>();
+                        _clipVariantsByBaseId[baseId] = variants;
+                    }
+
+                    variants.Add(clip.id);
                 }
             }
 
@@ -155,6 +186,23 @@ namespace Sound
                 if (view == null || string.IsNullOrWhiteSpace(view.view)) continue;
                 _viewsByName[view.view] = view;
             }
+        }
+
+        private static bool tryGetVariantBaseId(string id, out string baseId)
+        {
+            baseId = null;
+            int lastUnderscore = id.LastIndexOf('_');
+            if (lastUnderscore <= 0 || lastUnderscore >= id.Length - 1) return false;
+
+            string suffix = id.Substring(lastUnderscore + 1);
+            for (int i = 0; i < suffix.Length; i++)
+            {
+                if (suffix[i] < '0' || suffix[i] > '9')
+                    return false;
+            }
+
+            baseId = id.Substring(0, lastUnderscore);
+            return true;
         }
 
         private static float normalizeVolume(float volume)

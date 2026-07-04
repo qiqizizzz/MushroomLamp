@@ -26,6 +26,7 @@ namespace Module.View
         private const float HoverScale = 1.2f;      // 悬停目标缩放
         private const float ScaleLerpSpeed = 12f;   // 缩放过渡速度
         private const float OutlineWidth = 3f;      // 描边宽度（像素）
+        private const string SfxHandDragSelect = "sfx_ingame_select";
 
         private CookView _view;
         private CookMaterialData _materialData;
@@ -162,6 +163,8 @@ namespace Module.View
                 _canvasGroup.alpha = 0.88f;
                 _canvasGroup.blocksRaycasts = false;
             }
+
+            GameApp.SoundManager?.PlayEffect(SfxHandDragSelect);
         }
 
         public void OnDrag(PointerEventData eventData)

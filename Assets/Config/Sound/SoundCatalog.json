@@ -87,8 +87,33 @@
       "volume": 1.0
     },
     {
+      "id": "sfx_ingame_select",
+      "path": "Effects/InGameSelect",
+      "volume": 1.0
+    },
+    {
       "id": "sfx_ingame_put_in_right_place",
       "path": "Effects/Ingame_PutInRightPlace",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_1",
+      "path": "Effects/PokerCardFlipping_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_2",
+      "path": "Effects/PokerCardFlipping_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_3",
+      "path": "Effects/PokerCardFlipping_3",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_4",
+      "path": "Effects/PokerCardFlipping_4",
       "volume": 1.0
     }
   ],
@@ -126,11 +151,13 @@
       "buttons": [
         {
           "path": "Bottom/Btn_Left",
-          "click": "sfx_box_change_1"
+          "click": "sfx_box_change",
+          "hover": ""
         },
         {
           "path": "Bottom/Btn_Right",
-          "click": "sfx_box_change_1"
+          "click": "sfx_box_change",
+          "hover": ""
         }
       ]
     },
@@ -152,6 +179,27 @@
       "buttonHover": "",
       "disableAutoButtonSound": false,
       "buttons": []
+    },
+    {
+      "view": "BlackjackView",
+      "bgms": [],
+      "buttonClick": "",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": [
+        {
+          "path": "Items/Item_0",
+          "click": "sfx_poker_card_flipping"
+        },
+        {
+          "path": "Items/Item_1",
+          "click": "sfx_poker_card_flipping"
+        },
+        {
+          "path": "Items/Item_2",
+          "click": "sfx_poker_card_flipping"
+        }
+      ]
     }
   ]
 }

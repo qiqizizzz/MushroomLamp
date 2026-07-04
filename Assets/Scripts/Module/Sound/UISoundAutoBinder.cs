@@ -45,17 +45,14 @@ namespace Sound
                 string buttonPath = getRelativePath(viewBehaviour.transform, button.transform);
                 SoundButtonBindingJsonData buttonBinding = SoundConfigLoader.FindButtonBinding(viewBinding, buttonPath);
 
-                string click = buttonBinding != null && !string.IsNullOrWhiteSpace(buttonBinding.click)
-                    ? buttonBinding.click
-                    : viewClick;
-                string hover = buttonBinding != null && !string.IsNullOrWhiteSpace(buttonBinding.hover)
-                    ? buttonBinding.hover
-                    : viewHover;
-
-                if (buttonBinding != null && buttonBinding.muteClick)
-                    click = string.Empty;
-                if (buttonBinding != null && buttonBinding.muteHover)
-                    hover = string.Empty;
+                string click = resolveButtonSound(
+                    buttonBinding?.click,
+                    buttonBinding?.muteClick ?? false,
+                    viewClick);
+                string hover = resolveButtonSound(
+                    buttonBinding?.hover,
+                    buttonBinding?.muteHover ?? false,
+                    viewHover);
 
                 if (string.IsNullOrWhiteSpace(click) && string.IsNullOrWhiteSpace(hover)) continue;
 
@@ -80,6 +77,18 @@ namespace Sound
             }
 
             return path;
+        }
+
+        // buttonField 为 null 表示 JSON 未配置，继承 View/全局默认；显式 "" 或 mute 表示静音
+        private static string resolveButtonSound(string buttonField, bool mute, string fallback)
+        {
+            if (mute)
+                return string.Empty;
+
+            if (buttonField != null)
+                return string.IsNullOrWhiteSpace(buttonField) ? string.Empty : buttonField;
+
+            return fallback;
         }
     }
 }
