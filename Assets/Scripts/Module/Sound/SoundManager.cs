@@ -26,6 +26,7 @@ namespace Sound
         private readonly AudioSource _bgmSource;
         private readonly List<AudioSource> _extraBgmSources = new();
         private readonly List<float> _extraBgmVolumeScales = new();
+        private readonly List<AudioSource> _breakableEffects = new();
 
         private readonly string[] _bgmPlaylist;
         private bool _isStop;
@@ -213,6 +214,8 @@ namespace Sound
             AudioClip clip = loadClip(clipData.Path);
             if (clip == null) return;
 
+            stopBreakableEffects();
+
             GameObject effectObj = new GameObject($"Effect_{name}");
             effectObj.transform.SetParent(_audioRootTf, false);
             effectObj.transform.position = pos;
@@ -222,6 +225,37 @@ namespace Sound
             effectSource.volume = EffectVolume * clipData.VolumeScale;
             effectSource.Play();
             Object.Destroy(effectObj, clip.length);
+
+            if (clipData.Breakable)
+                _breakableEffects.Add(effectSource);
+        }
+
+        private void stopBreakableEffects()
+        {
+            pruneBreakableEffects();
+
+            for (int i = _breakableEffects.Count - 1; i >= 0; i--)
+            {
+                AudioSource source = _breakableEffects[i];
+                if (source != null)
+                {
+                    source.Stop();
+                    if (source.gameObject != null)
+                        Object.Destroy(source.gameObject);
+                }
+
+                _breakableEffects.RemoveAt(i);
+            }
+        }
+
+        private void pruneBreakableEffects()
+        {
+            for (int i = _breakableEffects.Count - 1; i >= 0; i--)
+            {
+                AudioSource source = _breakableEffects[i];
+                if (source == null || !source.isPlaying)
+                    _breakableEffects.RemoveAt(i);
+            }
         }
 
         private void applyBgmVolume()

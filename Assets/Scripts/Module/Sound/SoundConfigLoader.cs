@@ -61,7 +61,8 @@ namespace Sound
             {
                 Id = clipData.id,
                 Path = normalizeSoundPath(clipData.path),
-                VolumeScale = normalizeVolume(clipData.volume)
+                VolumeScale = normalizeVolume(clipData.volume),
+                Breakable = clipData.breakable
             };
             return true;
         }

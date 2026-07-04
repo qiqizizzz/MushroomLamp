@@ -39,7 +39,8 @@
     {
       "id": "ui_click",
       "path": "Effects/Menu_Ui_Click",
-      "volume": 1.0
+      "volume": 1.0,
+      "breakable": true
     },
     {
       "id": "ui_hover",
@@ -54,7 +55,8 @@
     {
       "id": "menu_ui_hover",
       "path": "Effects/Menu_UI_Hover",
-      "volume": 0.8
+      "volume": 0.8,
+      "breakable": true
     },
     {
       "id": "sfx_box_change_1",
