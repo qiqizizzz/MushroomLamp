@@ -1,0 +1,34 @@
+{
+  "stages": [
+    {
+      "stageId": "spice_normal_1",
+      "displayName": "普通·第一小局",
+      "turnCount": 5,
+      "potTrayCapacity": 4,
+      "targetMin": 20,
+      "targetMax": 25,
+      "handCount": 5,
+      "angelRescueCount": 1
+    },
+    {
+      "stageId": "spice_normal_2",
+      "displayName": "普通·第二小局",
+      "turnCount": 5,
+      "potTrayCapacity": 4,
+      "targetMin": 28,
+      "targetMax": 34,
+      "handCount": 5,
+      "angelRescueCount": 1
+    },
+    {
+      "stageId": "spice_normal_3",
+      "displayName": "普通·第三小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 36,
+      "targetMax": 44,
+      "handCount": 5,
+      "angelRescueCount": 1
+    }
+  ]
+}

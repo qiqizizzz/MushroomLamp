@@ -28,7 +28,8 @@ namespace Sound
         private readonly List<float> _extraBgmVolumeScales = new();
         private readonly List<AudioSource> _breakableEffects = new();
 
-        private readonly string[] _bgmPlaylist;
+        private string[] _bgmPlaylist;
+        private bool _isBgmPlaylistLoaded;
         private bool _isStop;
         private bool _isPlaylistMode;
         private bool _isApplicationPaused;
@@ -87,8 +88,7 @@ namespace Sound
         public SoundManager()
         {
             _clips = new Dictionary<string, AudioClip>();
-            SoundConfigLoader.LoadCatalog();
-            _bgmPlaylist = SoundConfigLoader.GetBgmPlaylist(S_DefaultBgmPlaylist);
+            _bgmPlaylist = S_DefaultBgmPlaylist;
             _audioRootTf = getOrCreateAudioRoot();
             _bgmSource = getOrCreateBgmSource();
 
@@ -428,17 +428,18 @@ namespace Sound
 
         private void playNextPlaylistBgm()
         {
-            if (_bgmPlaylist == null || _bgmPlaylist.Length == 0)
+            string[] playlist = getBgmPlaylist();
+            if (playlist == null || playlist.Length == 0)
             {
                 _isPlaylistMode = false;
                 return;
             }
 
             int startIndex = getRandomPlaylistIndex();
-            for (int i = 0; i < _bgmPlaylist.Length; i++)
+            for (int i = 0; i < playlist.Length; i++)
             {
-                int playlistIndex = (startIndex + i) % _bgmPlaylist.Length;
-                if (!SoundConfigLoader.TryResolveBgm(_bgmPlaylist[playlistIndex], out SoundClipResolveData data))
+                int playlistIndex = (startIndex + i) % playlist.Length;
+                if (!SoundConfigLoader.TryResolveBgm(playlist[playlistIndex], out SoundClipResolveData data))
                     continue;
 
                 if (playMainBgm(data, false))
@@ -456,14 +457,25 @@ namespace Sound
 
         private int getRandomPlaylistIndex()
         {
-            if (_bgmPlaylist.Length <= 1)
+            string[] playlist = getBgmPlaylist();
+            if (playlist.Length <= 1)
                 return 0;
 
-            int playlistIndex = Random.Range(0, _bgmPlaylist.Length);
+            int playlistIndex = Random.Range(0, playlist.Length);
             if (playlistIndex == _lastPlaylistIndex)
-                playlistIndex = (playlistIndex + 1) % _bgmPlaylist.Length;
+                playlistIndex = (playlistIndex + 1) % playlist.Length;
 
             return playlistIndex;
+        }
+
+        // 懒加载 BGM 列表，避免框架初始化时提前读取配置
+        private string[] getBgmPlaylist()
+        {
+            if (_isBgmPlaylistLoaded) return _bgmPlaylist;
+
+            _bgmPlaylist = SoundConfigLoader.GetBgmPlaylist(S_DefaultBgmPlaylist);
+            _isBgmPlaylistLoaded = true;
+            return _bgmPlaylist;
         }
 
         private AudioClip loadClip(string name)

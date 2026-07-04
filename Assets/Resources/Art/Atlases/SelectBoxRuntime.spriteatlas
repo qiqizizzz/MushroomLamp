@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SelectBoxRuntime
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 0
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: WebGL
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 028a9cf3fb2a32944b08a08a3d432de3, type: 3}
+    - {fileID: 2800000, guid: 216491b687e5167438afe8cfc8ecb9c0, type: 3}
+    - {fileID: 2800000, guid: f662fd1bca334fa4a99cf164a5213acb, type: 3}
+    - {fileID: 2800000, guid: 45f155f81f95688438351c0575d01a3a, type: 3}
+    - {fileID: 2800000, guid: a8339e1e023426647b2ea36693124b97, type: 3}
+    - {fileID: 2800000, guid: 2ab6f69c59b4b27448abe142c1667d02, type: 3}
+    - {fileID: 2800000, guid: fe815b54e4a45004a8b6da85cd51d6de, type: 3}
+    - {fileID: 2800000, guid: 94edca869748694419d9468f31c0760d, type: 3}
+    - {fileID: 2800000, guid: a025fafce950e214c801b72ba86daa52, type: 3}
+    - {fileID: 2800000, guid: df0a28025432957439d16b72579d24b9, type: 3}
+    - {fileID: 2800000, guid: 0d1ab65b1dc473846b02a594048c0a71, type: 3}
+    - {fileID: 2800000, guid: 3fb59cf3257680e4089ec4bd48f0d21f, type: 3}
+    - {fileID: 2800000, guid: 4042713e15b289f43a5806d3314c5083, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - df0a28025432957439d16b72579d24b9: 21300000
+    - 3fb59cf3257680e4089ec4bd48f0d21f: 21300000
+    - 028a9cf3fb2a32944b08a08a3d432de3: 21300000
+    - fe815b54e4a45004a8b6da85cd51d6de: 21300000
+    - 94edca869748694419d9468f31c0760d: 21300000
+    - 216491b687e5167438afe8cfc8ecb9c0: 21300000
+    - 45f155f81f95688438351c0575d01a3a: 21300000
+    - f662fd1bca334fa4a99cf164a5213acb: 21300000
+    - 0d1ab65b1dc473846b02a594048c0a71: 21300000
+    - 2ab6f69c59b4b27448abe142c1667d02: 21300000
+    - a025fafce950e214c801b72ba86daa52: 21300000
+    - a8339e1e023426647b2ea36693124b97: 21300000
+    - 4042713e15b289f43a5806d3314c5083: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: df0a28025432957439d16b72579d24b9, type: 3}
+  - {fileID: 21300000, guid: 3fb59cf3257680e4089ec4bd48f0d21f, type: 3}
+  - {fileID: 21300000, guid: 028a9cf3fb2a32944b08a08a3d432de3, type: 3}
+  - {fileID: 21300000, guid: fe815b54e4a45004a8b6da85cd51d6de, type: 3}
+  - {fileID: 21300000, guid: 94edca869748694419d9468f31c0760d, type: 3}
+  - {fileID: 21300000, guid: 216491b687e5167438afe8cfc8ecb9c0, type: 3}
+  - {fileID: 21300000, guid: 45f155f81f95688438351c0575d01a3a, type: 3}
+  - {fileID: 21300000, guid: f662fd1bca334fa4a99cf164a5213acb, type: 3}
+  - {fileID: 21300000, guid: 0d1ab65b1dc473846b02a594048c0a71, type: 3}
+  - {fileID: 21300000, guid: 2ab6f69c59b4b27448abe142c1667d02, type: 3}
+  - {fileID: 21300000, guid: a025fafce950e214c801b72ba86daa52, type: 3}
+  - {fileID: 21300000, guid: a8339e1e023426647b2ea36693124b97, type: 3}
+  - {fileID: 21300000, guid: 4042713e15b289f43a5806d3314c5083, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 5
+  - IMG_9171
+  - bg_selectView
+  - 2
+  - 3
+  - "\u6750\u6599\u7BB1\uFF08\u52A8\u7269\u7EC4\uFF09"
+  - "\u6750\u6599\u7BB1\u56FE\u6807\uFF08\u52A8\u7269\u7EC4\uFF09"
+  - "\u6750\u6599\u7BB1\uFF08\u690D\u7269\u7EC4\uFF09"
+  - 6
+  - 1
+  - 4
+  - "\u6750\u6599\u7BB1\u56FE\u6807\uFF08\u690D\u7269\u7EC4\uFF09"
+  - IMG_9177
+  m_RenderDataMap: {}
+  m_Tag: SelectBoxRuntime
+  m_IsVariant: 0

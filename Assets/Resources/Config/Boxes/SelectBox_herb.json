@@ -1,0 +1,78 @@
+{
+  "backgroundPath": "Art/BG_img/bg_selectView",
+  "summaryTitle": "简介",
+  "lines": [
+    {
+      "materialId": "VEG_001",
+      "iconPath": "Art/Card_img/potato",
+      "label": "土豆",
+      "count": 5
+    },
+    {
+      "materialId": "VEG_002",
+      "iconPath": "Art/Card_img/potato",
+      "label": "胡萝卜",
+      "count": 3
+    },
+    {
+      "materialId": "VEG_003",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "白菜叶",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_004",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "生菜叶",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_005",
+      "iconPath": "Art/Card_img/pumpkin",
+      "label": "小番茄",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_006",
+      "iconPath": "Art/Card_img/potato",
+      "label": "洋葱",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_007",
+      "iconPath": "Art/Card_img/mushroom",
+      "label": "蘑菇",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_008",
+      "iconPath": "Art/Card_img/pumpkin",
+      "label": "南瓜块",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_101",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "卷心菜叶",
+      "count": 1
+    },
+    {
+      "materialId": "VEG_102",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "香草叶",
+      "count": 1
+    },
+    {
+      "materialId": "VEG_103",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "藤蔓叶",
+      "count": 1
+    },
+    {
+      "materialId": "VEG_104",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "月光叶",
+      "count": 1
+    }
+  ]
+}

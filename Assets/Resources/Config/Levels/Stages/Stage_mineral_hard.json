@@ -1,0 +1,34 @@
+{
+  "stages": [
+    {
+      "stageId": "mineral_hard_1",
+      "displayName": "困难·第一小局",
+      "turnCount": 5,
+      "potTrayCapacity": 4,
+      "targetMin": 26,
+      "targetMax": 32,
+      "handCount": 5,
+      "angelRescueCount": 1
+    },
+    {
+      "stageId": "mineral_hard_2",
+      "displayName": "困难·第二小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 36,
+      "targetMax": 44,
+      "handCount": 5,
+      "angelRescueCount": 0
+    },
+    {
+      "stageId": "mineral_hard_3",
+      "displayName": "困难·第三小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 46,
+      "targetMax": 56,
+      "handCount": 5,
+      "angelRescueCount": 0
+    }
+  ]
+}

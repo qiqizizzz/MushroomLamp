@@ -1,0 +1,212 @@
+{
+  "defaults": {
+    "buttonClick": "ui_click",
+    "buttonHover": "ui_hover",
+    "bgmPlaylist": [
+      "bgm_alchemical_clockwork",
+      "bgm_cinder_crucible",
+      "bgm_murmur_vatcall"
+    ]
+  },
+  "bgms": [
+    {
+      "id": "bgm_alchemical_clockwork",
+      "path": "BGM/Alchemical Clockwork",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_cinder_crucible",
+      "path": "BGM/Cinder Crucible",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_murmur_vatcall",
+      "path": "BGM/Murmur Vatcall",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_ingame",
+      "path": "BGM/ingame",
+      "volume": 1.0
+    },
+    {
+      "id": "bgm_boiling_loop",
+      "path": "BGM/Ingame_BoilingLoop",
+      "volume": 1.0
+    }
+  ],
+  "clips": [
+    {
+      "id": "ui_click",
+      "path": "Effects/Menu_Ui_Click",
+      "volume": 1.0,
+      "breakable": true
+    },
+    {
+      "id": "ui_hover",
+      "path": "Effects/Menu_UI_Hover",
+      "volume": 0.8
+    },
+    {
+      "id": "menu_ui_click",
+      "path": "Effects/Menu_Ui_Click",
+      "volume": 1.0
+    },
+    {
+      "id": "menu_ui_hover",
+      "path": "Effects/Menu_UI_Hover",
+      "volume": 0.8,
+      "breakable": true
+    },
+    {
+      "id": "sfx_box_change_1",
+      "path": "Effects/BoxChange_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_box_change_2",
+      "path": "Effects/BoxChange_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_menu_selection_1",
+      "path": "Effects/IngameMenuSelection_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_menu_selection_2",
+      "path": "Effects/IngameMenuSelection_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_appear",
+      "path": "Effects/Ingame_Appear",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_disappear",
+      "path": "Effects/Ingame_Disappear",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_select",
+      "path": "Effects/InGameSelect",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_ingame_put_in_right_place",
+      "path": "Effects/Ingame_PutInRightPlace",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_1",
+      "path": "Effects/PokerCardFlipping_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_2",
+      "path": "Effects/PokerCardFlipping_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_3",
+      "path": "Effects/PokerCardFlipping_3",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_poker_card_flipping_4",
+      "path": "Effects/PokerCardFlipping_4",
+      "volume": 1.0
+    }
+  ],
+  "viewBindings": [
+    {
+      "view": "MainMenuView",
+      "bgms": [],
+      "buttonClick": "menu_ui_click",
+      "buttonHover": "menu_ui_hover",
+      "disableAutoButtonSound": false,
+      "buttons": [
+        {
+          "path": "ButtonGroup/Btn_Start",
+          "click": "menu_ui_click",
+          "hover": "menu_ui_hover"
+        },
+        {
+          "path": "ButtonGroup/Btn_Settings",
+          "click": "menu_ui_click",
+          "hover": "menu_ui_hover"
+        },
+        {
+          "path": "ButtonGroup/Btn_Gallery",
+          "click": "menu_ui_click",
+          "hover": ""
+        },
+        {
+          "path": "ButtonGroup/Btn_Exit",
+          "click": "menu_ui_click",
+          "hover": "menu_ui_hover"
+        }
+      ]
+    },
+    {
+      "view": "SelectBoxView",
+      "bgms": [],
+      "buttonClick": "",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": [
+        {
+          "path": "Bottom/Btn_Left",
+          "click": "sfx_box_change",
+          "hover": ""
+        },
+        {
+          "path": "Bottom/Btn_Right",
+          "click": "sfx_box_change",
+          "hover": ""
+        }
+      ]
+    },
+    {
+      "view": "CookView",
+      "bgms": [
+        {
+          "id": "bgm_ingame",
+          "loop": true,
+          "layer": false
+        },
+        {
+          "id": "bgm_boiling_loop",
+          "loop": true,
+          "layer": true
+        }
+      ],
+      "buttonClick": "",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": []
+    },
+    {
+      "view": "BlackjackView",
+      "bgms": [],
+      "buttonClick": "",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": [
+        {
+          "path": "Items/Item_0",
+          "click": "sfx_poker_card_flipping"
+        },
+        {
+          "path": "Items/Item_1",
+          "click": "sfx_poker_card_flipping"
+        },
+        {
+          "path": "Items/Item_2",
+          "click": "sfx_poker_card_flipping"
+        }
+      ]
+    }
+  ]
+}

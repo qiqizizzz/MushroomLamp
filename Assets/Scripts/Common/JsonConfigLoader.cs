@@ -7,14 +7,14 @@
 */
 
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Common
 {
     public static class JsonConfigLoader
     {
-        // 从 Addressables 读取 JSON 配置（address 即文件名，如 "CardConfig_Data"、"Boxes/SelectBox_herb"）
+        private const string CONFIG_RESOURCE_ROOT = "Config/";
+
+        // 从 Resources/Config 读取 JSON 配置（address 即文件名，如 "CardConfig_Data"、"Boxes/SelectBox_herb"）
         public static T LoadFromConfig<T>(string fileName) where T : class
         {
             string json = readConfigJsonText(fileName);
@@ -86,28 +86,19 @@ namespace Common
             return result != null;
         }
 
-        // 通过 Addressables 读取配置 JSON 文本（同步等待，配置文件很小，开销可忽略）
+        // 读取配置 JSON 文本
         private static string readConfigJsonText(string fileName)
         {
             string address = normalizeAddress(fileName);
             if (string.IsNullOrEmpty(address))
                 return null;
 
-            AsyncOperationHandle<TextAsset> handle = Addressables.LoadAssetAsync<TextAsset>(address);
-            handle.WaitForCompletion();
+            TextAsset resourceText = Resources.Load<TextAsset>($"{CONFIG_RESOURCE_ROOT}{address}");
+            if (resourceText != null)
+                return resourceText.text;
 
-            if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
-            {
-                QLog.Error($"[{nameof(JsonConfigLoader)}] Addressable 配置加载失败：{address}");
-                if (handle.IsValid())
-                    Addressables.Release(handle);
-                return null;
-            }
-
-            string text = handle.Result.text;
-            // TextAsset 内容已拷贝为 string，句柄可立即释放
-            Addressables.Release(handle);
-            return text;
+            QLog.Error($"[{nameof(JsonConfigLoader)}] 配置未找到：Resources/{CONFIG_RESOURCE_ROOT}{address}");
+            return null;
         }
 
         // 规范化为 address：去掉可能的 .json 后缀

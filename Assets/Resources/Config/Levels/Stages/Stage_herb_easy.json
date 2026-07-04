@@ -1,0 +1,34 @@
+{
+  "stages": [
+    {
+      "stageId": "herb_easy_1",
+      "displayName": "简单·第一小局",
+      "turnCount": 5,
+      "potTrayCapacity": 4,
+      "targetMin": 16,
+      "targetMax": 20,
+      "handCount": 5,
+      "angelRescueCount": 2
+    },
+    {
+      "stageId": "herb_easy_2",
+      "displayName": "简单·第二小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 22,
+      "targetMax": 27,
+      "handCount": 5,
+      "angelRescueCount": 2
+    },
+    {
+      "stageId": "herb_easy_3",
+      "displayName": "简单·第三小局",
+      "turnCount": 6,
+      "potTrayCapacity": 4,
+      "targetMin": 28,
+      "targetMax": 34,
+      "handCount": 5,
+      "angelRescueCount": 2
+    }
+  ]
+}

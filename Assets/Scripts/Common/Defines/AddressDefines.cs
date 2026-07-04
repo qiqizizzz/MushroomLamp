@@ -38,7 +38,7 @@ namespace Common.Defines
         public const string Config_ShopCatalog = "ShopCatalog";
         public const string Config_SoundCatalog = "Sound/SoundCatalog";
 
-        // Art 与字体（Addressables address，相对 Assets/）
+        // Art 与字体（Resources 路径，相对 Resources/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
         public const string Art_ShopContinueHover = "Art/ShopView/IMG_9173";
         public const string Art_SelectBoxStartHover = "Art/SelectBoxView/IMG_9171";
@@ -54,6 +54,6 @@ namespace Common.Defines
         public const string Art_MainMenuExitHover = "Art/MainMenuView/退出_点击";
         public const string Art_SummaryNextRoundHover = "Art/SummaryView/BtnNextRoundHover";
         public const string Art_SummaryBackHomeHover = "Art/SummaryView/BtnBackHomeHover";
-        public const string Font_SourceHanSansSdf = "Fonts/siyuan/SourceHanSansSC-Normal SDF";
+        public const string Font_SourceHanSansSdf = "Fonts/jingnan/荆南缘默体 SDF";
     }
 }

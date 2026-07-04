@@ -1,0 +1,36 @@
+{
+  "backgroundPath": "Art/BG_img/bg_selectView",
+  "summaryTitle": "香料清单",
+  "lines": [
+    {
+      "materialId": "VEG_003",
+      "iconPath": "Art/Card_img/mushroom",
+      "label": "丁香",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_002",
+      "iconPath": "Art/Card_img/carrot",
+      "label": "肉桂",
+      "count": 1
+    },
+    {
+      "materialId": "VEG_005",
+      "iconPath": "Art/Card_img/pumpkin",
+      "label": "姜黄",
+      "count": 2
+    },
+    {
+      "materialId": "VEG_006",
+      "iconPath": "Art/Card_img/potato",
+      "label": "胡椒",
+      "count": 3
+    },
+    {
+      "materialId": "VEG_004",
+      "iconPath": "Art/Card_img/mushroom",
+      "label": "八角",
+      "count": 1
+    }
+  ]
+}
