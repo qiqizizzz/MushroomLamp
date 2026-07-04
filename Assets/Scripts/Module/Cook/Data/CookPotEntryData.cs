@@ -6,6 +6,7 @@
 * └──────────────────────────────────┘
 */
 
+using Module.Item;
 using UnityEngine;
 
 namespace Module.Cook
@@ -54,8 +55,16 @@ namespace Module.Cook
             }
             else if (CookProgress > overCookLimit)
             {
-                ScoreMultiplier = 0.4f;
-                CookStateText = "煮烂";
+                if (ItemPassiveManager.TryConvertOvercookToSlightBurn(out float slightMultiplier, out string slightState))
+                {
+                    ScoreMultiplier = slightMultiplier;
+                    CookStateText = slightState;
+                }
+                else
+                {
+                    ScoreMultiplier = 0.4f;
+                    CookStateText = "煮烂";
+                }
             }
             else
             {

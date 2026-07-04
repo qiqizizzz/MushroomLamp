@@ -17,5 +17,14 @@ namespace Module.Player
         public string iconPath;
         public string description;
         public int price;
+        public string rarity;
+        public string itemCategory;
+        public string effectType;
+        public string effectTarget;
+        public string effectValue;
+        public string triggerType;
+        public string durationType;
+        public string resetRule;
+        public bool stackable;
     }
 }

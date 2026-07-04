@@ -23,6 +23,7 @@ namespace Module.Player
     public class PlayerData
     {
         private readonly Dictionary<string, int> _cardCounts = new();
+        private readonly HashSet<string> _ownedItemIds = new();
 
         public int Money { get; private set; }
 
@@ -32,6 +33,35 @@ namespace Module.Player
         {
             Money = 0;
             _cardCounts.Clear();
+            _ownedItemIds.Clear();
+        }
+
+        public void ClearItemsForNewRun()
+        {
+            _ownedItemIds.Clear();
+        }
+
+        public bool AddItem(string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(itemId)) return false;
+
+            ItemParamJsonData cfg = Module.Item.ItemParamCatalogLoader.GetById(itemId);
+            if (cfg != null && !cfg.stackable && _ownedItemIds.Contains(itemId))
+                return false;
+
+            _ownedItemIds.Add(itemId);
+            return true;
+        }
+
+        public bool HasItem(string itemId)
+        {
+            return !string.IsNullOrWhiteSpace(itemId) && _ownedItemIds.Contains(itemId);
+        }
+
+        public IEnumerable<string> GetOwnedItemIds()
+        {
+            foreach (string itemId in _ownedItemIds)
+                yield return itemId;
         }
 
         public void AddMoney(int amount)

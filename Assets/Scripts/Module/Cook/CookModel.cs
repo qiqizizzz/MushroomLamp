@@ -8,6 +8,7 @@
 
 using Module.Card;
 using MVC.Model;
+using Module.Item;
 using Module.Level;
 using System;
 using System.Collections.Generic;
@@ -139,6 +140,7 @@ namespace Module.Cook
         public void StartRun(CookRunStartData startData = null)
         {
             setupStartData(startData);
+            ItemPassiveManager.ResetStageState();
 
             TurnIndex = 1;
             CurrentScore = 0;

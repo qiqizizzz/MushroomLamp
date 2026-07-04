@@ -8,6 +8,7 @@
 
 using Common.Defines;
 using Module.Confirm;
+using Module.Item;
 using MVC;
 using MVC.Controller;
 using MVC.View;
@@ -80,9 +81,26 @@ namespace Module.Blackjack
             refreshView();
 
             if (_model.IsBusted)
+            {
+                if (ItemPassiveManager.TryConsumeRabbitFootReroll() && _model.UndoLastReveal())
+                {
+                    refreshView();
+                    ConfirmController.Show(new ConfirmModel
+                    {
+                        mode = ConfirmModel.Mode.ConfirmOnly,
+                        title = "幸运兔脚",
+                        message = "首次凑出 21 点，已为你重抽这张牌。\n请再选一张牌试试手气。",
+                        confirmText = "继续"
+                    });
+                    return;
+                }
+
                 showBustResult();
+            }
             else if (_model.AllRevealed)
+            {
                 showSafeResult();
+            }
         }
 
         // 爆牌：弹确认框提示触发超级不好的 debuff（具体数值后续再接）
@@ -102,14 +120,14 @@ namespace Module.Blackjack
             });
         }
 
-        // 安全翻完 4 张未爆牌
+        // 安全翻完所有牌未爆牌
         private void showSafeResult()
         {
             ConfirmController.Show(new ConfirmModel
             {
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "安全过关",
-                message = $"四张牌翻完，累计 {_model.TotalPoint} 点，未爆牌。",
+                message = $"全部牌翻完，累计 {_model.TotalPoint} 点，未爆牌。",
                 confirmText = "收手",
                 onConfirm = () =>
                 {
@@ -121,6 +139,7 @@ namespace Module.Blackjack
         // 关闭 21 点并恢复烹饪界面
         private void returnToCookView()
         {
+            ItemPassiveManager.EndMagicBoxSession();
             GameApp.ViewManager.Close((int)ViewType.BlackjackView);
             ApplyControllerFunc(ControllerType.Cook, EventDefines.OpenCookView);
         }

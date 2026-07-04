@@ -4,6 +4,7 @@ using System.Linq;
 using Common;
 using Common.Defines;
 using Module.Player;
+using Module.Player;
 using Module.Select;
 using UnityEngine;
 
@@ -183,7 +184,9 @@ namespace Module.Shop
             var source = _itemConfig?.items;
             if (source == null || source.Length == 0 || count <= 0) return result;
 
-            var pool = source.ToList();
+            var pool = source
+                .Where(data => data != null && !isItemAlreadyOwned(data))
+                .ToList();
             for (int i = 0; i < count && pool.Count > 0; i++)
             {
                 int index = UnityEngine.Random.Range(0, pool.Count);
@@ -202,6 +205,12 @@ namespace Module.Shop
             }
 
             return result;
+        }
+
+        private static bool isItemAlreadyOwned(ItemParamJsonData data)
+        {
+            if (data.stackable || string.IsNullOrWhiteSpace(data.id)) return false;
+            return PlayerDataManager.Instance.HasItem(data.id);
         }
 
         private static ShopCatalogJsonConfig getShopConfig()

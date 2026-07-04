@@ -12,6 +12,7 @@ namespace Module.Shop
         [SerializeField] private Image imgPriceTag;
         [SerializeField] private TextMeshProUGUI txtPrice;
         [SerializeField] private TextMeshProUGUI txtDesc;
+        [SerializeField] private ShopHoverScaleItem hoverScale;
 
         public void Bind(ShopSlotData data, Action<ShopSlotData> onBuy = null)
         {
@@ -28,6 +29,17 @@ namespace Module.Shop
                 imgIcon.sprite = sprite;
                 imgIcon.preserveAspect = true;
                 imgIcon.enabled = sprite != null;
+            }
+
+            if (hoverScale != null)
+            {
+                hoverScale.SetInteractable(!data.isPurchased);
+                RectTransform hitRt = imgIcon != null ? imgIcon.rectTransform : transform as RectTransform;
+                if (hitRt != null)
+                {
+                    Vector3 scale = hitRt.localScale;
+                    hoverScale.SetHitSize(hitRt.rect.width * scale.x, hitRt.rect.height * scale.y);
+                }
             }
 
             bindBuyButton(data, onBuy);
@@ -58,6 +70,11 @@ namespace Module.Shop
                 Transform descTf = transform.Find("Txt_Desc");
                 if (descTf != null) txtDesc = descTf.GetComponent<TextMeshProUGUI>();
             }
+
+            if (hoverScale == null)
+                hoverScale = GetComponent<ShopHoverScaleItem>();
+            if (hoverScale == null)
+                hoverScale = gameObject.AddComponent<ShopHoverScaleItem>();
         }
 
         // 整个卡槽即购买按钮：绑根节点上的 Button
@@ -71,6 +88,7 @@ namespace Module.Shop
             if (data.isPurchased)
             {
                 btn.interactable = false;
+                hoverScale?.SetInteractable(false);
             }
             else
             {

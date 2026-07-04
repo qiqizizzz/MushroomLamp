@@ -85,7 +85,7 @@ namespace Module.Blackjack
 
             // 底部文本
             if (_txtBottom != null)
-                _txtBottom.text = $"累计点数：{model.TotalPoint} / {BlackjackModel.BustLimit}　已翻 {model.RevealedCount}/{BlackjackModel.CardCount}";
+                _txtBottom.text = $"累计点数：{model.TotalPoint} / {BlackjackModel.BustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
 
             if (_bubbleLeft != null) _bubbleLeft.text = model.IsBusted ? "嘿嘿，爆了吧！" : "再翻一张试试？";
             if (_bubbleRight != null) _bubbleRight.text = model.IsBusted ? "唉，别贪心呀…" : "见好就收哦~";

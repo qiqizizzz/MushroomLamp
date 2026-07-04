@@ -11,6 +11,7 @@ using Common.Defines;
 using MVC;
 using MVC.Controller;
 using MVC.View;
+using Module.Item;
 using Module.Level;
 using Module.StageSettle;
 using Module.View;
@@ -203,6 +204,7 @@ namespace Module.Cook
                 return;
             }
 
+            ItemPassiveManager.BeginMagicBoxSession();
             refreshCookView();
             ApplyControllerFunc(ControllerType.Blackjack, EventDefines.OpenBlackjackView);
         }
