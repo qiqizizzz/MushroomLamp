@@ -56,17 +56,15 @@ namespace Module.Blackjack
 
         private void onOpen(object[] args)
         {
-            _model.Reset();
             _dialogSession.Reset();
             GameApp.ViewManager.Open((int)ViewType.BlackjackView, args);
-            refreshView();
+            beginSession();
         }
 
         private void onRestart(object[] args)
         {
-            _model.Reset();
             _dialogSession.Reset();
-            refreshView();
+            beginSession();
         }
 
         private void onReturn(object[] args)
@@ -77,10 +75,9 @@ namespace Module.Blackjack
         // 点道具抽牌：翻开下一张，刷新界面；达/超 21 触发结算
         private void onDraw(object[] args)
         {
-            if (!_model.CanDraw) return;
-
-            int index = _model.RevealNext();
-            if (index < 0) return;
+            int slotIndex = resolveItemSlotIndex(args);
+            if (!_model.TryDrawFromSlot(slotIndex, out int cardIndex) || cardIndex < 0)
+                return;
 
             refreshView();
 
@@ -150,11 +147,35 @@ namespace Module.Blackjack
 
         private void refreshView()
         {
-            _dialogSession.Refresh(_model, buildDialogContext());
+            var view = getBlackjackView();
+            if (view == null) return;
 
-            var view = GameApp.ViewManager.GetView((int)ViewType.BlackjackView);
-            if (view is BlackjackView blackjackView)
-                blackjackView.Refresh(_model, _dialogSession);
+            view.RefreshGameplay(_model);
+
+            if (!_dialogSession.DialogEnabled) return;
+
+            _dialogSession.Refresh(_model, buildDialogContext());
+            view.RefreshDialog(_dialogSession);
+        }
+
+        private void beginSession()
+        {
+            BlackjackView view = getBlackjackView();
+            if (view == null) return;
+
+            _model.Reset(view.GetItemSlotCount());
+            view.BeginSession(_model, onIntroFinished);
+        }
+
+        private void onIntroFinished()
+        {
+            _dialogSession.SetDialogEnabled(true);
+            refreshView();
+        }
+
+        private BlackjackView getBlackjackView()
+        {
+            return GameApp.ViewManager.GetView((int)ViewType.BlackjackView) as BlackjackView;
         }
 
         private static BlackjackDialogContext buildDialogContext()
@@ -163,6 +184,12 @@ namespace Module.Blackjack
                 return new BlackjackDialogContext(cookModel.CurrentScore, cookModel.TargetMin);
 
             return BlackjackDialogContext.Empty;
+        }
+
+        private static int resolveItemSlotIndex(object[] args)
+        {
+            if (args == null || args.Length == 0) return 0;
+            return args[0] is int index ? index : 0;
         }
     }
 }

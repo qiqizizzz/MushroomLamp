@@ -6,8 +6,10 @@
 * └──────────────────────────────────┘
 */
 
+using System;
 using System.Collections.Generic;
 using Common.Defines;
+using Common.UI;
 using DG.Tweening;
 using MVC.View;
 using TMPro;
@@ -21,12 +23,28 @@ namespace Module.Blackjack
         private const float BubbleAnimDuration = 0.32f;
         private const float BubbleHideScale = 0.08f;
 
+        private const float ItemHoverScale = 1.2f;
+        private const float DealStagger = 0.08f;
+        private const float DealDuration = 0.42f;
+
+        private static readonly Color ItemNormalColor = Color.white;
+        private static readonly Color ItemDisabledColor = new Color(0.78f, 0.78f, 0.78f, 0.55f);
+
+        [Header("开场")]
+        [SerializeField] private float _openCooldownSeconds = 1.5f;
+        [Header("小牌布局")]
+        [SerializeField] private float _layoutCardWidth = 140f;
+        [SerializeField] private float _layoutSpacing = 20f;
+
         private readonly List<Button> _itemButtons = new();
+        private readonly List<UIButtonHoverItem> _itemHovers = new();
+        private readonly List<CardSlot> _smallCardPool = new();
         private readonly List<CardSlot> _smallCards = new();
 
         private Button _btnBox;
 
         private CardSlot _bigCard;
+        private RectTransform _smallCardsRoot;
         private TextMeshProUGUI _txtBottom;
 
         private BubbleAnimSlot _devilBubble;
@@ -35,9 +53,14 @@ namespace Module.Blackjack
         private BlackjackDialogSession _dialogSession;
         private TMP_FontAsset _fontTemplate;
 
+        private Sequence _introSequence;
+        private bool _interactionLocked;
+        private Action _onIntroComplete;
+
         private class CardSlot
         {
             public GameObject root;
+            public RectTransform rect;
             public TextMeshProUGUI point;
             public Image face;
         }
@@ -208,30 +231,72 @@ namespace Module.Blackjack
         {
             base.Open(args);
             _dialogSession = null;
+            killIntroSequence();
             _devilBubble?.resetInstant();
             _angelBubble?.resetInstant();
         }
 
         public override void Close(params object[] args)
         {
+            killIntroSequence();
             _devilBubble?.killTween();
             _angelBubble?.killTween();
             base.Close(args);
         }
 
+        public int GetItemSlotCount()
+        {
+            return _itemButtons.Count;
+        }
+
+        public void BeginSession(BlackjackModel model, Action onIntroComplete)
+        {
+            _onIntroComplete = onIntroComplete;
+            killIntroSequence();
+            _devilBubble?.resetInstant();
+            _angelBubble?.resetInstant();
+
+            syncItemSlots(model.ItemSlotCount);
+            syncSmallCards(model);
+            setInteractionLocked(true);
+            RefreshGameplay(model, applyLayout: false);
+
+            Vector2 flyStart = getBigCardAnchoredInSmallCardsRoot();
+            IReadOnlyList<Vector2> targets = model.GetSmallCardLayout(
+                _smallCardsRoot != null ? _smallCardsRoot.rect.width : 720f,
+                _layoutCardWidth,
+                _layoutSpacing);
+
+            prepareSmallCardsAt(flyStart);
+
+            float cooldown = Mathf.Max(0f, _openCooldownSeconds);
+            _introSequence = DOTween.Sequence()
+                .AppendInterval(cooldown)
+                .AppendCallback(() => playSmallCardsFlyIn(targets, () =>
+                {
+                    setInteractionLocked(false);
+                    _onIntroComplete?.Invoke();
+                    _onIntroComplete = null;
+                }));
+        }
+
         protected override void OnUpdate()
         {
-            if (_dialogSession == null) return;
+            if (_dialogSession == null || !_dialogSession.DialogEnabled) return;
 
             _dialogSession.Tick();
             applyBubbleVisibility();
         }
 
-        public void Refresh(BlackjackModel model, BlackjackDialogSession dialogSession)
+        public void RefreshGameplay(BlackjackModel model, bool applyLayout = true)
         {
             if (model == null) return;
 
-            _dialogSession = dialogSession;
+            if (applyLayout)
+            {
+                syncItemSlots(model.ItemSlotCount);
+                syncSmallCards(model);
+            }
 
             if (_bigCard != null)
             {
@@ -248,21 +313,180 @@ namespace Module.Blackjack
                     slot.point.text = revealed ? model.GetRevealedPoint(i).ToString() : "?";
             }
 
-            foreach (Button btn in _itemButtons)
-                if (btn != null) btn.interactable = model.CanDraw;
+            for (int i = 0; i < _itemButtons.Count; i++)
+            {
+                bool available = !_interactionLocked && model.IsItemSlotAvailable(i);
+                applyItemSlotState(i, available);
+            }
 
             if (_txtBottom != null)
                 _txtBottom.text = $"累计点数：{model.TotalPoint} / {BlackjackModel.BustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
+        }
 
+        public void RefreshDialog(BlackjackDialogSession dialogSession)
+        {
+            _dialogSession = dialogSession;
             applyBubbleVisibility();
+        }
+
+        private void applyItemSlotState(int index, bool available)
+        {
+            if (index < 0 || index >= _itemButtons.Count) return;
+
+            Button btn = _itemButtons[index];
+            if (btn != null)
+            {
+                btn.interactable = available;
+                if (btn.targetGraphic is Image img)
+                    img.color = available ? ItemNormalColor : ItemDisabledColor;
+            }
+
+            if (index < _itemHovers.Count && _itemHovers[index] != null)
+                _itemHovers[index].SetInteractable(available);
         }
 
         private void applyBubbleVisibility()
         {
-            if (_dialogSession == null) return;
+            if (_dialogSession == null || !_dialogSession.DialogEnabled) return;
 
             _devilBubble?.sync(_dialogSession.DevilText, !string.IsNullOrEmpty(_dialogSession.DevilText));
             _angelBubble?.sync(_dialogSession.AngelText, !string.IsNullOrEmpty(_dialogSession.AngelText));
+        }
+
+        private void syncItemSlots(int slotCount)
+        {
+            Transform items = Find<Transform>("Items");
+            if (items == null) return;
+
+            int index = 0;
+            foreach (Transform child in items)
+            {
+                bool active = index < slotCount;
+                if (child.gameObject.activeSelf != active)
+                    child.gameObject.SetActive(active);
+                index++;
+            }
+        }
+
+        private void syncSmallCards(BlackjackModel model)
+        {
+            if (model == null || _smallCardsRoot == null) return;
+
+            ensureSmallCardPool(model.ItemSlotCount);
+
+            _smallCards.Clear();
+            for (int i = 0; i < _smallCardPool.Count; i++)
+            {
+                CardSlot slot = _smallCardPool[i];
+                bool active = i < model.ItemSlotCount;
+                if (slot.root != null)
+                    slot.root.SetActive(active);
+                if (active)
+                    _smallCards.Add(slot);
+            }
+
+            IReadOnlyList<Vector2> layout = model.GetSmallCardLayout(
+                _smallCardsRoot.rect.width,
+                _layoutCardWidth,
+                _layoutSpacing);
+
+            for (int i = 0; i < _smallCards.Count; i++)
+            {
+                if (_smallCards[i].rect == null || i >= layout.Count) continue;
+                _smallCards[i].rect.anchoredPosition = layout[i];
+                _smallCards[i].rect.localScale = Vector3.one;
+            }
+        }
+
+        private void ensureSmallCardPool(int required)
+        {
+            if (_smallCardPool.Count == 0) return;
+
+            while (_smallCardPool.Count < required)
+            {
+                CardSlot template = _smallCardPool[0];
+                GameObject clone = Instantiate(template.root, _smallCardsRoot);
+                clone.name = $"Card_{_smallCardPool.Count}";
+                _smallCardPool.Add(bindCard(clone));
+            }
+        }
+
+        private void prepareSmallCardsAt(Vector2 anchoredPosition)
+        {
+            for (int i = 0; i < _smallCards.Count; i++)
+            {
+                CardSlot slot = _smallCards[i];
+                if (slot.rect == null) continue;
+                slot.rect.anchoredPosition = anchoredPosition;
+                slot.rect.localScale = Vector3.zero;
+            }
+        }
+
+        private void playSmallCardsFlyIn(IReadOnlyList<Vector2> targets, Action onComplete)
+        {
+            killIntroSequence();
+
+            int count = Mathf.Min(_smallCards.Count, targets?.Count ?? 0);
+            if (count <= 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            _introSequence = DOTween.Sequence();
+
+            for (int i = 0; i < count; i++)
+            {
+                CardSlot slot = _smallCards[i];
+                if (slot.rect == null) continue;
+
+                Vector2 target = targets[i];
+                float delay = i * DealStagger;
+
+                _introSequence.Insert(delay, slot.rect.DOAnchorPos(target, DealDuration).SetEase(Ease.OutCubic));
+                _introSequence.Insert(delay, slot.rect.DOScale(Vector3.one, DealDuration).SetEase(Ease.OutBack));
+            }
+
+            _introSequence.OnComplete(() =>
+            {
+                _introSequence = null;
+                onComplete?.Invoke();
+            });
+        }
+
+        private Vector2 getBigCardAnchoredInSmallCardsRoot()
+        {
+            if (_bigCard?.root == null || _smallCardsRoot == null)
+                return Vector2.zero;
+
+            var bigRt = _bigCard.root.transform as RectTransform;
+            if (bigRt == null) return Vector2.zero;
+
+            Vector3 world = bigRt.TransformPoint(bigRt.rect.center);
+            return _smallCardsRoot.InverseTransformPoint(world);
+        }
+
+        private void setInteractionLocked(bool locked)
+        {
+            _interactionLocked = locked;
+
+            for (int i = 0; i < _itemButtons.Count; i++)
+            {
+                if (_itemButtons[i] != null)
+                    _itemButtons[i].interactable = !locked;
+                if (i < _itemHovers.Count && _itemHovers[i] != null)
+                    _itemHovers[i].SetInteractable(!locked);
+            }
+
+            if (_btnBox != null)
+                _btnBox.interactable = !locked;
+        }
+
+        private void killIntroSequence()
+        {
+            if (_introSequence == null) return;
+            _introSequence.Kill();
+            _introSequence = null;
         }
 
         private static Vector3 getEmitLocalPosition(RectTransform character, RectTransform bubble, Vector2 normalizedInCharacter)
@@ -283,6 +507,7 @@ namespace Module.Blackjack
         private void collectItemButtons()
         {
             _itemButtons.Clear();
+            _itemHovers.Clear();
             Transform items = Find<Transform>("Items");
             if (items == null) return;
 
@@ -290,6 +515,12 @@ namespace Module.Blackjack
             {
                 Button btn = child.GetComponent<Button>();
                 if (btn == null) btn = child.gameObject.AddComponent<Button>();
+
+                UIButtonHoverItem hover = child.GetComponent<UIButtonHoverItem>();
+                if (hover == null) hover = child.gameObject.AddComponent<UIButtonHoverItem>();
+                hover.Setup(btn, null, ItemHoverScale);
+
+                _itemHovers.Add(hover);
                 _itemButtons.Add(btn);
             }
         }
@@ -333,15 +564,17 @@ namespace Module.Blackjack
 
         private void collectCards()
         {
+            _smallCardPool.Clear();
             _smallCards.Clear();
 
             Transform big = transform.Find("BigCard");
             if (big != null) _bigCard = bindCard(big.gameObject);
 
-            Transform smalls = Find<Transform>("SmallCards");
-            if (smalls != null)
-                foreach (Transform child in smalls)
-                    _smallCards.Add(bindCard(child.gameObject));
+            _smallCardsRoot = Find<RectTransform>("SmallCards");
+            if (_smallCardsRoot == null) return;
+
+            foreach (Transform child in _smallCardsRoot)
+                _smallCardPool.Add(bindCard(child.gameObject));
         }
 
         private CardSlot bindCard(GameObject root)
@@ -349,6 +582,7 @@ namespace Module.Blackjack
             return new CardSlot
             {
                 root = root,
+                rect = root.GetComponent<RectTransform>(),
                 face = root.GetComponent<Image>(),
                 point = findTextIn(root.transform, "Txt_Point")
             };

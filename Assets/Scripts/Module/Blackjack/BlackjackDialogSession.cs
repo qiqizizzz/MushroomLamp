@@ -20,6 +20,9 @@ namespace Module.Blackjack
         private bool _angelBubbleVisible;
         private float _devilHideAt = float.PositiveInfinity;
         private float _angelHideAt = float.PositiveInfinity;
+        private bool _dialogEnabled;
+
+        public bool DialogEnabled => _dialogEnabled;
 
         public string DevilText => _devilBubbleVisible ? _lastDevilText : string.Empty;
         public string AngelText => _angelBubbleVisible ? _lastAngelText : string.Empty;
@@ -38,10 +41,23 @@ namespace Module.Blackjack
             _angelBubbleVisible = false;
             _devilHideAt = float.PositiveInfinity;
             _angelHideAt = float.PositiveInfinity;
+            _dialogEnabled = false;
+        }
+
+        public void SetDialogEnabled(bool enabled)
+        {
+            _dialogEnabled = enabled;
+            if (enabled) return;
+
+            _devilBubbleVisible = false;
+            _angelBubbleVisible = false;
+            _devilHideAt = float.PositiveInfinity;
+            _angelHideAt = float.PositiveInfinity;
         }
 
         public void Refresh(BlackjackModel model, BlackjackDialogContext context)
         {
+            if (!_dialogEnabled) return;
             string phase = BlackjackDialogCatalogLoader.ResolvePhase(model, context);
             bool phaseChanged = phase != _lastPhase;
             _lastPhase = phase;
