@@ -38,6 +38,7 @@ public class GameApp : Singleton<GameApp>
         TimerManager = new TimerManager();
         MessageCenter = new MessageCenter();
         SoundManager = new SoundManager();
+        Common.UI.UIFontHelper.EnsurePrewarmed();
         _isInit = true;
     }
 

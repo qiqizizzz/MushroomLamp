@@ -2388,7 +2388,7 @@ MonoBehaviour:
   m_AtlasTextures:
   - {fileID: -7636660970760617460}
   m_AtlasTextureIndex: 0
-  m_IsMultiAtlasTexturesEnabled: 0
+  m_IsMultiAtlasTexturesEnabled: 1
   m_ClearDynamicDataOnBuild: 0
   m_UsedGlyphRects:
   - m_X: 0
@@ -3157,8 +3157,8 @@ MonoBehaviour:
     pointSize: 90
     padding: 9
     packingMode: 0
-    atlasWidth: 1024
-    atlasHeight: 1024
+    atlasWidth: 4096
+    atlasHeight: 4096
     characterSetSelectionMode: 7
     characterSequence: 
     referencedFontAssetGUID: 
