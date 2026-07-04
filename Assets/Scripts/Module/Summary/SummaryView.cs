@@ -1,4 +1,6 @@
 using System.Collections;
+using Common.Defines;
+using Common.UI;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -47,7 +49,7 @@ namespace Module.Summary
             _txtDevil       = Find<TextMeshProUGUI>($"{stats}/Row_Devil/Txt_Value");
             _txtGold        = Find<TextMeshProUGUI>($"{stats}/Row_Gold/Txt_Value");
 
-            _txtScoreValue = Find<TextMeshProUGUI>("Middle/Center/ScorePanel/Txt_ScoreValue");
+            _txtScoreValue = Find<TextMeshProUGUI>("Middle/Right/ScorePanel/Txt_ScoreValue");
 
             _highlightsContainer = Find<Transform>("Middle/Right/Highlights");
             _highlightTemplate   = Find("Middle/Right/Highlights/HighlightTemplate");
@@ -57,6 +59,25 @@ namespace Module.Summary
             _btnAlmanac   = Find<Button>("Bottom/Btn_Almanac");
             _btnBackMenu  = Find<Button>("Bottom/Btn_BackMenu");
             _btnCookAgain = Find<Button>("Bottom/Btn_CookAgain");
+
+            setupButtonHovers();
+        }
+
+        private void setupButtonHovers()
+        {
+            setupButtonHover(_btnCookAgain, AddressDefines.Art_SummaryNextRoundHover);
+            setupButtonHover(_btnBackMenu, AddressDefines.Art_SummaryBackHomeHover);
+        }
+
+        private static void setupButtonHover(Button button, string hoverSpriteAddress)
+        {
+            if (button == null) return;
+
+            UIButtonHoverItem hover = button.GetComponent<UIButtonHoverItem>();
+            if (hover == null)
+                hover = button.gameObject.AddComponent<UIButtonHoverItem>();
+
+            hover.Setup(button, hoverSpriteAddress);
         }
 
         public override void InitData()
