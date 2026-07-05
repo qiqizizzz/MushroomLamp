@@ -148,7 +148,8 @@ namespace Module.Blackjack
 
             view.MarkSlotUsed(slotIndex);
             int point = _model.GetRevealedPoint(cardIndex);
-            view.PlayCardFlipReveal(cardIndex, point, slotIndex, onDrawFlipFinished);
+            string faceKey = _model.GetFaceSpriteKey(cardIndex);
+            view.PlayCardFlipReveal(cardIndex, point, slotIndex, faceKey, onDrawFlipFinished);
 
             if (showMaterialConfirm == null) return;
 

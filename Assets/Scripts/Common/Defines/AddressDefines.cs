@@ -58,6 +58,8 @@ namespace Common.Defines
         public const string Art_MainMenuExitHover = "Art/MainMenuView/退出_点击";
         public const string Art_SummaryNextRoundHover = "Art/SummaryView/BtnNextRoundHover";
         public const string Art_SummaryBackHomeHover = "Art/SummaryView/BtnBackHomeHover";
+        public const string Art_PokerRoot = "Art/Poker";
+        public const string Art_PokerCardBack = "Art/Poker/CardBack";
         public const string Font_JingnanSdf = "Fonts/jingnan/荆南缘默体 SDF";
     }
 }

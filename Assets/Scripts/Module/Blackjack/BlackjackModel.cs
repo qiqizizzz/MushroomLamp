@@ -20,6 +20,7 @@ namespace Module.Blackjack
     {
         public int revealedPoint;     // 翻开后得到的点数
         public bool revealed;         // 是否已翻开
+        public string faceSpriteKey;  // 牌面 Resources 名（如 7H），花色随机
     }
 
     public class BlackjackModel : BaseModel
@@ -118,6 +119,7 @@ namespace Module.Blackjack
             BlackjackCardData card = Cards[slotIndex];
             int point = rollNextPoint();
             card.revealedPoint = point;
+            card.faceSpriteKey = PokerCardSpriteLoader.RollFaceSpriteKey(point);
             card.revealed = true;
             TotalPoint += point;
             RevealedCount++;
@@ -136,6 +138,7 @@ namespace Module.Blackjack
             TotalPoint -= card.revealedPoint;
             card.revealed = false;
             card.revealedPoint = 0;
+            card.faceSpriteKey = null;
             RevealedCount--;
             _usedItemSlots.Remove(_lastUsedItemSlot);
             _lastUndoneItemSlot = _lastUsedItemSlot;
@@ -148,6 +151,12 @@ namespace Module.Blackjack
         {
             if (index < 0 || index >= Cards.Count) return 0;
             return Cards[index].revealed ? Cards[index].revealedPoint : 0;
+        }
+
+        public string GetFaceSpriteKey(int index)
+        {
+            if (index < 0 || index >= Cards.Count) return null;
+            return Cards[index].revealed ? Cards[index].faceSpriteKey : null;
         }
 
         private int rollNextPoint()

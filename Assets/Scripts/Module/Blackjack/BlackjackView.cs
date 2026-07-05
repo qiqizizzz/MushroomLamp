@@ -63,6 +63,7 @@ namespace Module.Blackjack
 
         private BlackjackDialogSession _dialogSession;
         private TMP_FontAsset _fontTemplate;
+        private Sprite _cardBackSprite;
 
         private Sequence _introSequence;
         private bool _interactionLocked;
@@ -235,6 +236,8 @@ namespace Module.Blackjack
 
             if (_txtBottom != null) _fontTemplate = _txtBottom.font;
             else if (_devilBubble.text != null) _fontTemplate = _devilBubble.text.font;
+
+            _cardBackSprite = PokerCardSpriteLoader.Back;
         }
 
         public override void InitData()
@@ -336,9 +339,9 @@ namespace Module.Blackjack
 
                 CardSlot slot = _smallCards[i];
                 bool revealed = i < model.Cards.Count && model.Cards[i].revealed;
-                setCardFace(slot, revealed);
-                if (slot.point != null)
-                    slot.point.text = revealed ? model.GetRevealedPoint(i).ToString() : "?";
+                string faceKey = model.GetFaceSpriteKey(i);
+                int point = revealed ? model.GetRevealedPoint(i) : 0;
+                applySmallCardVisual(slot, revealed, faceKey, point);
             }
 
             for (int i = 0; i < _itemButtons.Count; i++)
@@ -364,7 +367,7 @@ namespace Module.Blackjack
         }
 
         // 点击道具后播放小牌翻转；数值与累计点数在动画结束后由 onComplete 触发刷新
-        public void PlayCardFlipReveal(int cardIndex, int pointValue, int usedItemSlot, Action onComplete)
+        public void PlayCardFlipReveal(int cardIndex, int pointValue, int usedItemSlot, string faceSpriteKey, Action onComplete)
         {
             if (cardIndex < 0 || cardIndex >= _smallCards.Count)
             {
@@ -385,24 +388,14 @@ namespace Module.Blackjack
             applyItemSlotState(usedItemSlot, false);
             setInteractionLocked(true);
 
-            setCardFace(slot, false);
-            if (slot.point != null)
-            {
-                slot.point.text = "?";
-                slot.point.gameObject.SetActive(true);
-            }
+            applySmallCardVisual(slot, revealed: false, faceSpriteKey: null, pointValue: 0);
 
             slot.rect.localScale = Vector3.one;
             float half = Mathf.Max(0.05f, _flipHalfDuration);
 
             slot.flipTween = DOTween.Sequence()
                 .Append(slot.rect.DOScaleX(0f, half).SetEase(Ease.InQuad))
-                .AppendCallback(() =>
-                {
-                    setCardFace(slot, true);
-                    if (slot.point != null)
-                        slot.point.text = pointValue.ToString();
-                })
+                .AppendCallback(() => applySmallCardVisual(slot, true, faceSpriteKey, pointValue))
                 .Append(slot.rect.DOScaleX(1f, half).SetEase(Ease.OutQuad))
                 .OnComplete(() =>
                 {
@@ -419,8 +412,7 @@ namespace Module.Blackjack
         {
             if (_bigCard != null)
             {
-                setCardFace(_bigCard, true);
-                if (_bigCard.point != null) _bigCard.point.text = model.TotalPoint.ToString();
+                applyBigCardVisual(_bigCard, model.TotalPoint);
             }
 
             if (_txtBottom != null)
@@ -843,13 +835,51 @@ namespace Module.Blackjack
             };
         }
 
-        private static void setCardFace(CardSlot slot, bool revealed)
+        private void applyBigCardVisual(CardSlot slot, int totalPoint)
         {
-            if (slot == null) return;
-            if (slot.face != null)
-                slot.face.color = revealed ? new Color(1f, 1f, 1f, 1f) : new Color(0.45f, 0.3f, 0.55f, 1f);
+            if (slot?.face == null) return;
+
+            if (_cardBackSprite != null)
+            {
+                slot.face.sprite = _cardBackSprite;
+                slot.face.color = Color.white;
+            }
+
             if (slot.point != null)
+            {
                 slot.point.gameObject.SetActive(true);
+                slot.point.text = totalPoint.ToString();
+                slot.point.color = Color.white;
+            }
+        }
+
+        private void applySmallCardVisual(CardSlot slot, bool revealed, string faceSpriteKey, int pointValue)
+        {
+            if (slot?.face == null) return;
+
+            if (slot.point != null)
+                slot.point.gameObject.SetActive(false);
+
+            if (!revealed)
+            {
+                if (_cardBackSprite != null)
+                {
+                    slot.face.sprite = _cardBackSprite;
+                    slot.face.color = Color.white;
+                }
+
+                return;
+            }
+
+            Sprite face = PokerCardSpriteLoader.GetFace(faceSpriteKey);
+            if (face != null)
+            {
+                slot.face.sprite = face;
+                slot.face.color = Color.white;
+                return;
+            }
+
+            slot.face.color = Color.white;
         }
 
         private TextMeshProUGUI findText(string path)
