@@ -1,5 +1,6 @@
 {
   "boxId": "shop_box_leaf_order",
+  "description": "叶菜顺序补强箱，含白菜叶、生菜叶、小番茄及卷心菜叶、香草叶、藤蔓叶、月光叶等叶系材料。购买后随机展示 3 张候选，选 1 张加入牌组。",
   "materialIds": [
     "VEG_003",
     "VEG_004",
