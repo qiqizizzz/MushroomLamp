@@ -12,6 +12,7 @@ using Common.Defines;
 using Common.UI;
 using Module.Item;
 using MVC.View;
+using Sound;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -235,6 +236,8 @@ namespace Module.Shop
                 var binder = obj.GetComponent<ShopSlotBinder>();
                 if (binder != null)
                     binder.Bind(data[i], onBuySlot, this);
+
+                bindPurchaseSlotSound(obj.GetComponent<Button>(), data[i]);
             }
         }
 
@@ -269,6 +272,7 @@ namespace Module.Shop
 
             var binder = root.GetComponent<ShopBoxSlotBinder>();
             binder.Bind(data, iconPath, _boxSprite, _fontTemplate, onBuySlot, this);
+            bindPurchaseSlotSound(button, data);
         }
 
         private void applyBoxSprite(Image target)
@@ -320,6 +324,24 @@ namespace Module.Shop
         {
             for (int c = slot.childCount - 1; c >= 0; c--)
                 Destroy(slot.GetChild(c).gameObject);
+        }
+
+        // 材料箱/道具购买槽在 Refresh 时动态创建，按 SoundCatalog 绑定悬浮音效
+        private void bindPurchaseSlotSound(Button button, ShopSlotData data)
+        {
+            if (button == null) return;
+
+            UIButtonSoundHandler handler = button.GetComponent<UIButtonSoundHandler>();
+            if (handler == null)
+                handler = button.gameObject.AddComponent<UIButtonSoundHandler>();
+
+            if (data != null && data.isPurchased)
+            {
+                handler.Configure(string.Empty, string.Empty);
+                return;
+            }
+
+            UISoundAutoBinder.BindButton(this, button);
         }
 
         // 显示商店商品详情浮层

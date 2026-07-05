@@ -22,6 +22,8 @@ namespace Module.Cook
     // 烹饪核心玩法控制器，负责局内流程与事件分发
     public class CookController : BaseController
     {
+        private const string SfxPestle = "sfx_pestle";
+
         private bool _hasOpenedStageEndView;
 
         public CookController()
@@ -237,7 +239,10 @@ namespace Module.Cook
         private void settleTurn(object[] args)
         {
             CookModel cookModel = GetCookModel();
+            bool hasGrinderContent = cookModel.ProcessedMaterials.Count > 0;
             cookModel.SettleTurn();
+            if (hasGrinderContent)
+                GameApp.SoundManager?.PlayEffect(SfxPestle, UnityEngine.Vector3.zero);
             refreshCookView();
             openStageEndViewIfNeeded();
         }

@@ -10,12 +10,15 @@ using Common.Defines;
 using MVC;
 using MVC.Controller;
 using MVC.View;
+using Sound;
 
 namespace Module.Summary
 {
     // 总结算界面控制器，负责生成展示数据与按钮跳转
     public class SummaryController : BaseController
     {
+        private const string SfxVictorySparkle = "sfx_victory_sparkle";
+
         private SummaryModel _model;
 
         public SummaryController()
@@ -42,12 +45,22 @@ namespace Module.Summary
             RegisterFunc("Summary.CookAgain", onCookAgain);
         }
 
-        // 打开总结算界面并刷新大局汇总数据
+        // 打开总结算界面并刷新大局汇总数据；args[0]=true 表示本局胜利
         private void onOpen(object[] args)
         {
             _model.LoadFromCurrentRun();
             GameApp.ViewManager.Open(ViewType.SummaryView);
+
+            if (resolveVictory(args))
+                playVictoryOverlay();
+
             refreshSummaryView();
+        }
+
+        public override void CloseView(IBaseView view)
+        {
+            if (view is SummaryView)
+                stopVictoryOverlay();
         }
 
         // SummaryView 打开后刷新显示数据
@@ -68,12 +81,14 @@ namespace Module.Summary
         // 打开图鉴界面
         private void onViewAlmanac(object[] args)
         {
+            stopVictoryOverlay();
             ApplyControllerFunc(ControllerType.Almanac, EventDefines.OpenAlmanacView, ViewType.SummaryView);
         }
 
         // 返回主菜单
         private void onBackMenu(object[] args)
         {
+            stopVictoryOverlay();
             GameApp.ViewManager.Close(ViewType.SummaryView);
             ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView);
         }
@@ -81,9 +96,25 @@ namespace Module.Summary
         // 重新开始一局
         private void onCookAgain(object[] args)
         {
+            stopVictoryOverlay();
             GameApp.ViewManager.Close(ViewType.SummaryView);
             GameApp.ViewManager.Close(ViewType.MainMenuView);
             ApplyControllerFunc(ControllerType.SelectBox, EventDefines.OpenSelectBoxView);
+        }
+
+        private static bool resolveVictory(object[] args)
+        {
+            return args != null && args.Length > 0 && args[0] is bool isVictory && isVictory;
+        }
+
+        private static void playVictoryOverlay()
+        {
+            GameApp.SoundManager?.PlayOverlayClip(SfxVictorySparkle);
+        }
+
+        private static void stopVictoryOverlay()
+        {
+            GameApp.SoundManager?.StopOverlayClip();
         }
     }
 }

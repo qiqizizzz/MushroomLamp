@@ -13,6 +13,7 @@ using Common.UI;
 using DG.Tweening;
 using Module.MagicBoxBuff;
 using MVC.View;
+using Sound;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -240,6 +241,7 @@ namespace Module.Blackjack
         {
             base.InitData();
             bindItemButtons();
+            bindItemButtonSounds();
             bindBoxButton();
         }
 
@@ -689,6 +691,13 @@ namespace Module.Blackjack
 
                 btn.onClick.AddListener(action);
             }
+        }
+
+        // 道具槽 Button 在 InitUI 中动态添加，此处按 SoundCatalog 绑定 MagicBuff 等点击音效
+        private void bindItemButtonSounds()
+        {
+            for (int i = 0; i < _itemButtons.Count; i++)
+                UISoundAutoBinder.BindButton(this, _itemButtons[i]);
         }
 
         private void syncSlotBuffItems(int slotCount)

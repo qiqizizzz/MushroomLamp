@@ -28,6 +28,44 @@ namespace Sound
                 GameApp.SoundManager?.PlayViewBgms(viewBinding.bgms);
         }
 
+        // 为单个按钮按 SoundCatalog 绑定点击/悬停音效（Blackjack 道具槽等运行时 Button）
+        public static void BindButton(MonoBehaviour viewRoot, Button button, SoundViewBindingJsonData viewBinding = null)
+        {
+            if (viewRoot == null || button == null) return;
+
+            if (viewBinding == null)
+                viewBinding = SoundConfigLoader.GetViewBinding(viewRoot.GetType().Name);
+
+            if (viewBinding != null && viewBinding.disableAutoButtonSound) return;
+
+            string viewClick = string.IsNullOrWhiteSpace(viewBinding?.buttonClick)
+                ? SoundConfigLoader.GetDefaultButtonClick()
+                : viewBinding.buttonClick;
+            string viewHover = string.IsNullOrWhiteSpace(viewBinding?.buttonHover)
+                ? SoundConfigLoader.GetDefaultButtonHover()
+                : viewBinding.buttonHover;
+
+            string buttonPath = getRelativePath(viewRoot.transform, button.transform);
+            SoundButtonBindingJsonData buttonBinding = SoundConfigLoader.FindButtonBinding(viewBinding, buttonPath);
+
+            string click = resolveButtonSound(
+                buttonBinding?.click,
+                buttonBinding?.muteClick ?? false,
+                viewClick);
+            string hover = resolveButtonSound(
+                buttonBinding?.hover,
+                buttonBinding?.muteHover ?? false,
+                viewHover);
+
+            if (string.IsNullOrWhiteSpace(click) && string.IsNullOrWhiteSpace(hover)) return;
+
+            UIButtonSoundHandler handler = button.GetComponent<UIButtonSoundHandler>();
+            if (handler == null)
+                handler = button.gameObject.AddComponent<UIButtonSoundHandler>();
+
+            handler.Configure(click, hover);
+        }
+
         private static void bindButtons(MonoBehaviour viewBehaviour, SoundViewBindingJsonData viewBinding)
         {
             string viewClick = string.IsNullOrWhiteSpace(viewBinding?.buttonClick)

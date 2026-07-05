@@ -90,7 +90,7 @@ namespace Module.StageSettle
             GameApp.ViewManager.Close(ViewType.StageSettleView);
 
             if (_currentData != null && _currentData.GoToFinalSummary)
-                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
+                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView, _currentData.IsTargetReached);
             else
                 ApplyControllerFunc(ControllerType.Shop, "OpenShopView");
         }
