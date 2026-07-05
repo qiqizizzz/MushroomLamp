@@ -43,6 +43,7 @@ namespace Common.Defines
         public const string Config_ShopCatalog = "ShopCatalog";
         public const string Config_SoundCatalog = "Sound/SoundCatalog";
         public const string Config_HintTooltipCatalog = "HintTooltipCatalog";
+        public const string Config_DetailCatolog = "DetailCatolog";
 
         // Art 与字体（Resources 路径，相对 Resources/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
