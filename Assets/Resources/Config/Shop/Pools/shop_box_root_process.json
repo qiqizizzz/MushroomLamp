@@ -1,6 +1,6 @@
 {
   "boxId": "shop_box_root_process",
-  "description": "根茎加工补强箱，含土豆、胡萝卜、洋葱、南瓜块及土豆泥、胡萝卜丁、南瓜丁、完美加工产物等。购买后随机展示 3 张候选，选 1 张加入牌组。",
+  "description": "根茎原料与加工产物补强箱。",
   "materialIds": [
     "VEG_001",
     "VEG_002",

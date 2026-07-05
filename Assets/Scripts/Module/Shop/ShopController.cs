@@ -8,6 +8,7 @@
 
 using Common;
 using Common.Defines;
+using Common.UI;
 using Module.Confirm;
 using Module.Item;
 using Module.Level;
@@ -24,6 +25,7 @@ namespace Module.Shop
         private const string ShopRecycleDone = "Shop.RecycleDone";
 
         private ShopModel _shopModel;
+        private bool _buyConfirmPending;
 
         public ShopController()
         {
@@ -53,15 +55,25 @@ namespace Module.Shop
 
         private void OnOpenShopView(object[] args)
         {
-            // 从 Store 返回时仅重新打开界面，不刷新货架，保留已购箱子状态
             bool reopenOnly = args != null && args.Length > 0 && args[0] is true;
+
+            StoreController.EnsureClosed();
+
             if (!reopenOnly)
             {
                 _shopModel.ResetRecycleState();
                 _shopModel.Refresh();
+                GameApp.ViewManager.Open((int)ViewType.ShopView, args);
+            }
+            else if (GameApp.ViewManager.IsOpen((int)ViewType.ShopView))
+            {
+                GameApp.ViewManager.GetView((int)ViewType.ShopView)?.SetVisible(true);
+            }
+            else
+            {
+                GameApp.ViewManager.Open((int)ViewType.ShopView, args);
             }
 
-            GameApp.ViewManager.Open((int)ViewType.ShopView, args);
             RefreshView();
         }
 
@@ -125,6 +137,7 @@ namespace Module.Shop
         // 继续：推进到下一小局；若已是最后小局则进入最终结算
         private void OnContinue(object[] args)
         {
+            StoreController.EnsureClosed();
             GameApp.ViewManager.Close((int)ViewType.ShopView);
 
             if (LevelFlow.Instance.AdvanceStage())
@@ -139,6 +152,7 @@ namespace Module.Shop
 
         private void OnBuyItem(object[] args)
         {
+            if (UiClickGuard.IsBlocked || ConfirmController.IsVisible || _buyConfirmPending) return;
             if (args == null || args.Length == 0 || args[0] is not ShopSlotData slotData) return;
             if (slotData.isPurchased) return;
 
@@ -154,6 +168,9 @@ namespace Module.Shop
                 return;
             }
 
+            ShopSlotData buying = slotData;
+            _buyConfirmPending = true;
+
             ConfirmController.Show(new ConfirmModel
             {
                 mode = ConfirmModel.Mode.ConfirmCancel,
@@ -161,38 +178,47 @@ namespace Module.Shop
                 message = buildBuyMessage(slotData),
                 confirmText = "购买",
                 cancelText = "取消",
-                onConfirm = () =>
+                onResult = confirmed =>
                 {
-                    if (!PlayerDataManager.Instance.SpendMoney(slotData.price)) return;
-
-                    if (!slotData.isBox && !slotData.isCard)
-                    {
-                        if (!PlayerDataManager.Instance.AddItem(slotData.id))
-                        {
-                            PlayerDataManager.Instance.AddMoney(slotData.price);
-                            ConfirmController.Show(new ConfirmModel
-                            {
-                                mode = ConfirmModel.Mode.ConfirmOnly,
-                                title = "无法购买",
-                                message = $"你已经拥有\"{slotData.name}\"，该道具不可重复购买。",
-                                confirmText = "知道了"
-                            });
-                            return;
-                        }
-                    }
-
-                    slotData.isPurchased = true;
-                    RefreshView();
-
-                    if (slotData.isBox)
-                        openStoreAfterBoxPurchase(slotData);
-                    else if (slotData.isCard)
-                    {
-                        PlayerDataManager.Instance.AddCard(slotData.id);
-                        LevelFlow.Instance.AddMaterial(slotData.id);
-                    }
+                    _buyConfirmPending = false;
+                    if (!confirmed) return;
+                    executeBuy(buying);
                 }
             });
+        }
+
+        private void executeBuy(ShopSlotData slotData)
+        {
+            if (slotData == null || slotData.isPurchased) return;
+
+            if (!PlayerDataManager.Instance.SpendMoney(slotData.price)) return;
+
+            if (!slotData.isBox && !slotData.isCard)
+            {
+                if (!PlayerDataManager.Instance.AddItem(slotData.id))
+                {
+                    PlayerDataManager.Instance.AddMoney(slotData.price);
+                    ConfirmController.Show(new ConfirmModel
+                    {
+                        mode = ConfirmModel.Mode.ConfirmOnly,
+                        title = "无法购买",
+                        message = $"你已经拥有\"{slotData.name}\"，该道具不可重复购买。",
+                        confirmText = "知道了"
+                    });
+                    return;
+                }
+            }
+
+            slotData.isPurchased = true;
+            RefreshView();
+
+            if (slotData.isBox)
+                openStoreAfterBoxPurchase(slotData);
+            else if (slotData.isCard)
+            {
+                PlayerDataManager.Instance.AddCard(slotData.id);
+                LevelFlow.Instance.AddMaterial(slotData.id);
+            }
         }
 
         private static string buildBuyMessage(ShopSlotData slotData)

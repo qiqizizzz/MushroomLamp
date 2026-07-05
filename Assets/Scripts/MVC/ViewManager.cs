@@ -193,7 +193,13 @@ namespace MVC
                 view = createView(key, viewInfo);
 
             if (view == null) return;
-            if (_opens.ContainsKey(key)) return;
+
+            if (_opens.ContainsKey(key))
+            {
+                view.SetVisible(true);
+                view.Open(args);
+                return;
+            }
 
             if (!viewInfo.IsOverlay)
                 closeNonOverlayViewsExcept(key);

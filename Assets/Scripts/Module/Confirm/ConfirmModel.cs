@@ -20,5 +20,7 @@ namespace Module.Confirm
         public string cancelText = "取消";
         public Action onConfirm;
         public Action onCancel;
+        // true=确认，false=取消；与 onConfirm/onCancel 互斥触发
+        public Action<bool> onResult;
     }
 }

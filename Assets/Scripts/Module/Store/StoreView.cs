@@ -148,6 +148,13 @@ namespace Module.Store
 
         }
 
+        public override void Close(params object[] args)
+        {
+            HideMaterialTooltip();
+            _model = null;
+            base.Close(args);
+        }
+
 
 
         private void collectBuyAnchors()
