@@ -32,6 +32,7 @@ namespace Common.Defines
         public const string UI_StageSettleView = "UI/View/StageSettleView";
         public const string UI_RecycleView = "UI/View/RecycleView";
         public const string UI_MaterialPickView = "UI/View/MaterialPickView";
+        public const string UI_HintTooltip = "UI/Common/HintTooltip";
 
         // JSON 配置，对应 Assets/Config/（不含扩展名）
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";
@@ -40,6 +41,7 @@ namespace Common.Defines
         public const string Config_MagicBoxBuffCatalog = "MagicBoxBuffCatalog";
         public const string Config_ShopCatalog = "ShopCatalog";
         public const string Config_SoundCatalog = "Sound/SoundCatalog";
+        public const string Config_HintTooltipCatalog = "HintTooltipCatalog";
 
         // Art 与字体（Resources 路径，相对 Resources/）
         public const string Art_ShopMaterialBoxSample = "Art/ShopView/材料箱样本";
