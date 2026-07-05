@@ -76,6 +76,8 @@ namespace Module.Cook
         public float DevilRisk => _devilRisk;
         public string MagicBoxStatusText { get; private set; }
         public IReadOnlyList<CookMaterialData> HandMaterials => _handMaterials;
+        public int TurnTakenMaterialCount => _turnTakenMaterialCount;
+        public int TurnTakeLimit => TURN_TAKE_COUNT;
         public int DrawPileCount => _drawPile.Count;        // 天使抽牌堆剩余
         public int DiscardPileCount => _discardPile.Count;  // 恶魔弃牌堆数量
         // 本回合放牌后作废、需飞向恶魔的剩余手牌（仅供表现层做飞出动画，下次发牌前由 View 消费）
@@ -578,8 +580,14 @@ namespace Module.Cook
         }
 
         // 清空本回合放入法阵内的材料
-        public void ClearPlacedMaterials()
+        public bool ClearPlacedMaterials()
         {
+            if (_placeHistory.Count == 0)
+            {
+                LastTip = "没有可清空的材料";
+                return false;
+            }
+
             int clearedCount = 0;
             for (int i = _placeHistory.Count - 1; i >= 0; i--)
             {
@@ -601,6 +609,7 @@ namespace Module.Cook
             refreshPreviewValue();
             RoundState = CookRoundStateType.Operating;
             LastTip = "已清空本回合放入的材料";
+            return clearedCount > 0;
         }
 
         // 跳过当前回合

@@ -69,6 +69,7 @@ namespace Module.View
             {
                 _imgIcon.sprite = material?.Icon;
                 _imgIcon.enabled = material?.Icon != null;
+                CookMaterialIconVisual.Apply(_imgIcon, new Vector2(92f, 92f), _imgIcon.rectTransform);
             }
 
             if (_imgBackground != null)
@@ -281,11 +282,13 @@ namespace Module.View
             if (_dragIconRect.sizeDelta.sqrMagnitude <= 0f)
                 _dragIconRect.sizeDelta = new Vector2(92f, 92f);
             _dragIconRect.localScale = Vector3.one;
+            _dragIconRect.localRotation = Quaternion.identity;
 
             Image dragImage = _dragIconObject.GetComponent<Image>();
             dragImage.sprite = sprite;
             dragImage.preserveAspect = true;
             dragImage.raycastTarget = false;
+            CookMaterialIconVisual.Apply(dragImage, _dragIconRect.sizeDelta);
 
             CanvasGroup canvasGroup = _dragIconObject.GetComponent<CanvasGroup>();
             canvasGroup.blocksRaycasts = false;

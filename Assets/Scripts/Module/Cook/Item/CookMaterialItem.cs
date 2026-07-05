@@ -105,6 +105,7 @@ namespace Module.View
                 _imgIcon.sprite = materialData?.Icon;
                 _imgIcon.enabled = materialData?.Icon != null;
                 _imgIcon.preserveAspect = true;
+                applyIconVisualLayout();
             }
         }
 
@@ -114,6 +115,7 @@ namespace Module.View
             _displayWidth = Mathf.Max(1f, width);
             _displayHeight = Mathf.Max(1f, height);
             applyDisplaySize(_displayWidth, _displayHeight);
+            applyIconVisualLayout();
         }
 
         // 每帧检测悬停（使用未放大的逻辑尺寸，避免 HoverScale 导致邻牌切换失效）
@@ -156,6 +158,7 @@ namespace Module.View
             _rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _rectTransform.pivot = new Vector2(0.5f, 0.5f);
             _rectTransform.sizeDelta = new Vector2(CardWidth, CardHeight);
+            applyIconVisualLayout(CardWidth, CardHeight);
             moveToPointer(eventData);
 
             if (_canvasGroup != null)
@@ -230,8 +233,9 @@ namespace Module.View
             _imgIcon.raycastTarget = false;
 
             setupChildRect(_imgBackground.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            // 无文本，图标铺满整张卡
+            // 无文本，图标按统一盒子展示
             setupChildRect(_imgIcon.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            applyIconVisualLayout();
         }
 
         // 切换图标描边（悬停时贴合轮廓的白描边）
@@ -380,6 +384,18 @@ namespace Module.View
             layoutElement.preferredHeight = height;
         }
 
+        // 按素材透明边和原图倾斜微调图标，让材料在手牌区看起来更端正
+        private void applyIconVisualLayout()
+        {
+            applyIconVisualLayout(_displayWidth, _displayHeight);
+        }
+
+        // 按指定显示尺寸应用图标视觉校正
+        private void applyIconVisualLayout(float width, float height)
+        {
+            CookMaterialIconVisual.Apply(_imgIcon, new Vector2(width, height));
+        }
+
         private void moveToPointer(PointerEventData eventData)
         {
             RectTransform dragRoot = _view == null ? null : _view.GetDragRoot() as RectTransform;
@@ -446,6 +462,9 @@ namespace Module.View
 
             rectTransform.anchorMin = anchorMin;
             rectTransform.anchorMax = anchorMax;
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.localScale = Vector3.one;
+            rectTransform.localRotation = Quaternion.identity;
             rectTransform.offsetMin = offsetMin;
             rectTransform.offsetMax = offsetMax;
         }

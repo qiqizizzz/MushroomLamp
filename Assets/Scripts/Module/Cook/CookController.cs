@@ -120,8 +120,8 @@ namespace Module.Cook
             if (args == null || args.Length < 2) return;
             if (args[0] is not int materialId || args[1] is not int slotIndex) return;
 
-            cookModel.PlaceMaterial(materialId, slotIndex);
-            refreshCookView();
+            bool isPlaced = cookModel.PlaceMaterial(materialId, slotIndex);
+            refreshCookView(shouldRefreshHandAfterTake(isPlaced, cookModel));
         }
 
         // 移动或交换法阵槽位材料
@@ -209,8 +209,8 @@ namespace Module.Cook
             if (args == null || args.Length < 1) return;
             if (args[0] is not int materialId) return;
 
-            cookModel.ProcessMaterial(materialId);
-            refreshCookView();
+            bool isProcessed = cookModel.ProcessMaterial(materialId);
+            refreshCookView(shouldRefreshHandAfterTake(isProcessed, cookModel));
         }
 
         // 触碰魔盒：打开 21 点玩法界面
@@ -231,15 +231,15 @@ namespace Module.Cook
         // 撤回最近一次放置
         private void undoMaterial(object[] args)
         {
-            GetCookModel().UndoLastPlace();
-            refreshCookView();
+            bool isUndo = GetCookModel().UndoLastPlace();
+            refreshCookView(true, isUndo);
         }
 
         // 清空法阵材料
         private void clearMaterials(object[] args)
         {
-            GetCookModel().ClearPlacedMaterials();
-            refreshCookView();
+            bool isCleared = GetCookModel().ClearPlacedMaterials();
+            refreshCookView(true, isCleared);
         }
 
         // 跳过当前回合
@@ -324,12 +324,21 @@ namespace Module.Cook
         }
 
         // 刷新烹饪玩法视图
-        private void refreshCookView()
+        private void refreshCookView(bool refreshHand = true, bool replayHandDeal = false)
         {
             CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
             if (cookView == null) return;
 
-            cookView.Refresh(GetCookModel());
+            cookView.Refresh(GetCookModel(), refreshHand, replayHandDeal);
+        }
+
+        // 判断取材操作后是否需要刷新右侧材料区
+        private static bool shouldRefreshHandAfterTake(bool isTakeSuccess, CookModel cookModel)
+        {
+            if (!isTakeSuccess) return true;
+            if (cookModel == null) return true;
+
+            return cookModel.TurnTakenMaterialCount >= cookModel.TurnTakeLimit;
         }
     }
 }

@@ -504,6 +504,12 @@ namespace Module.Cook
         // 根据烹饪模型刷新界面
         public void Refresh(CookModel cookModel)
         {
+            Refresh(cookModel, true, false);
+        }
+
+        // 根据烹饪模型刷新界面，可按操作类型跳过或重播手牌动画
+        public void Refresh(CookModel cookModel, bool shouldRefreshHand, bool replayHandDeal)
+        {
             if (cookModel == null) return;
 
             HideItemTooltip();
@@ -513,7 +519,10 @@ namespace Module.Cook
             refreshTarget(cookModel);
             refreshSlots(cookModel);
             refreshPotTray(cookModel);
-            refreshHand(cookModel);
+            if (replayHandDeal)
+                _lastHandIds.Clear();
+            if (shouldRefreshHand)
+                refreshHand(cookModel);
             refreshProcessedMaterials(cookModel);
             refreshActions(cookModel);
             refreshOwnedItems();
@@ -1165,6 +1174,7 @@ namespace Module.Cook
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = size;
             rt.localScale = Vector3.one;
+            rt.localRotation = Quaternion.identity;
             rt.anchoredPosition = new Vector2(startX + index * step, 0f);
 
             if (item.Group != null) { item.Group.alpha = 1f; item.Group.blocksRaycasts = true; }
@@ -1335,6 +1345,7 @@ namespace Module.Cook
                 flyImage.sprite = data.sprite;
                 flyImage.preserveAspect = true;
                 flyImage.raycastTarget = false;
+                CookMaterialIconVisual.Apply(flyImage, data.size);
 
                 CanvasGroup canvasGroup = flyObj.GetComponent<CanvasGroup>();
                 canvasGroup.blocksRaycasts = false;
