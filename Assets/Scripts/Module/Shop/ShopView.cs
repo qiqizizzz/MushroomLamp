@@ -359,9 +359,24 @@ namespace Module.Shop
             if (_itemTooltip != null)
                 return true;
 
-            Transform parent = GameApp.ViewManager?.canvasTf ?? transform;
+            Transform parent = transform;
             GameObject tooltipObj = ResManager.Instantiate(ITEM_TOOLTIP_PATH, parent);
             if (tooltipObj == null) return false;
+
+            Canvas viewCanvas = GetComponent<Canvas>();
+            Canvas tooltipCanvas = tooltipObj.GetComponent<Canvas>();
+            if (tooltipCanvas != null && viewCanvas != null)
+            {
+                tooltipCanvas.overrideSorting = true;
+                tooltipCanvas.sortingOrder = viewCanvas.sortingOrder + 1;
+            }
+
+            CanvasGroup tooltipGroup = tooltipObj.GetComponent<CanvasGroup>();
+            if (tooltipGroup == null)
+                tooltipGroup = tooltipObj.AddComponent<CanvasGroup>();
+
+            tooltipGroup.interactable = false;
+            tooltipGroup.blocksRaycasts = false;
 
             _itemTooltip = tooltipObj.GetComponent<ItemTooltip>();
             if (_itemTooltip == null)

@@ -84,7 +84,7 @@ namespace Module.Item
                 Mode = ItemTooltipMode.Shop,
                 Name = string.IsNullOrWhiteSpace(slotData.name) ? "未知商品" : slotData.name,
                 Desc = slotData.description,
-                PriceText = $"价格 {slotData.price}",
+                PriceText = $"￥{slotData.price}",
                 Icon = ArtAssetLoader.LoadSprite(slotData.iconPath, logOnFail: false)
             };
 
