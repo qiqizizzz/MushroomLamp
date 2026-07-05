@@ -11,6 +11,7 @@ using Common;
 using Module.Cook;
 using Module.Material;
 using Module.Player;
+using Module.Recycle;
 using Module.Shop;
 using UnityEngine;
 
@@ -80,6 +81,31 @@ namespace Module.Item
             addBasicFields(data, material, config);
             data.ProcessText = string.Empty;
             data.EffectText = string.Empty;
+            return data;
+        }
+
+        // 从回收材料构建 Tooltip 展示数据
+        public static ItemTooltipData FromRecycleOffer(RecycleOfferData offer)
+        {
+            if (offer == null)
+                return null;
+
+            ItemTooltipData data = new ItemTooltipData
+            {
+                Mode = ItemTooltipMode.Full,
+                Name = string.IsNullOrWhiteSpace(offer.name) ? "未知材料" : offer.name,
+                Subtitle = string.IsNullOrWhiteSpace(offer.category) ? "可回收材料" : $"可回收材料 / {offer.category}",
+                Desc = offer.description,
+                PriceText = $"回收 ￥{offer.price}",
+                Icon = ArtAssetLoader.LoadSprite(offer.iconPath, logOnFail: false)
+            };
+
+            if (!string.IsNullOrWhiteSpace(offer.category))
+                data.Tags.Add(offer.category);
+            data.Tags.Add("回收");
+            data.AddField(FIELD_BASIC_SCORE, "回收收益", $"￥{offer.price}");
+            data.AddField(FIELD_STATE, "类别", string.IsNullOrWhiteSpace(offer.category) ? "材料" : offer.category);
+            data.AddField(FIELD_EFFECT, "用途", "卖出后立即获得金币");
             return data;
         }
 

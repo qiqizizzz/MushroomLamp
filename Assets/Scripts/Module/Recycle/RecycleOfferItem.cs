@@ -17,10 +17,10 @@ using UnityEngine.UI;
 namespace Module.Recycle
 {
     // 回收材料格子，负责展示材料、选中状态与卖出动画
-    public class RecycleOfferItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class RecycleOfferItem : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler
     {
         private const float HOVER_SCALE = 1.12f;
-        private const float SELECTED_SCALE = 1.08f;
+        private const float SELECTED_SCALE = 1.18f;
         private const float SCALE_DURATION = 0.12f;
         private const float OUTLINE_WIDTH = 3f;
 
@@ -32,6 +32,7 @@ namespace Module.Recycle
         private Button _button;
         private CanvasGroup _canvasGroup;
         private RecycleOfferData _data;
+        private RecycleView _view;
         private Action<RecycleOfferData, RecycleOfferItem> _onClick;
         private Tween _scaleTween;
         private UnityEngine.Material _outlineMaterial;
@@ -42,11 +43,12 @@ namespace Module.Recycle
         public RecycleOfferData Data => _data;
 
         // 绑定材料数据和点击回调
-        public void Bind(RecycleOfferData data, Action<RecycleOfferData, RecycleOfferItem> onClick)
+        public void Bind(RecycleOfferData data, RecycleView view, Action<RecycleOfferData, RecycleOfferItem> onClick)
         {
             ensureReferences();
 
             _data = data;
+            _view = view;
             _onClick = onClick;
             _canvasGroup.alpha = 1f;
             _canvasGroup.blocksRaycasts = true;
@@ -90,9 +92,9 @@ namespace Module.Recycle
 
             _isSelected = selected;
             if (_imgSelected != null)
-                _imgSelected.enabled = selected;
+                _imgSelected.enabled = false;
 
-            setOutline(selected || _isPointerInside);
+            setOutline(false);
             tweenToCurrentScale();
         }
 
@@ -100,6 +102,7 @@ namespace Module.Recycle
         public void PlaySold(Action onComplete)
         {
             ensureReferences();
+            _view?.HideRecycleTooltip(this);
             if (_button != null) _button.interactable = false;
             if (_canvasGroup != null) _canvasGroup.blocksRaycasts = false;
 
@@ -118,8 +121,17 @@ namespace Module.Recycle
             if (_data == null || _isPlayingSold) return;
 
             _isPointerInside = true;
-            setOutline(true);
+            setOutline(false);
             tweenToCurrentScale();
+            _view?.ShowRecycleTooltip(this, _data, eventData.position);
+        }
+
+        // 鼠标移动时同步详情浮层位置
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            if (_data == null || _isPlayingSold) return;
+
+            _view?.MoveRecycleTooltip(eventData.position);
         }
 
         // 鼠标离开时恢复材料图标
@@ -128,8 +140,9 @@ namespace Module.Recycle
             if (_isPlayingSold) return;
 
             _isPointerInside = false;
-            setOutline(_isSelected);
+            setOutline(false);
             tweenToCurrentScale();
+            _view?.HideRecycleTooltip(this);
         }
 
         private void handleClick()
@@ -179,6 +192,7 @@ namespace Module.Recycle
 
         private void OnDestroy()
         {
+            _view?.HideRecycleTooltip(this);
             _scaleTween?.Kill();
             if (_outlineMaterial != null)
             {
@@ -190,7 +204,7 @@ namespace Module.Recycle
         // 根据选中和悬停状态刷新缩放
         private void tweenToCurrentScale()
         {
-            float targetScale = _isPointerInside ? HOVER_SCALE : (_isSelected ? SELECTED_SCALE : 1f);
+            float targetScale = _isSelected ? SELECTED_SCALE : (_isPointerInside ? HOVER_SCALE : 1f);
             _scaleTween?.Kill();
             _scaleTween = transform.DOScale(targetScale, SCALE_DURATION).SetEase(Ease.OutBack);
         }
