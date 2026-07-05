@@ -1,0 +1,180 @@
+BlackjackPageAngel.png
+size: 960,180
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aperture
+  rotate: false
+  xy: 810, 2
+  size: 68, 35
+  orig: 69, 36
+  offset: 1, 0
+  index: -1
+body
+  rotate: true
+  xy: 194, 13
+  size: 165, 182
+  orig: 173, 187
+  offset: 7, 1
+  index: -1
+by
+  rotate: true
+  xy: 927, 9
+  size: 70, 31
+  orig: 72, 33
+  offset: 1, 1
+  index: -1
+left ear
+  rotate: true
+  xy: 852, 118
+  size: 60, 45
+  orig: 61, 47
+  offset: 1, 1
+  index: -1
+left foot
+  rotate: false
+  xy: 907, 81
+  size: 43, 44
+  orig: 43, 44
+  offset: 0, 0
+  index: -1
+left hand
+  rotate: true
+  xy: 796, 118
+  size: 60, 54
+  orig: 61, 56
+  offset: 1, 1
+  index: -1
+left wing
+  rotate: false
+  xy: 701, 5
+  size: 47, 77
+  orig: 49, 78
+  offset: 2, 1
+  index: -1
+m a
+  rotate: true
+  xy: 815, 39
+  size: 77, 41
+  orig: 77, 41
+  offset: 0, 0
+  index: -1
+m body
+  rotate: true
+  xy: 2, 6
+  size: 172, 190
+  orig: 173, 190
+  offset: 1, 0
+  index: -1
+m l ear
+  rotate: true
+  xy: 587, 109
+  size: 69, 54
+  orig: 69, 54
+  offset: 0, 0
+  index: -1
+m l foot
+  rotate: false
+  xy: 899, 127
+  size: 51, 51
+  orig: 51, 51
+  offset: 0, 0
+  index: -1
+m l hand
+  rotate: true
+  xy: 581, 15
+  size: 71, 60
+  orig: 71, 61
+  offset: 0, 0
+  index: -1
+m l wing
+  rotate: false
+  xy: 525, 2
+  size: 54, 84
+  orig: 55, 84
+  offset: 1, 0
+  index: -1
+m r ear
+  rotate: false
+  xy: 378, 2
+  size: 79, 74
+  orig: 80, 74
+  offset: 0, 0
+  index: -1
+m r foot
+  rotate: true
+  xy: 643, 17
+  size: 65, 56
+  orig: 65, 56
+  offset: 0, 0
+  index: -1
+m r wing
+  rotate: false
+  xy: 378, 78
+  size: 98, 100
+  orig: 98, 100
+  offset: 0, 0
+  index: -1
+m tail
+  rotate: false
+  xy: 738, 114
+  size: 56, 64
+  orig: 56, 65
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: true
+  xy: 750, 3
+  size: 31, 47
+  orig: 33, 49
+  offset: 1, 1
+  index: -1
+open
+  rotate: false
+  xy: 738, 87
+  size: 75, 25
+  orig: 77, 26
+  offset: 1, 0
+  index: -1
+right ear
+  rotate: true
+  xy: 459, 4
+  size: 72, 64
+  orig: 72, 64
+  offset: 0, 0
+  index: -1
+right foot
+  rotate: true
+  xy: 858, 59
+  size: 57, 47
+  orig: 70, 48
+  offset: 12, 1
+  index: -1
+right hand
+  rotate: false
+  xy: 880, 5
+  size: 45, 52
+  orig: 46, 54
+  offset: 0, 1
+  index: -1
+right wing
+  rotate: false
+  xy: 643, 84
+  size: 93, 94
+  orig: 94, 95
+  offset: 1, 0
+  index: -1
+sp
+  rotate: true
+  xy: 478, 88
+  size: 90, 107
+  orig: 92, 109
+  offset: 1, 1
+  index: -1
+tail
+  rotate: true
+  xy: 750, 36
+  size: 49, 58
+  orig: 50, 59
+  offset: 0, 0
+  index: -1
