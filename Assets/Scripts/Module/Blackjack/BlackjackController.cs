@@ -17,6 +17,7 @@ using Module.MaterialPick;
 using MVC;
 using MVC.Controller;
 using MVC.View;
+using UnityEngine;
 
 namespace Module.Blackjack
 {
