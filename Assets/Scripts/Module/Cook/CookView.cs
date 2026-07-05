@@ -559,6 +559,7 @@ namespace Module.Cook
             if (materialItem == null) return false;
             if (!canPlaceMaterial(materialItem.MaterialId, slotIndex)) return false;
 
+            materialItem.AcceptDropAndDestroy();
             ApplyFunc(EventDefines.CookPlaceMaterial, materialItem.MaterialId, slotIndex);
             GameApp.SoundManager?.PlayEffect(SfxHandSelect);
             return true;
@@ -623,6 +624,7 @@ namespace Module.Cook
                 return false;
             }
 
+            materialItem.AcceptDropAndDestroy();
             ApplyFunc(EventDefines.CookProcessMaterial, materialItem.MaterialId);
             return true;
         }

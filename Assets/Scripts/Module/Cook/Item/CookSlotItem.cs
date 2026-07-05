@@ -89,10 +89,7 @@ namespace Module.View
 
             CookMaterialItem materialItem = eventData.pointerDrag.GetComponent<CookMaterialItem>();
             if (materialItem != null && _view.TryPlaceMaterial(materialItem, _slotIndex))
-            {
-                materialItem.AcceptDropAndDestroy();
                 return;
-            }
 
             CookSlotItem slotItem = eventData.pointerDrag.GetComponent<CookSlotItem>();
             if (slotItem == null || slotItem == this) return;

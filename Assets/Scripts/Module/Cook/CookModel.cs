@@ -22,6 +22,7 @@ namespace Module.Cook
     {
         private const int GRID_SIZE = 9;
         private const int HAND_COUNT = 6;
+        private const int TURN_TAKE_COUNT = 2;
         private const int POT_TRAY_CAPACITY = 3;   // Pot 暂存槽数量（后续由关卡配置覆盖）
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
@@ -50,7 +51,7 @@ namespace Module.Cook
         private float _vegetableMagicBoxBonusApplied;
         private readonly HashSet<int> _vegetableMagicBoxBonusMaterialIds = new();
         private int _turnProcessCount;
-        private bool _hasPlacedHandThisTurn;
+        private int _turnTakenMaterialCount;
 
         public int TurnIndex { get; private set; }
         public float CurrentScore { get; private set; }
@@ -126,7 +127,7 @@ namespace Module.Cook
         public bool HasPlacedMaterial => _placeHistory.Count > 0;
         public bool HasCookingMaterial => hasAnySlotMaterial();
         public bool HasPotMaterial => _potEntries.Count > 0;
-        public bool CanPlaceHandThisTurn => IsRunActive && !_hasPlacedHandThisTurn;
+        public bool CanPlaceHandThisTurn => canTakeMaterialThisTurn();
         // GM 测试开关：开启后小局恒视为达标，便于测试小局推进全流程
         public static bool ForceStageWin;
 
@@ -200,9 +201,9 @@ namespace Module.Cook
                 return false;
             }
 
-            if (_hasPlacedHandThisTurn)
+            if (!canTakeMaterialThisTurn())
             {
-                LastTip = "本回合已经放入过一个材料";
+                LastTip = $"本回合已经拿满 {TURN_TAKE_COUNT} 个材料";
                 return false;
             }
 
@@ -217,20 +218,14 @@ namespace Module.Cook
             removeAvailableMaterial(material);
             slot.Place(material, _nextPlaceOrder++);
             _placeHistory.Add(slotIndex);
-            _hasPlacedHandThisTurn = true;
+            _turnTakenMaterialCount++;
             material.Ability.OnPlaced(this, slotIndex);
-
-            // 放一张即锁定本回合：剩余手牌先回收进恶魔弃牌堆，同时记录快照供撤回恢复
-            DiscardedHandThisTurn.Clear();
-            DiscardedHandThisTurn.AddRange(_handMaterials);
             _handBeforePlaceHistory.Add(handBeforePlace);
-            for (int i = 0; i < _handMaterials.Count; i++)
-                recycleToDiscard(_handMaterials[i]);
-            _handMaterials.Clear();
+            recycleRemainingHandIfTakeLimitReached();
 
             RoundState = CookRoundStateType.ReadyToSettle;
             refreshPreviewValue();
-            LastTip = $"已放入 {material.Config.name}，结束回合后获得熟度 +{slot.EnchantText}";
+            LastTip = $"已放入 {material.Config.name}，本回合已拿 {_turnTakenMaterialCount}/{TURN_TAKE_COUNT}";
             return true;
         }
 
@@ -283,8 +278,6 @@ namespace Module.Cook
             if (!IsRunActive) return false;
             if (!isValidSlotIndex(slotIndex)) return false;
             if (!_slots[slotIndex].HasMaterial) return false;
-            // 放牌即锁定本回合，剩余手牌已作废，不允许撤回
-            if (_hasPlacedHandThisTurn) return false;
 
             return _placeHistory.Contains(slotIndex);
         }
@@ -315,7 +308,7 @@ namespace Module.Cook
             if (material != null)
                 returnMaterialToAvailableArea(material);
 
-            _hasPlacedHandThisTurn = false;
+            _turnTakenMaterialCount = Mathf.Max(0, _turnTakenMaterialCount - 1);
             RoundState = CanSettle ? CookRoundStateType.ReadyToSettle : CookRoundStateType.Operating;
             refreshPreviewValue();
             LastTip = material == null ? "槽位已清空" : $"已撤回 {material.Config.name}";
@@ -517,13 +510,21 @@ namespace Module.Cook
                 return false;
             }
 
+            if (!canTakeMaterialThisTurn())
+            {
+                LastTip = $"本回合已经拿满 {TURN_TAKE_COUNT} 个材料";
+                return false;
+            }
+
             int processBonus = material.Ability.GetProcessBonus();
             material.MarkProcessed(processBonus, "研磨");
             _turnProcessCount++;
+            _turnTakenMaterialCount++;
             _handMaterials.Remove(material);
             _pendingProcessedMaterials.Add(material);
             material.Ability.OnProcessed(this);
-            LastTip = $"已放入研磨器 {material.Config.name}，结束本回合后会出现在研磨器出口";
+            recycleRemainingHandIfTakeLimitReached();
+            LastTip = $"已放入研磨器 {material.Config.name}，本回合已拿 {_turnTakenMaterialCount}/{TURN_TAKE_COUNT}";
             return true;
         }
 
@@ -569,7 +570,7 @@ namespace Module.Cook
             if (material != null && !isMaterialInList(handBeforePlace, material))
                 returnMaterialToAvailableArea(material);
 
-            _hasPlacedHandThisTurn = false;
+            _turnTakenMaterialCount = Mathf.Max(0, _turnTakenMaterialCount - 1);
             refreshPreviewValue();
             RoundState = CanSettle ? CookRoundStateType.ReadyToSettle : CookRoundStateType.Operating;
             LastTip = material == null ? "槽位已清空" : $"已撤回 {material.Config.name}";
@@ -579,6 +580,7 @@ namespace Module.Cook
         // 清空本回合放入法阵内的材料
         public void ClearPlacedMaterials()
         {
+            int clearedCount = 0;
             for (int i = _placeHistory.Count - 1; i >= 0; i--)
             {
                 int slotIndex = _placeHistory[i];
@@ -589,11 +591,13 @@ namespace Module.Cook
                 restoreHandBeforePlace(handBeforePlace);
                 if (material != null && !isMaterialInList(handBeforePlace, material))
                     returnMaterialToAvailableArea(material);
+
+                clearedCount++;
             }
 
             _placeHistory.Clear();
             _handBeforePlaceHistory.Clear();
-            _hasPlacedHandThisTurn = false;
+            _turnTakenMaterialCount = Mathf.Max(0, _turnTakenMaterialCount - clearedCount);
             refreshPreviewValue();
             RoundState = CookRoundStateType.Operating;
             LastTip = "已清空本回合放入的材料";
@@ -731,7 +735,7 @@ namespace Module.Cook
             _handBeforePlaceHistory.Clear();
             _processedMaterials.Clear();
             // 注意：暂存槽（PotTray）跨回合保留，只在投入时清空
-            _hasPlacedHandThisTurn = false;
+            _turnTakenMaterialCount = 0;
             _turnProcessCount = 0;
             _magicBoxBonus = 0;
             _devilRisk = 0;
@@ -769,7 +773,7 @@ namespace Module.Cook
             _nextPlaceOrder = 1;
             _nextSubmitOrder = 1;
             _turnProcessCount = 0;
-            _hasPlacedHandThisTurn = false;
+            _turnTakenMaterialCount = 0;
             _vegetableMagicBoxBonusApplied = 0f;
             _vegetableMagicBoxBonusMaterialIds.Clear();
 
@@ -990,6 +994,25 @@ namespace Module.Cook
                 _processedMaterials.Add(material);
             else
                 _handMaterials.Add(material);
+        }
+
+        // 判断本回合是否还能从手牌区拿材料
+        private bool canTakeMaterialThisTurn()
+        {
+            return IsRunActive && _turnTakenMaterialCount < TURN_TAKE_COUNT;
+        }
+
+        // 达到本回合取材上限后回收剩余手牌，并交给表现层播放回收动画
+        private void recycleRemainingHandIfTakeLimitReached()
+        {
+            if (_turnTakenMaterialCount < TURN_TAKE_COUNT || _handMaterials.Count == 0) return;
+
+            DiscardedHandThisTurn.Clear();
+            DiscardedHandThisTurn.AddRange(_handMaterials);
+            for (int i = 0; i < _handMaterials.Count; i++)
+                recycleToDiscard(_handMaterials[i]);
+
+            _handMaterials.Clear();
         }
 
         // 同步本回合放置记录中的槽位位置

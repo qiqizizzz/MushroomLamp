@@ -46,8 +46,7 @@ namespace Module.Cook
             CookMaterialItem materialItem = eventData.pointerDrag.GetComponent<CookMaterialItem>();
             if (materialItem == null) return;
 
-            if (_view.TryProcessMaterial(materialItem))
-                materialItem.AcceptDropAndDestroy();
+            _view.TryProcessMaterial(materialItem);
         }
     }
 }
