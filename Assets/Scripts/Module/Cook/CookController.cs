@@ -182,6 +182,15 @@ namespace Module.Cook
         // 集满后投入锅中
         private void submitPotTray(object[] args)
         {
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            if (cookView != null && cookView.PlayPotSubmitFlyAnimation(finishSubmitPotTray))
+                return;
+
+            finishSubmitPotTray();
+        }
+
+        private void finishSubmitPotTray()
+        {
             CookModel cookModel = GetCookModel();
             if (!cookModel.SubmitPotTray())
             {
@@ -189,8 +198,6 @@ namespace Module.Cook
                 return;
             }
 
-            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
-            cookView?.PlayPotPutIntoAnimation();
             refreshCookView();
             openStageEndViewIfNeeded();
         }
@@ -250,7 +257,10 @@ namespace Module.Cook
             bool hasGrinderContent = cookModel.ProcessedMaterials.Count > 0;
             cookModel.SettleTurn();
             if (hasGrinderContent)
+            {
                 GameApp.SoundManager?.PlayEffect(SfxPestle, UnityEngine.Vector3.zero);
+                GameApp.ViewManager.GetView<CookView>(ViewType.CookView)?.PlayGrinderGrindingAnimation();
+            }
             refreshCookView();
             openStageEndViewIfNeeded();
         }
