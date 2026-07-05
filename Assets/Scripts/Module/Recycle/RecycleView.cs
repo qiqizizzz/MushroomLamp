@@ -38,18 +38,11 @@ namespace Module.Recycle
             "Right",
             "Bottom"
         };
-        private static readonly Vector2[] S_OfferAnchorPresets =
+        private struct OfferPlacement
         {
-            new Vector2(0f, 1f),
-            new Vector2(0.5f, 1f),
-            new Vector2(1f, 1f),
-            new Vector2(0f, 0.5f),
-            new Vector2(0.5f, 0.5f),
-            new Vector2(1f, 0.5f),
-            new Vector2(0f, 0f),
-            new Vector2(0.5f, 0f),
-            new Vector2(1f, 0f)
-        };
+            public RectTransform areaRoot;
+            public Vector2 anchorPreset;
+        }
 
         private Button _btnBack;
         private Button _btnConfirm;
@@ -148,28 +141,28 @@ namespace Module.Recycle
 
             disableOfferRootLayout();
             clearGeneratedOfferItems(_offerRoot);
-            List<RectTransform> areaRoots = collectOfferAreaRoots();
+            Dictionary<string, RectTransform> areaRoots = collectOfferAreaRoots();
             if (areaRoots.Count == 0) return;
 
             refreshOffersInAreas(offers, areaRoots);
         }
 
-        // 按 Left/Right/Bottom 区域平均分配候选材料
-        private void refreshOffersInAreas(IReadOnlyList<RecycleOfferData> offers, List<RectTransform> areaRoots)
+        // 按指定区域与九宫格位置摆放候选材料
+        private void refreshOffersInAreas(IReadOnlyList<RecycleOfferData> offers, Dictionary<string, RectTransform> areaRoots)
         {
-            for (int i = 0; i < areaRoots.Count; i++)
-            {
-                clearChildren(areaRoots[i]);
-            }
+            foreach (RectTransform areaRoot in areaRoots.Values)
+                clearChildren(areaRoot);
 
-            List<List<Vector2>> areaAnchorPools = buildOfferAnchorPools(areaRoots.Count);
+            List<OfferPlacement> placements = buildOfferPlacements(areaRoots);
+            if (placements.Count == 0) return;
+
             for (int i = 0; i < offers.Count; i++)
             {
-                int areaIndex = i % areaRoots.Count;
-                RectTransform areaRoot = areaRoots[areaIndex];
+                OfferPlacement placement = placements[i % placements.Count];
+                RectTransform areaRoot = placement.areaRoot;
                 Vector2 itemSize = resolveOfferItemSize(areaRoot.rect);
                 float rotation = Random.Range(-OFFER_RANDOM_ROTATION, OFFER_RANDOM_ROTATION);
-                Vector2 anchorPreset = takeUniqueOfferAnchor(areaAnchorPools[areaIndex]);
+                Vector2 anchorPreset = placement.anchorPreset;
                 Vector2 anchoredPosition = getAnchorInsetPosition(areaRoot.rect, itemSize, rotation, anchorPreset);
 
                 RecycleOfferItem item = createOfferItem(areaRoot, i, anchorPreset, anchoredPosition, itemSize, rotation);
@@ -338,19 +331,45 @@ namespace Module.Recycle
         }
 
         // 收集预制体中标记散落范围的区域节点
-        private List<RectTransform> collectOfferAreaRoots()
+        private Dictionary<string, RectTransform> collectOfferAreaRoots()
         {
-            List<RectTransform> areaRoots = new List<RectTransform>(S_OfferAreaNames.Length);
+            Dictionary<string, RectTransform> areaRoots = new Dictionary<string, RectTransform>(S_OfferAreaNames.Length);
             if (_offerRoot == null) return areaRoots;
 
             for (int i = 0; i < S_OfferAreaNames.Length; i++)
             {
-                RectTransform areaRoot = findOptional<RectTransform>(_offerRoot, S_OfferAreaNames[i]);
+                string areaName = S_OfferAreaNames[i];
+                RectTransform areaRoot = findOptional<RectTransform>(_offerRoot, areaName);
                 if (areaRoot != null)
-                    areaRoots.Add(areaRoot);
+                    areaRoots[areaName] = areaRoot;
             }
 
             return areaRoots;
+        }
+
+        // 构建固定摆放点：Left 左上/正右，Right 中间，Bottom 最左/最右
+        private static List<OfferPlacement> buildOfferPlacements(Dictionary<string, RectTransform> areaRoots)
+        {
+            List<OfferPlacement> placements = new List<OfferPlacement>(RecycleModel.OfferCount);
+            addOfferPlacement(placements, areaRoots, "Left", new Vector2(0f, 1f));
+            addOfferPlacement(placements, areaRoots, "Left", new Vector2(1f, 0.5f));
+            addOfferPlacement(placements, areaRoots, "Right", new Vector2(0.5f, 0.5f));
+            addOfferPlacement(placements, areaRoots, "Bottom", new Vector2(0f, 0.5f));
+            addOfferPlacement(placements, areaRoots, "Bottom", new Vector2(1f, 0.5f));
+            return placements;
+        }
+
+        // 添加一个可用区域中的固定摆放点
+        private static void addOfferPlacement(List<OfferPlacement> placements, Dictionary<string, RectTransform> areaRoots, string areaName, Vector2 anchorPreset)
+        {
+            if (placements == null || areaRoots == null) return;
+            if (!areaRoots.TryGetValue(areaName, out RectTransform areaRoot) || areaRoot == null) return;
+
+            placements.Add(new OfferPlacement
+            {
+                areaRoot = areaRoot,
+                anchorPreset = anchorPreset
+            });
         }
 
         // 根据区域大小限制材料尺寸，确保完整显示在区域内
@@ -362,44 +381,6 @@ namespace Module.Recycle
             float maxHeight = Mathf.Max(24f, areaRect.height - OFFER_AREA_PADDING * 2f);
             float scale = Mathf.Min(1f, maxWidth / (maxRotatedBounds.x * OFFER_MAX_INTERACTION_SCALE), maxHeight / (maxRotatedBounds.y * OFFER_MAX_INTERACTION_SCALE));
             return desiredSize * scale;
-        }
-
-        // 为每个散落区域创建独立的九宫格锚点池
-        private static List<List<Vector2>> buildOfferAnchorPools(int areaCount)
-        {
-            List<List<Vector2>> anchorPools = new List<List<Vector2>>(areaCount);
-            for (int i = 0; i < areaCount; i++)
-                anchorPools.Add(createShuffledOfferAnchors());
-
-            return anchorPools;
-        }
-
-        // 从区域锚点池中取一个未使用的位置
-        private static Vector2 takeUniqueOfferAnchor(List<Vector2> anchorPool)
-        {
-            if (anchorPool == null)
-                return S_OfferAnchorPresets[Random.Range(0, S_OfferAnchorPresets.Length)];
-
-            if (anchorPool.Count == 0)
-                anchorPool.AddRange(createShuffledOfferAnchors());
-
-            int lastIndex = anchorPool.Count - 1;
-            Vector2 anchor = anchorPool[lastIndex];
-            anchorPool.RemoveAt(lastIndex);
-            return anchor;
-        }
-
-        // 打乱九宫格锚点顺序
-        private static List<Vector2> createShuffledOfferAnchors()
-        {
-            List<Vector2> anchors = new List<Vector2>(S_OfferAnchorPresets);
-            for (int i = anchors.Count - 1; i > 0; i--)
-            {
-                int swapIndex = Random.Range(0, i + 1);
-                (anchors[i], anchors[swapIndex]) = (anchors[swapIndex], anchors[i]);
-            }
-
-            return anchors;
         }
 
         // 根据锚点和旋转后的四角，把材料向区域内轻推，避免旋转后越界
