@@ -88,6 +88,12 @@ namespace Module.Item
             return true;
         }
 
+        // GM：重置幸运兔脚本小关使用标记
+        public static void GmResetRabbitFoot()
+        {
+            _rabbitFootUsed = false;
+        }
+
         private static bool ownsEffect(string effectType)
         {
             foreach (string itemId in PlayerDataManager.Instance.GetOwnedItemIds())

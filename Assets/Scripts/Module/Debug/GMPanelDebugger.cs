@@ -4,6 +4,7 @@ using Common.Defines;
 using Module.Cook;
 using Module.Item;
 using Module.MagicBoxBuff;
+using Module.Blackjack;
 using Module.Player;
 using Module.Level;
 using Module.Select;
@@ -114,6 +115,7 @@ namespace Module.Debug
             drawLevelColumn(panelWidth);
             drawItemColumn(panelWidth);
             drawBuffColumn(panelWidth);
+            drawBlackjackGmColumn();
         }
 
         // 关卡 GM：重启 / 跳关（重新发初始手牌）
@@ -325,6 +327,59 @@ namespace Module.Debug
             }
 
             GUILayout.EndArea();
+        }
+
+        // 21 点 GM：手动加点 / 模拟爆牌（测幸运兔脚重抽）
+        private void drawBlackjackGmColumn()
+        {
+            if (GameApp.ViewManager == null || !GameApp.ViewManager.IsOpen((int)ViewType.BlackjackView))
+                return;
+
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Blackjack) is not BlackjackModel model)
+                return;
+
+            const float colWidth = 240f;
+            var rect = new Rect(16f, 16f + 420f + 12f, colWidth, 220f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+
+            GUILayout.Label("21 点 GM");
+            GUILayout.Label($"累计：{BlackjackModel.FormatPoint(model.TotalPoint)} / {model.EffectiveBustLimit}");
+            GUILayout.Label($"已翻：{model.RevealedCount}/{model.CardCount}  爆牌：{model.IsBusted}");
+            GUILayout.Space(4f);
+            GUILayout.Label("测兔脚：先翻1张牌 → 加点 → 检测爆牌", GUI.skin.label);
+
+            GUILayout.BeginHorizontal();
+            foreach (float delta in new[] { 1f, 3f, 5f, 10f })
+            {
+                float d = delta;
+                if (GUILayout.Button($"+{BlackjackModel.FormatPoint(d)}", GUILayout.Height(26f)))
+                    gmBlackjackAddPoint(d);
+            }
+            GUILayout.EndHorizontal();
+
+            if (GUILayout.Button($"设为爆牌线 ({model.EffectiveBustLimit})", GUILayout.Height(26f)))
+            {
+                model.GmSetTotalPoint(model.EffectiveBustLimit);
+                gmBlackjackRefresh();
+            }
+
+            if (GUILayout.Button("检测爆牌（触发兔脚/认栽）", GUILayout.Height(28f)))
+                GameApp.ControllerManager.ApplyFunc((int)ControllerType.Blackjack, EventDefines.BlackjackGmCheckBust);
+
+            if (GUILayout.Button("重置幸运兔脚(本小关)", GUILayout.Height(26f)))
+                ItemPassiveManager.GmResetRabbitFoot();
+
+            GUILayout.EndArea();
+        }
+
+        private static void gmBlackjackAddPoint(float delta)
+        {
+            GameApp.ControllerManager.ApplyFunc((int)ControllerType.Blackjack, EventDefines.BlackjackGmAddPoint, delta);
+        }
+
+        private static void gmBlackjackRefresh()
+        {
+            GameApp.ControllerManager.ApplyFunc((int)ControllerType.Blackjack, EventDefines.BlackjackGmAddPoint, 0f);
         }
 
         private static void gmAddAllItems(IReadOnlyList<ItemParamJsonData> allItems)

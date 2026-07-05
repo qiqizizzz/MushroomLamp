@@ -61,6 +61,8 @@ namespace Module.Blackjack
             RegisterFunc(EventDefines.BlackjackPickMaterial, onPickMaterial);
             RegisterFunc(EventDefines.BlackjackRestart, onRestart);
             RegisterFunc(EventDefines.BlackjackReturn, onReturn);
+            RegisterFunc(EventDefines.BlackjackGmAddPoint, onGmAddPoint);
+            RegisterFunc(EventDefines.BlackjackGmCheckBust, onGmCheckBust);
         }
 
         public override void RemoveModuleEvent()
@@ -70,6 +72,8 @@ namespace Module.Blackjack
             UnRegisterFunc(EventDefines.BlackjackPickMaterial, onPickMaterial);
             UnRegisterFunc(EventDefines.BlackjackRestart, onRestart);
             UnRegisterFunc(EventDefines.BlackjackReturn, onReturn);
+            UnRegisterFunc(EventDefines.BlackjackGmAddPoint, onGmAddPoint);
+            UnRegisterFunc(EventDefines.BlackjackGmCheckBust, onGmCheckBust);
         }
 
         private void onOpen(object[] args)
@@ -104,18 +108,47 @@ namespace Module.Blackjack
             MagicBoxBuffJsonData buff = _slotBuffs[slotIndex];
             if (buff == null) return;
 
-            if (!MagicBoxBuffManager.GrantBuff(buff.id)) return;
-
-            applyCookBuffEffects(buff);
+            // 不可叠加 Buff 重复获得时仍允许翻牌，仅跳过再次生效（如兔脚重抽同槽）
+            bool grantedNew = MagicBoxBuffManager.GrantBuff(buff.id);
+            if (grantedNew)
+                applyCookBuffEffects(buff);
 
             if (buff.effectType == MagicBoxBuffManager.EffectPickMaterialReward)
             {
+                if (!grantedNew)
+                {
+                    drawFromSlot(slotIndex);
+                    return;
+                }
+
                 _pendingMaterialSlot = slotIndex;
                 beginMaterialPick(buff);
                 return;
             }
 
             drawFromSlot(slotIndex);
+        }
+
+        private void onGmAddPoint(object[] args)
+        {
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.BlackjackView)) return;
+
+            float delta = 1f;
+            if (args != null && args.Length > 0)
+            {
+                if (args[0] is float f) delta = f;
+                else if (args[0] is int i) delta = i;
+                else if (args[0] is double d) delta = (float)d;
+            }
+
+            _model.GmAddTotalPoint(delta);
+            refreshView();
+        }
+
+        private void onGmCheckBust(object[] args)
+        {
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.BlackjackView)) return;
+            onDrawFlipFinished();
         }
 
         private void onPickMaterial(object[] args)

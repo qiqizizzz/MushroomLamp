@@ -176,6 +176,17 @@ namespace Module.Blackjack
             return Cards[index].revealed ? Cards[index].faceSpriteKey : null;
         }
 
+        // GM：手动调整累计点数（不改变已翻牌张数）
+        public void GmAddTotalPoint(float delta)
+        {
+            TotalPoint = Mathf.Max(0f, TotalPoint + delta);
+        }
+
+        public void GmSetTotalPoint(float value)
+        {
+            TotalPoint = Mathf.Max(0f, value);
+        }
+
         // 从牌堆抽一张未发过的牌（同点数同花色不重复）
         private bool tryDrawNextCard(out string spriteKey, out float point)
         {
