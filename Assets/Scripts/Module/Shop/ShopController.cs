@@ -65,7 +65,7 @@ namespace Module.Shop
             RefreshView();
         }
 
-        private const int RefreshCost = 5;   // 刷新货架费用（固定）
+        private const int RefreshCost = ShopModel.RefreshShelfCost;
 
         private void OnRefresh(object[] args)
         {
