@@ -8,12 +8,13 @@
 
 using MVC.View;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Module.Shop
 {
     // 商店货架悬停放大（与 CookMaterialItem 卡牌悬停参数一致）
-    public class ShopHoverScaleItem : BaseItem
+    public class ShopHoverScaleItem : BaseItem, IPointerEnterHandler, IPointerExitHandler
     {
         private const float HoverScale = 1.2f;
         private const float ScaleLerpSpeed = 12f;
@@ -74,14 +75,14 @@ namespace Module.Shop
 
         private void OnDisable()
         {
-            hideTooltip();
+            clearPointerHoverState();
         }
 
         protected override void OnUpdate()
         {
             if (_rectTransform == null) return;
 
-            updatePointerHover();
+            updateTooltipPosition();
 
             Vector3 current = _rectTransform.localScale;
             Vector3 target = Vector3.one * _targetScale;
@@ -91,74 +92,48 @@ namespace Module.Shop
                 _rectTransform.localScale = target;
         }
 
-        private void updatePointerHover()
+        public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!_interactable)
+            if (!_interactable || _view == null || _slotData == null || eventData == null) return;
+
+            _isPointerInside = true;
+            _targetScale = _baseScale * HoverScale;
+            showTooltip(eventData.position);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            clearPointerHoverState();
+        }
+
+        private void updateTooltipPosition()
+        {
+            if (!_isPointerInside || !_isTooltipVisible) return;
+
+            _view?.MoveShopTooltip(Input.mousePosition);
+        }
+
+        // 显示商品详情浮层
+        private void showTooltip(Vector2 screenPosition)
+        {
+            if (_view == null || _slotData == null) return;
+
+            _isTooltipVisible = true;
+            _view.ShowShopTooltip(this, _slotData, screenPosition);
+        }
+
+        // 清理当前指针悬停状态
+        private void clearPointerHoverState()
+        {
+            if (!_isPointerInside && !_isTooltipVisible)
             {
                 _targetScale = _baseScale;
                 return;
             }
 
-            bool isInside = isPointerOver();
-            if (isInside)
-            {
-                _isPointerInside = true;
-                _targetScale = _baseScale * HoverScale;
-                showOrMoveTooltip();
-                return;
-            }
-
-            if (!_isPointerInside) return;
-
             _isPointerInside = false;
             _targetScale = _baseScale;
             hideTooltip();
-        }
-
-        private bool isPointerOver()
-        {
-            Camera camera = resolveHoverCamera();
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    _rectTransform,
-                    Input.mousePosition,
-                    camera,
-                    out Vector2 localPoint))
-                return false;
-
-            Vector3 scale = _rectTransform.localScale;
-            if (Mathf.Abs(scale.x) > 0.001f)
-                localPoint.x /= scale.x;
-            if (Mathf.Abs(scale.y) > 0.001f)
-                localPoint.y /= scale.y;
-
-            Vector2 halfSize = new Vector2(_width * 0.5f, _height * 0.5f);
-            return localPoint.x >= -halfSize.x && localPoint.x <= halfSize.x
-                && localPoint.y >= -halfSize.y && localPoint.y <= halfSize.y;
-        }
-
-        private Camera resolveHoverCamera()
-        {
-            Canvas canvas = _rectTransform != null ? _rectTransform.GetComponentInParent<Canvas>() : null;
-            if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
-                return null;
-
-            return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
-        }
-
-        // 显示或移动商品详情浮层
-        private void showOrMoveTooltip()
-        {
-            if (_view == null || _slotData == null) return;
-
-            Vector2 screenPosition = Input.mousePosition;
-            if (_isTooltipVisible)
-            {
-                _view.MoveShopTooltip(screenPosition);
-                return;
-            }
-
-            _isTooltipVisible = true;
-            _view.ShowShopTooltip(this, _slotData, screenPosition);
         }
 
         // 隐藏当前来源打开的商品详情浮层
