@@ -218,26 +218,40 @@ namespace Module.Cook
         private void touchMagicBox(object[] args)
         {
             CookModel cookModel = GetCookModel();
-            if (!cookModel.IsRunActive || cookModel.IsMagicBoxUsed)
+            if (!cookModel.IsRunActive)
             {
                 refreshCookView();
                 return;
             }
 
-            if (cookModel.CurrentScore < CookModel.MagicBoxUnlockMinScore)
+            if (cookModel.CurrentScore < CookModel.MagicBoxUnlockMinScore
+                || cookModel.GetRemainingBuffClaims() <= 0)
             {
                 ConfirmController.Show(new ConfirmModel
                 {
                     mode = ConfirmModel.Mode.ConfirmOnly,
-                    title = "无法解锁魔盒",
-                    message = $"分数未达到{CookModel.MagicBoxUnlockMinScore}分，无法解锁魔盒",
+                    title = cookModel.CurrentScore < CookModel.MagicBoxUnlockMinScore
+                        ? "无法解锁魔盒"
+                        : "暂时无法领取",
+                    message = cookModel.BuildMagicBoxBlockedMessage(),
                     confirmText = "知道了"
                 });
                 return;
             }
 
-            if (!cookModel.TouchMagicBox())
+            if (!cookModel.TryBeginMagicBoxSession(out string blockedMessage))
             {
+                if (!string.IsNullOrEmpty(blockedMessage))
+                {
+                    ConfirmController.Show(new ConfirmModel
+                    {
+                        mode = ConfirmModel.Mode.ConfirmOnly,
+                        title = "无法解锁魔盒",
+                        message = blockedMessage,
+                        confirmText = "知道了"
+                    });
+                }
+
                 refreshCookView();
                 return;
             }

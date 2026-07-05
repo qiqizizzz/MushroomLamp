@@ -29,6 +29,8 @@ namespace Module.Cook
         private const int COIN_PER_POT_SUBMIT = 2; // 每次投入锅中计分
         private const int COIN_STAGE_CLEAR = 5;    // 小局达标通关固定奖励
         public const int MagicBoxUnlockMinScore = 15; // 触碰魔盒所需最低分数
+        public const int MagicBoxBuffMaxClaimCount = 3;
+        private static readonly float[] MagicBoxBuffTierScores = { 15f, 18f, 21f };
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
         // 三区牌堆：天使抽牌堆 → 手牌筛选区 → 恶魔弃牌堆；卡实例全程复用，牌只在三区间流转、永不减少
@@ -77,6 +79,7 @@ namespace Module.Cook
         public string PreviewBreakdownText { get; private set; }
         public CookRoundResultData LastRoundResult { get; private set; }
         public bool IsMagicBoxUsed { get; private set; }
+        public int MagicBoxBuffsClaimedThisRound { get; private set; }
         public CookMagicBoxEffectType LastMagicBoxEffect { get; private set; }
         public float DevilRisk => _devilRisk;
         public string MagicBoxStatusText { get; private set; }
@@ -549,24 +552,98 @@ namespace Module.Cook
             return true;
         }
 
-        // 触碰魔盒：校验通过后标记本回合已使用，由控制器打开 BlackjackView
-        public bool TouchMagicBox()
+        // 当前分数下，本轮最多可领取的魔盒 Buff 数量（15→1，18→2，21→3）
+        public static int GetMaxBuffClaimAllowance(float score)
+        {
+            if (score >= MagicBoxBuffTierScores[2]) return 3;
+            if (score >= MagicBoxBuffTierScores[1]) return 2;
+            if (score >= MagicBoxBuffTierScores[0]) return 1;
+            return 0;
+        }
+
+        // 当前分数下还可领取的 Buff 数量
+        public int GetRemainingBuffClaims()
+        {
+            int allowance = GetMaxBuffClaimAllowance(CurrentScore);
+            return Mathf.Max(0, allowance - MagicBoxBuffsClaimedThisRound);
+        }
+
+        // 已领满当前分数档、需更高分数才能再领时，返回下一档分数；否则 null
+        public float? GetNextBuffClaimScoreThreshold()
+        {
+            if (MagicBoxBuffsClaimedThisRound >= MagicBoxBuffMaxClaimCount)
+                return null;
+            if (GetRemainingBuffClaims() > 0)
+                return null;
+
+            int nextTierIndex = MagicBoxBuffsClaimedThisRound;
+            if (nextTierIndex >= MagicBoxBuffTierScores.Length)
+                return null;
+
+            return MagicBoxBuffTierScores[nextTierIndex];
+        }
+
+        public string BuildMagicBoxBlockedMessage()
         {
             if (!IsRunActive)
+                return "当前烹饪已结束";
+
+            if (CurrentScore < MagicBoxUnlockMinScore)
+                return $"分数未达到{MagicBoxUnlockMinScore}分，无法解锁魔盒";
+
+            float? nextScore = GetNextBuffClaimScoreThreshold();
+            if (nextScore.HasValue)
             {
-                LastTip = "当前烹饪已结束";
-                return false;
+                return $"已领取 {MagicBoxBuffsClaimedThisRound} 个 Buff，分数达到 {CookRoundResultData.FormatScore(nextScore.Value)} 分后可再领取 1 个";
             }
 
-            if (IsMagicBoxUsed)
+            if (MagicBoxBuffsClaimedThisRound >= MagicBoxBuffMaxClaimCount)
+                return "本轮魔盒 Buff 已全部领完（最多 3 个）";
+
+            return "暂时无法领取魔盒 Buff";
+        }
+
+        public string BuildMagicBoxEnterMessage()
+        {
+            int remaining = GetRemainingBuffClaims();
+            int allowance = GetMaxBuffClaimAllowance(CurrentScore);
+            return
+                $"当前分数 {CookRoundResultData.FormatScore(CurrentScore)} 分\n" +
+                $"本轮已领取 {MagicBoxBuffsClaimedThisRound} 个 Buff\n" +
+                $"本次还可领取 {remaining} 个（当前分数档最多 {allowance} 个）";
+        }
+
+        public void RecordMagicBoxBuffClaimed()
+        {
+            MagicBoxBuffsClaimedThisRound = Mathf.Min(
+                MagicBoxBuffsClaimedThisRound + 1,
+                MagicBoxBuffMaxClaimCount);
+            refreshMagicBoxStatusText();
+        }
+
+        // 触碰魔盒：校验通过后由控制器打开 BlackjackView
+        public bool TryBeginMagicBoxSession(out string blockedMessage)
+        {
+            blockedMessage = null;
+
+            if (!IsRunActive)
             {
-                LastTip = "本回合已经触碰过魔盒";
+                blockedMessage = "当前烹饪已结束";
+                LastTip = blockedMessage;
                 return false;
             }
 
             if (CurrentScore < MagicBoxUnlockMinScore)
             {
-                LastTip = $"分数未达到{MagicBoxUnlockMinScore}分，无法解锁魔盒";
+                blockedMessage = BuildMagicBoxBlockedMessage();
+                LastTip = blockedMessage;
+                return false;
+            }
+
+            if (GetRemainingBuffClaims() <= 0)
+            {
+                blockedMessage = BuildMagicBoxBlockedMessage();
+                LastTip = blockedMessage;
                 return false;
             }
 
@@ -774,6 +851,7 @@ namespace Module.Cook
             _magicBoxBonus = 0;
             _devilRisk = 0;
             IsMagicBoxUsed = false;
+            MagicBoxBuffsClaimedThisRound = 0;
             LastMagicBoxEffect = CookMagicBoxEffectType.None;
             refreshMagicBoxStatusText();
 
@@ -1209,6 +1287,28 @@ namespace Module.Cook
 
         public void AddBonus(float value) { _magicBoxBonus += value; }
         public void AddDevil(float value) { _devilRisk = Mathf.Max(0f, _devilRisk + value); }
+
+        // 21 点爆牌：当前烹饪分数按惩罚比例扣除（默认扣一半；天使底护等 Buff 可减半惩罚）
+        public float ApplyBlackjackBustScorePenalty(float penaltyMultiplier = 1f)
+        {
+            float scoreBefore = CurrentScore;
+            float lossRatio = 0.5f * Mathf.Max(0f, penaltyMultiplier);
+            CurrentScore = Mathf.Max(0f, scoreBefore * (1f - lossRatio));
+            refreshPreviewValue();
+
+            float lost = scoreBefore - CurrentScore;
+            LastTip = lost > 0f
+                ? $"21点爆牌，分数 -{CookRoundResultData.FormatScore(lost)}"
+                : "21点爆牌";
+            refreshMagicBoxStatusText();
+            return lost;
+        }
+
+        public static float PreviewBlackjackBustScoreLoss(float currentScore, float penaltyMultiplier = 1f)
+        {
+            float lossRatio = 0.5f * Mathf.Max(0f, penaltyMultiplier);
+            return currentScore * lossRatio;
+        }
         public void ExpandTarget(int value) { LevelFlow.Instance.ExpandTarget(value); }
 
         // 魔盒 Buff：计分校准等，点击即计入本局总分（CookView 火候条立即更新）
@@ -1296,7 +1396,8 @@ namespace Module.Cook
 
         private void refreshMagicBoxStatusText()
         {
-            string boxState = IsMagicBoxUsed ? "魔盒已触碰" : "魔盒未触碰";
+            int allowance = GetMaxBuffClaimAllowance(CurrentScore);
+            string boxState = $"魔盒 Buff {MagicBoxBuffsClaimedThisRound}/{allowance}";
             string angelState = LevelFlow.Instance.AngelRescueCount > 0 ? $"天使救援 {LevelFlow.Instance.AngelRescueCount}" : "天使救援 0";
             string devilState = _devilRisk > 0 ? $"恶魔风险 +{CookRoundResultData.FormatScore(_devilRisk)}" : "恶魔风险 0";
             MagicBoxStatusText = $"{boxState}\n{angelState}\n{devilState}";

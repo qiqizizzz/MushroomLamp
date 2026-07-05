@@ -51,7 +51,7 @@
       "category": "保底类",
       "effectType": "reduce_bust_penalty",
       "effectTarget": "magicBoxBustPenalty",
-      "description": "本次21点爆牌惩罚减半。",
+      "description": "本次21点爆牌时，烹饪分数扣分减半（仅扣25%）。",
       "durationType": "magic_box_session",
       "baseWeight": 70,
       "sortOrder": 100,

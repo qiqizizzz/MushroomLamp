@@ -677,7 +677,7 @@ namespace Module.Cook
         // 点击魔盒：由 Controller 打开 Blackjack 叠加层，CookView 保持打开
         private void onMagicBoxClick()
         {
-            if (_cookModel != null && (!_cookModel.IsRunActive || _cookModel.IsMagicBoxUsed))
+            if (_cookModel != null && !_cookModel.IsRunActive)
                 return;
 
             ApplyFunc(EventDefines.CookTouchMagicBox);
@@ -1585,13 +1585,13 @@ namespace Module.Cook
                 _btnSettle.interactable = cookModel.CanSettle;
 
             if (_btnMagicBox != null)
-                _btnMagicBox.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
+                _btnMagicBox.interactable = cookModel.IsRunActive;
 
             if (_btnMagicBoxLegacy != null)
-                _btnMagicBoxLegacy.interactable = cookModel.IsRunActive && !cookModel.IsMagicBoxUsed;
+                _btnMagicBoxLegacy.interactable = cookModel.IsRunActive;
 
             if (_magicBoxHover != null)
-                _magicBoxHover.SetInteractable(cookModel.IsRunActive && !cookModel.IsMagicBoxUsed);
+                _magicBoxHover.SetInteractable(cookModel.IsRunActive);
         }
 
         private void clearHand()

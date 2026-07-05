@@ -22,7 +22,6 @@ namespace Module.Blackjack
 {
     public class BlackjackController : BaseController
     {
-        private const float DefaultBustDebuff = 5f;
         private const string SfxMagicDebuff = "sfx_magic_debuff";
 
         private enum SessionPhase
@@ -38,6 +37,8 @@ namespace Module.Blackjack
         private List<MagicBoxBuffJsonData> _slotBuffs = new();
         private List<MaterialJsonData> _materialCandidates = new();
         private int _pendingMaterialSlot = -1;
+        private int _sessionBuffClaimLimit;
+        private int _sessionBuffsClaimed;
 
         public BlackjackController()
         {
@@ -100,6 +101,7 @@ namespace Module.Blackjack
         private void onUseItemSlot(object[] args)
         {
             if (_phase != SessionPhase.PlayItem) return;
+            if (_sessionBuffsClaimed >= _sessionBuffClaimLimit) return;
 
             int slotIndex = resolveItemSlotIndex(args);
             if (!_model.IsItemSlotAvailable(slotIndex)) return;
@@ -111,7 +113,10 @@ namespace Module.Blackjack
             // 不可叠加 Buff 重复获得时仍允许翻牌，仅跳过再次生效（如兔脚重抽同槽）
             bool grantedNew = MagicBoxBuffManager.GrantBuff(buff.id);
             if (grantedNew)
+            {
                 applyCookBuffEffects(buff);
+                recordSessionBuffClaimed();
+            }
 
             if (buff.effectType == MagicBoxBuffManager.EffectPickMaterialReward)
             {
@@ -216,30 +221,43 @@ namespace Module.Blackjack
                 }
 
                 showBustResult();
+                return;
             }
-            else if (_model.AllRevealed)
+
+            if (isSessionBuffQuotaReached())
             {
-                showSafeResult();
+                showBuffQuotaResult();
+                return;
             }
+
+            if (_model.AllRevealed)
+                showSafeResult();
         }
 
         private void showBustResult()
         {
             GameApp.SoundManager?.PlayEffect(SfxMagicDebuff, UnityEngine.Vector3.zero);
 
-            float debuff = DefaultBustDebuff * MagicBoxBuffManager.GetBlackjackBustPenaltyMultiplier();
-            string guardText = debuff < DefaultBustDebuff ? "\n（天使底护：惩罚减半）" : string.Empty;
+            float penaltyMultiplier = MagicBoxBuffManager.GetBlackjackBustPenaltyMultiplier();
+            bool hasGuard = penaltyMultiplier < 0.999f;
+            CookModel cookModel = GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) as CookModel;
+
+            float scoreBefore = cookModel?.CurrentScore ?? 0f;
+            float lost = CookModel.PreviewBlackjackBustScoreLoss(scoreBefore, penaltyMultiplier);
+            float scoreAfter = Mathf.Max(0f, scoreBefore - lost);
+            string guardText = hasGuard ? "\n（天使底护：扣分减半）" : string.Empty;
 
             ConfirmController.Show(new ConfirmModel
             {
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "爆牌！",
-                message = $"累计 {BlackjackModel.FormatPoint(_model.TotalPoint)} 点，达到/超过 {_model.EffectiveBustLimit} 点。\n恶魔风险 +{debuff:0.#}{guardText}",
+                message =
+                    $"累计 {BlackjackModel.FormatPoint(_model.TotalPoint)} 点，达到/超过 {_model.EffectiveBustLimit} 点。\n" +
+                    $"烹饪分数 {CookRoundResultData.FormatScore(scoreBefore)} → {CookRoundResultData.FormatScore(scoreAfter)}（扣除 {CookRoundResultData.FormatScore(lost)} 分）{guardText}",
                 confirmText = "认栽",
                 onConfirm = () =>
                 {
-                    if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
-                        cookModel.AddDevil(debuff);
+                    cookModel?.ApplyBlackjackBustScorePenalty(penaltyMultiplier);
                     returnToCookView();
                 }
             });
@@ -252,6 +270,23 @@ namespace Module.Blackjack
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "安全过关",
                 message = $"全部牌翻完，累计 {BlackjackModel.FormatPoint(_model.TotalPoint)} 点，未爆牌。",
+                confirmText = "收手",
+                onConfirm = () => returnToCookView()
+            });
+        }
+
+        private void showBuffQuotaResult()
+        {
+            float? nextScore = resolveNextBuffClaimScoreFromCook();
+            string nextHint = nextScore.HasValue
+                ? $"\n\n分数达到 {CookRoundResultData.FormatScore(nextScore.Value)} 分后可再领取 1 个 Buff。"
+                : string.Empty;
+
+            ConfirmController.Show(new ConfirmModel
+            {
+                mode = ConfirmModel.Mode.ConfirmOnly,
+                title = "Buff 已领取",
+                message = $"本次已领取 {_sessionBuffsClaimed} 个 Buff，已达当前可领取上限。{nextHint}",
                 confirmText = "收手",
                 onConfirm = () => returnToCookView()
             });
@@ -293,6 +328,27 @@ namespace Module.Blackjack
             BlackjackView view = getBlackjackView();
             if (view == null) return;
 
+            _sessionBuffClaimLimit = resolveRemainingBuffClaimsFromCook();
+            _sessionBuffsClaimed = 0;
+            if (_sessionBuffClaimLimit <= 0)
+            {
+                returnToCookView();
+                return;
+            }
+
+            string enterMessage = resolveEnterMessageFromCook();
+            ConfirmController.Show(new ConfirmModel
+            {
+                mode = ConfirmModel.Mode.ConfirmOnly,
+                title = "魔盒",
+                message = enterMessage,
+                confirmText = "开始",
+                onConfirm = () => startIntroSession(view)
+            });
+        }
+
+        private void startIntroSession(BlackjackView view)
+        {
             _phase = SessionPhase.Intro;
             _model.Reset(view.GetItemSlotCount());
             view.BeginSession(_model, onIntroFinished);
@@ -361,6 +417,42 @@ namespace Module.Blackjack
 
             CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
             cookView?.Refresh(cookModel);
+        }
+
+        private void recordSessionBuffClaimed()
+        {
+            _sessionBuffsClaimed++;
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                cookModel.RecordMagicBoxBuffClaimed();
+        }
+
+        private bool isSessionBuffQuotaReached()
+        {
+            return _sessionBuffClaimLimit > 0 && _sessionBuffsClaimed >= _sessionBuffClaimLimit;
+        }
+
+        private static int resolveRemainingBuffClaimsFromCook()
+        {
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                return cookModel.GetRemainingBuffClaims();
+
+            return 0;
+        }
+
+        private static string resolveEnterMessageFromCook()
+        {
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                return cookModel.BuildMagicBoxEnterMessage();
+
+            return "当前还可领取魔盒 Buff";
+        }
+
+        private static float? resolveNextBuffClaimScoreFromCook()
+        {
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                return cookModel.GetNextBuffClaimScoreThreshold();
+
+            return null;
         }
     }
 }
