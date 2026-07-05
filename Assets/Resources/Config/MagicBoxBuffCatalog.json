@@ -57,6 +57,22 @@
       "sortOrder": 100,
       "stackable": false,
       "bustPenaltyMultiplier": 0.5
+    },
+    {
+      "id": "BUFF_LUCK_GOLD",
+      "name": "幸运三选一",
+      "rarity": "gold",
+      "category": "幸运类",
+      "effectType": "pick_material_reward",
+      "effectTarget": "playerMaterialPool",
+      "description": "弹出三选一界面，从3份基础蔬菜材料中选1张加入天使抽牌堆。",
+      "durationType": "immediate",
+      "baseWeight": 25,
+      "sortOrder": 80,
+      "stackable": false,
+      "materialChoiceCount": 3,
+      "materialPickCount": 1,
+      "materialPool": "basic_vegetable"
     }
   ]
 }

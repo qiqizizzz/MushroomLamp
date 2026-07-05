@@ -22,6 +22,7 @@ namespace MVC
         StageSettle = 9,
         Store = 10,
         Blackjack = 11,
-        Recycle = 12
+        Recycle = 12,
+        MaterialPick = 13
     }
 }

@@ -196,15 +196,15 @@
       "buttons": [
         {
           "path": "Items/Item_0",
-          "click": "sfx_poker_card_flipping"
+          "muteClick": true
         },
         {
           "path": "Items/Item_1",
-          "click": "sfx_poker_card_flipping"
+          "muteClick": true
         },
         {
           "path": "Items/Item_2",
-          "click": "sfx_poker_card_flipping"
+          "muteClick": true
         }
       ]
     }

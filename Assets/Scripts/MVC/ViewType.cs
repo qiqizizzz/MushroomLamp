@@ -22,6 +22,7 @@ namespace MVC
         StageSettleView = 9,
         StoreView = 10,
         BlackjackView = 11,
-        RecycleView = 12
+        RecycleView = 12,
+        MaterialPickView = 13
     }
 }

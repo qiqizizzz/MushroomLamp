@@ -12,7 +12,6 @@ using Common.Defines;
 using Common.UI;
 using DG.Tweening;
 using Module.MagicBoxBuff;
-using Module.Material;
 using MVC.View;
 using TMPro;
 using UnityEngine;
@@ -33,12 +32,6 @@ namespace Module.Blackjack
         private static readonly Color ItemNormalColor = Color.white;
         private static readonly Color ItemDisabledColor = new Color(0.78f, 0.78f, 0.78f, 0.55f);
 
-        private enum ItemInteractionMode
-        {
-            PlaySlot,
-            PickMaterial
-        }
-
         [Header("开场")]
         [SerializeField] private float _openCooldownSeconds = 1.5f;
         [Header("小牌布局")]
@@ -46,6 +39,9 @@ namespace Module.Blackjack
         [SerializeField] private float _layoutSpacing = 20f;
         [Header("翻牌")]
         [SerializeField] private float _flipHalfDuration = 0.18f;
+
+        private const string SfxPokerCardFlipPrefix = "sfx_poker_card_flipping_";
+        private const int SfxPokerCardFlipVariantCount = 4;
 
         private readonly List<Button> _itemButtons = new();
         private readonly List<UnityAction> _itemClickActions = new();
@@ -72,9 +68,7 @@ namespace Module.Blackjack
         private Action _onIntroComplete;
         private readonly HashSet<int> _flippingCardIndices = new();
         private readonly HashSet<int> _usedSlotIndices = new();
-        private ItemInteractionMode _itemMode = ItemInteractionMode.PlaySlot;
         private readonly List<MagicBoxBuffJsonData> _slotBuffs = new();
-        private readonly List<MaterialJsonData> _materialCandidates = new();
 
         private class CardSlot
         {
@@ -280,7 +274,6 @@ namespace Module.Blackjack
             _flippingCardIndices.Clear();
             _usedSlotIndices.Clear();
             _slotBuffs.Clear();
-            _materialCandidates.Clear();
             clearItemLabels();
             _devilBubble?.resetInstant();
             _angelBubble?.resetInstant();
@@ -323,13 +316,7 @@ namespace Module.Blackjack
 
             if (applyLayout)
             {
-                if (_itemMode == ItemInteractionMode.PlaySlot)
-                    syncSlotBuffItems(model.ItemSlotCount);
-                else if (_itemMode == ItemInteractionMode.PickMaterial)
-                    syncMaterialItemSlots(_materialCandidates);
-                else
-                    syncItemSlots(model.ItemSlotCount);
-
+                syncSlotBuffItems(model.ItemSlotCount);
                 syncSmallCards(model);
             }
 
@@ -358,14 +345,17 @@ namespace Module.Blackjack
         private bool resolveItemAvailable(BlackjackModel model, int index)
         {
             if (_interactionLocked) return false;
+            return model.IsItemSlotAvailable(index);
+        }
 
-            switch (_itemMode)
-            {
-                case ItemInteractionMode.PickMaterial:
-                    return index >= 0 && index < _materialCandidates.Count;
-                default:
-                    return model.IsItemSlotAvailable(index);
-            }
+        public void SetInteractionLocked(bool locked) => setInteractionLocked(locked);
+
+        private static void playCardFlipSound()
+        {
+            if (SfxPokerCardFlipVariantCount <= 0) return;
+
+            int index = UnityEngine.Random.Range(1, SfxPokerCardFlipVariantCount + 1);
+            GameApp.SoundManager?.PlayEffect($"{SfxPokerCardFlipPrefix}{index}", Vector3.zero);
         }
 
         // 点击道具后播放小牌翻转；数值与累计点数在动画结束后由 onComplete 触发刷新
@@ -394,6 +384,7 @@ namespace Module.Blackjack
 
             slot.rect.localScale = Vector3.one;
             float half = Mathf.Max(0.05f, _flipHalfDuration);
+            playCardFlipSound();
 
             slot.flipTween = DOTween.Sequence()
                 .Append(slot.rect.DOScaleX(0f, half).SetEase(Ease.InQuad))
@@ -423,7 +414,6 @@ namespace Module.Blackjack
 
         public void SetupSlotBuffs(IReadOnlyList<MagicBoxBuffJsonData> slotBuffs)
         {
-            _itemMode = ItemInteractionMode.PlaySlot;
             _usedSlotIndices.Clear();
             _slotBuffs.Clear();
             if (slotBuffs != null)
@@ -436,7 +426,6 @@ namespace Module.Blackjack
 
         public void RestorePlaySlotMode()
         {
-            _itemMode = ItemInteractionMode.PlaySlot;
             bindItemButtons();
             syncSlotBuffItems(_slotBuffs.Count);
         }
@@ -454,30 +443,9 @@ namespace Module.Blackjack
                 _usedSlotIndices.Remove(slotIndex);
         }
 
-        public void SetupMaterialPick(IReadOnlyList<MaterialJsonData> candidates)
-        {
-            _itemMode = ItemInteractionMode.PickMaterial;
-
-            _materialCandidates.Clear();
-            if (candidates != null)
-                _materialCandidates.AddRange(candidates);
-
-            bindItemButtons();
-            syncMaterialItemSlots(_materialCandidates);
-            setInteractionLocked(false);
-        }
-
         private void reapplyItemLabels()
         {
-            switch (_itemMode)
-            {
-                case ItemInteractionMode.PlaySlot:
-                    syncSlotBuffItemLabels();
-                    break;
-                case ItemInteractionMode.PickMaterial:
-                    syncMaterialItemSlots(_materialCandidates);
-                    break;
-            }
+            syncSlotBuffItemLabels();
         }
 
         public void RefreshDialog(BlackjackDialogSession dialogSession)
@@ -712,9 +680,7 @@ namespace Module.Blackjack
                 if (i < _itemClickActions.Count && _itemClickActions[i] != null)
                     btn.onClick.RemoveListener(_itemClickActions[i]);
 
-                UnityAction action = _itemMode == ItemInteractionMode.PickMaterial
-                    ? () => ApplyFunc(EventDefines.BlackjackPickMaterial, itemIndex)
-                    : () => ApplyFunc(EventDefines.BlackjackUseItemSlot, itemIndex);
+                UnityAction action = () => ApplyFunc(EventDefines.BlackjackUseItemSlot, itemIndex);
 
                 if (i >= _itemClickActions.Count)
                     _itemClickActions.Add(action);
@@ -745,26 +711,6 @@ namespace Module.Blackjack
             {
                 MagicBoxBuffJsonData buff = _slotBuffs[i];
                 setItemLabel(i, buff?.name ?? "Buff");
-            }
-        }
-
-        private void syncMaterialItemSlots(IReadOnlyList<MaterialJsonData> candidates)
-        {
-            Transform items = Find<Transform>("Items");
-            if (items == null) return;
-
-            int childIndex = 0;
-            foreach (Transform child in items)
-            {
-                bool active = candidates != null && childIndex < candidates.Count;
-                child.gameObject.SetActive(active);
-                if (active)
-                {
-                    MaterialJsonData material = candidates[childIndex];
-                    setItemLabel(childIndex, material?.name ?? "材料");
-                }
-
-                childIndex++;
             }
         }
 

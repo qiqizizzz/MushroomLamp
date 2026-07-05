@@ -74,6 +74,10 @@ namespace Common.Defines
         public const string BlackjackGmAddPoint = "BlackjackGmAddPoint";
         public const string BlackjackGmCheckBust = "BlackjackGmCheckBust";
 
+        // 材料三选一弹层
+        public const string OpenMaterialPickView = "OpenMaterialPickView";
+        public const string MaterialPickSelect = "MaterialPickSelect";
+
         // 商店子页面（购买 + 背包）
         public const string OpenStoreView = "OpenStoreView";
         public const string StoreReturn = "StoreReturn";

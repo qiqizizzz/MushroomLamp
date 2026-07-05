@@ -21,6 +21,7 @@ using Module.Shop;
 using Module.Recycle;
 using Module.Store;
 using Module.Blackjack;
+using Module.MaterialPick;
 using Module.StageSettle;
 using Module.Summary;
 using MVC;
@@ -107,5 +108,6 @@ public class GameScene : MonoBehaviour
         GameApp.ControllerManager.Register(ControllerType.Summary, new SummaryController());
         GameApp.ControllerManager.Register(ControllerType.Settings, new SettingsController());
         GameApp.ControllerManager.Register(ControllerType.StageSettle, new StageSettleController());
+        GameApp.ControllerManager.Register(ControllerType.MaterialPick, new MaterialPickController());
     }
 }
