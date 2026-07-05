@@ -295,6 +295,7 @@ namespace Module.Cook
         // 返回材料选择界面
         private void returnToSelect(object[] args)
         {
+            LevelFlow.Instance.AbandonInProgressRun();
             GameApp.ViewManager.Close(ViewType.CookView);
             ApplyControllerFunc(ControllerType.SelectBox, EventDefines.OpenSelectBoxView, args);
         }

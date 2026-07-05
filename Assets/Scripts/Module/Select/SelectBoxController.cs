@@ -8,9 +8,7 @@
 using Common;
 using Common.Defines;
 using Module.Cook;
-using Module.Item;
 using Module.Level;
-using Module.Player;
 using Module.View;
 using MVC;
 using MVC.Controller;
@@ -60,6 +58,7 @@ namespace Module.Select
         private void openSelectBoxView(object[] args)
         {
             ensureModel();
+            LevelFlow.Instance.AbandonInProgressRun();
             GameApp.ViewManager.Open(ViewType.SelectBoxView, args);
         }
 
@@ -109,12 +108,10 @@ namespace Module.Select
 
             // 初始化关卡流程（定位第一小局），后续商店推进沿用 LevelFlow
             var materials = SelectBoxMaterialHelper.CollectMaterials(detail);
-            PlayerDataManager.Instance.ClearItemsForNewRun();
-            ItemPassiveManager.ResetRun();
-            LevelFlow.Instance.Begin(entry?.id, entry?.displayName, model.Difficulty, materials);
+            LevelRunBootstrap.BeginNewRun(entry?.id, entry?.displayName, model.Difficulty, materials);
 
             GameApp.ViewManager.Close(ViewType.SelectBoxView);
-            ApplyControllerFunc(ControllerType.Cook, EventDefines.StartCookRun, LevelFlow.Instance.BuildStartData());
+            LevelRunBootstrap.EnterCookRun();
         }
 
         private SelectBoxModel ensureModel()

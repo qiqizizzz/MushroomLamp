@@ -69,6 +69,46 @@ namespace Module.Level
         public bool HasFlow => !string.IsNullOrEmpty(BoxId) && StageCount > 0;
         public bool IsLastStage => HasStageConfig && StageCount > 0 && StageIndex >= StageCount - 1;
 
+        // 放弃当前未完成的大局进度，回到第一小局（选择页再次进入时用）
+        public void AbandonInProgressRun()
+        {
+            if (!HasFlow) return;
+
+            StageIndex = 0;
+            resetRunSummary();
+            refreshCurrentStageConfig();
+        }
+
+        // GM：从第一小局重新开始（保留当前箱子与材料池）
+        public void GmRestartFromFirstStage()
+        {
+            if (!HasFlow) return;
+
+            StageIndex = 0;
+            resetRunSummary();
+            refreshCurrentStageConfig();
+        }
+
+        // GM：跳转到指定难度的指定小局（0=第一关）
+        public void GmJumpToStage(SelectDifficulty difficulty, int stageIndex)
+        {
+            if (!HasFlow) return;
+
+            Difficulty = difficulty;
+            LevelEntryJsonData level = findLevel(BoxId);
+            StageCount = level != null ? LevelConfigLoader.GetStageCount(level, difficulty) : 0;
+
+            if (StageCount <= 0)
+            {
+                applyFallbackConfig(difficulty);
+                return;
+            }
+
+            StageIndex = UnityEngine.Mathf.Clamp(stageIndex, 0, StageCount - 1);
+            resetRunSummary();
+            refreshCurrentStageConfig();
+        }
+
         // 开始一个大局（在 SelectBox 点开始时调用），定位到第一小局
         public void Begin(string boxId, string boxName, SelectDifficulty difficulty, IEnumerable<CookMaterialSeedData> materials)
         {

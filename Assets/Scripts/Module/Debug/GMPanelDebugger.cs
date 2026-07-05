@@ -5,6 +5,8 @@ using Module.Cook;
 using Module.Item;
 using Module.MagicBoxBuff;
 using Module.Player;
+using Module.Level;
+using Module.Select;
 using Module.Store;
 using MVC;
 using UnityEngine;
@@ -65,6 +67,11 @@ namespace Module.Debug
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
                         GameApp.ControllerManager.ApplyFunc((int)ControllerType.Blackjack, EventDefines.OpenBlackjackView);
                 }
+                else if (viewType == ViewType.CookView)
+                {
+                    if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
+                        gmEnterCookFromPanel();
+                }
                 else if (viewType == ViewType.StoreView)
                 {
                     if (GUILayout.Button($"{viewTypeName} (GM进入)", GUILayout.Height(28f)))
@@ -104,8 +111,69 @@ namespace Module.Debug
             GUILayout.EndArea();
 
             drawMoneyColumn(panelWidth);
+            drawLevelColumn(panelWidth);
             drawItemColumn(panelWidth);
             drawBuffColumn(panelWidth);
+        }
+
+        // 关卡 GM：重启 / 跳关（重新发初始手牌）
+        private void drawLevelColumn(float leftPanelWidth)
+        {
+            const float colWidth = 220f;
+            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f, 16f, colWidth, 300f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+
+            LevelFlow flow = LevelFlow.Instance;
+            GUILayout.Label("关卡 GM");
+            if (flow.HasFlow)
+            {
+                GUILayout.Label($"箱子：{flow.BoxName}");
+                GUILayout.Label($"难度：{flow.Difficulty}  小局：{flow.StageIndex + 1}/{flow.StageCount}");
+            }
+            else
+            {
+                GUILayout.Label("当前无进行中的大局");
+            }
+
+            GUILayout.Space(6f);
+
+            if (GUILayout.Button("重启大关(第一小关)", GUILayout.Height(28f)))
+                gmRestartRun();
+
+            GUILayout.Space(6f);
+            GUILayout.Label("简单 · 跳关");
+            GUILayout.BeginHorizontal();
+            for (int i = 0; i < 3; i++)
+            {
+                int stageIndex = i;
+                if (GUILayout.Button($"第{i + 1}关", GUILayout.Height(26f)))
+                    gmJumpToStage(SelectDifficulty.Easy, stageIndex);
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndArea();
+        }
+
+        private static void gmRestartRun()
+        {
+            LevelRunBootstrap.EnsureDefaultRun(SelectDifficulty.Normal);
+            LevelFlow.Instance.GmRestartFromFirstStage();
+            LevelRunBootstrap.EnterCookRun();
+        }
+
+        private static void gmJumpToStage(SelectDifficulty difficulty, int stageIndex)
+        {
+            LevelRunBootstrap.EnsureDefaultRun(difficulty);
+            LevelFlow.Instance.GmJumpToStage(difficulty, stageIndex);
+            LevelRunBootstrap.EnterCookRun();
+        }
+
+        private static void gmEnterCookFromPanel()
+        {
+            if (!LevelFlow.Instance.HasFlow)
+                LevelRunBootstrap.EnsureDefaultRun(SelectDifficulty.Normal);
+
+            LevelRunBootstrap.EnterCookRun();
         }
 
         // 独立的金币列，放在面板右侧（不与 View 按钮同列）
@@ -140,7 +208,8 @@ namespace Module.Debug
         private void drawItemColumn(float leftPanelWidth)
         {
             const float colWidth = 280f;
-            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f, 16f, colWidth, 420f);
+            const float levelColWidth = 220f;
+            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f + levelColWidth + 12f, 16f, colWidth, 420f);
             GUILayout.BeginArea(rect, GUI.skin.box);
 
             ItemParamCatalogLoader.EnsureLoaded();
@@ -202,7 +271,8 @@ namespace Module.Debug
         private void drawBuffColumn(float leftPanelWidth)
         {
             const float colWidth = 280f;
-            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f + 280f + 12f, 16f, colWidth, 420f);
+            const float levelColWidth = 220f;
+            var rect = new Rect(16f + leftPanelWidth + 12f + 200f + 12f + levelColWidth + 12f + 280f + 12f, 16f, colWidth, 420f);
             GUILayout.BeginArea(rect, GUI.skin.box);
 
             MagicBoxBuffCatalogLoader.EnsureLoaded();
