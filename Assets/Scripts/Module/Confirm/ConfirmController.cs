@@ -5,7 +5,10 @@
 * └──────────────────────────────────┘
 */
 
+using System.Collections;
+using Common;
 using Common.Defines;
+using Common.UI;
 using MVC;
 using MVC.Controller;
 
@@ -14,6 +17,10 @@ namespace Module.Confirm
     public class ConfirmController : BaseController
     {
         private ConfirmModel _currentModel;
+        private bool _isClosing;
+
+        public static bool IsVisible =>
+            GameApp.ViewManager != null && GameApp.ViewManager.IsOpen((int)ViewType.ConfirmView);
 
         public ConfirmController()
         {
@@ -46,31 +53,49 @@ namespace Module.Confirm
         private void openConfirmView(object[] args)
         {
             if (args == null || args.Length == 0 || args[0] is not ConfirmModel model) return;
+            _isClosing = false;
             _currentModel = model;
             GameApp.ViewManager.Open(ViewType.ConfirmView, args);
         }
 
-        private void onConfirm(object[] args)
+        private void onConfirm(object[] args) => dispatchChoice(true);
+
+        private void onCancel(object[] args) => dispatchChoice(false);
+
+        private void dispatchChoice(bool confirmed)
         {
-            GameApp.ViewManager.Close(ViewType.ConfirmView);
-            var cb = _currentModel?.onConfirm;
+            if (_isClosing) return;
+
+            ConfirmModel model = _currentModel;
             _currentModel = null;
-            cb?.Invoke();
+            _isClosing = true;
+            UiClickGuard.BlockForFrames(10);
+
+            if (confirmed)
+                model?.onConfirm?.Invoke();
+            else
+                model?.onCancel?.Invoke();
+
+            model?.onResult?.Invoke(confirmed);
+            GameAppRunner.Run(deferredClose());
         }
 
-        private void onCancel(object[] args)
+        private static IEnumerator deferredClose()
         {
+            yield return null;
             GameApp.ViewManager.Close(ViewType.ConfirmView);
-            var cb = _currentModel?.onCancel;
-            _currentModel = null;
-            cb?.Invoke();
         }
 
-        /// <summary>
-        /// 静态便捷入口，任意位置直接调用
-        /// </summary>
         public static void Show(ConfirmModel model)
         {
+            if (model == null) return;
+            GameAppRunner.Run(showNextFrame(model));
+        }
+
+        private static IEnumerator showNextFrame(ConfirmModel model)
+        {
+            yield return null;
+            UiClickGuard.BlockForFrames(3);
             GameApp.ControllerManager.ApplyFunc((int)ControllerType.Confirm, EventDefines.OpenConfirmView, model);
         }
     }

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Module.Cook;
 using Module.Level;
 using Module.Player;
 using MVC.Model;
@@ -101,7 +102,7 @@ namespace Module.Shop
         private static int countMaterialKinds(LevelFlow flow)
         {
             int kinds = 0;
-            foreach (Cook.CookMaterialSeedData seed in flow.MaterialPool)
+            foreach (CookMaterialSeedData seed in flow.MaterialPool)
             {
                 if (seed != null && seed.Count > 0)
                     kinds++;

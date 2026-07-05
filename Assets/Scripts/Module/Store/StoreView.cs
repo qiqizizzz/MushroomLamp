@@ -148,6 +148,37 @@ namespace Module.Store
 
         }
 
+        public override void Open(params object[] args)
+        {
+            gameObject.SetActive(true);
+            HideMaterialTooltip();
+        }
+
+        public override void Close(params object[] args)
+        {
+            disableAllHovers();
+            HideMaterialTooltip();
+            hideTooltipObject();
+            _model = null;
+            gameObject.SetActive(false);
+        }
+
+        private void disableAllHovers()
+        {
+            for (int i = 0; i < _buyItems.Count; i++)
+            {
+                StoreBuyItem item = _buyItems[i];
+                item?.Hover?.SetHoverEnabled(false);
+            }
+        }
+
+        private void hideTooltipObject()
+        {
+            if (_itemTooltip == null) return;
+            _itemTooltip.Hide();
+            _itemTooltip.gameObject.SetActive(false);
+        }
+
 
 
         private void collectBuyAnchors()
@@ -380,6 +411,8 @@ namespace Module.Store
 
         {
 
+            if (!isActiveAndEnabled) return;
+
             if (string.IsNullOrWhiteSpace(materialId)) return;
 
             MaterialJsonData config = MaterialCatalogLoader.GetById(materialId);
@@ -391,6 +424,8 @@ namespace Module.Store
             CookMaterialData preview = new CookMaterialData(0, config, icon);
 
             _itemTooltipOwner = owner;
+
+            _itemTooltip.gameObject.SetActive(true);
 
             _itemTooltip.transform.SetAsLastSibling();
 

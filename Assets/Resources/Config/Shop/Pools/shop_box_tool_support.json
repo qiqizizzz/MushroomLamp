@@ -1,6 +1,6 @@
 {
   "boxId": "shop_box_tool_support",
-  "description": "加工工具补缺箱，提供小菜刀、研磨钵、蔬菜汤底，适合缺少加工手段时使用。购买后随机展示 3 张候选，选 1 张加入牌组。",
+  "description": "加工工具与辅助道具补缺箱。",
   "materialIds": [
     "VEG_301",
     "VEG_302",

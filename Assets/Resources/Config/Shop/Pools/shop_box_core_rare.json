@@ -1,6 +1,6 @@
 {
   "boxId": "shop_box_core_rare",
-  "description": "中后段核心稀有材料箱，含月光叶、叶之冠、完美加工产物、根须结晶、蔬菜汤底等高价值材料。购买后随机展示 3 张候选，选 1 张加入牌组。",
+  "description": "中后段高价值核心材料箱。",
   "materialIds": [
     "VEG_104",
     "VEG_105",

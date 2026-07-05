@@ -17,7 +17,9 @@ using Common.Defines;
 using Module.Confirm;
 
 using Module.Level;
+
 using Module.Player;
+
 using Module.Shop;
 
 using MVC;
@@ -50,7 +52,7 @@ namespace Module.Store
 
 
 
-            GameApp.ViewManager.Register((int)ViewType.StoreView, new ViewInfo
+            GameApp.ViewManager.Register(ViewType.StoreView, new ViewInfo
 
             {
 
@@ -60,7 +62,9 @@ namespace Module.Store
 
                 controller = this,
 
-                Sorting_Order = 20
+                Sorting_Order = 20,
+
+                IsOverlay = true
 
             });
 
@@ -83,6 +87,16 @@ namespace Module.Store
             RegisterFunc(EventDefines.StoreBuy, OnBuy);
 
             RegisterFunc(EventDefines.StoreSetBagCount, OnSetBagCount);
+
+        }
+
+
+
+        public override void CloseView(IBaseView view)
+
+        {
+
+            _model?.ClearBoxContext();
 
         }
 
@@ -120,7 +134,7 @@ namespace Module.Store
 
             _model.RefreshBag();
 
-            GameApp.ViewManager.Open((int)ViewType.StoreView, args);
+            GameApp.ViewManager.Open(ViewType.StoreView, args);
 
             RefreshView();
 
@@ -129,23 +143,63 @@ namespace Module.Store
 
 
         private void OnReturn(object[] args)
+
         {
+
             returnToShop();
+
         }
+
+
 
         private void returnToShop()
+
         {
-            _model.ClearBoxContext();
-            GameApp.ViewManager.Close((int)ViewType.StoreView);
+
+            closeStoreView();
+
             ApplyControllerFunc(ControllerType.Shop, "OpenShopView", true);
+
         }
 
-        private void OnBuy(object[] args)
+
+
+        public static void EnsureClosed()
+
         {
+
+            closeStoreView();
+
+        }
+
+
+
+        private static void closeStoreView()
+
+        {
+
+            if (GameApp.ViewManager == null) return;
+
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.StoreView)) return;
+
+            GameApp.ViewManager.Close(ViewType.StoreView);
+
+        }
+
+
+
+        private void OnBuy(object[] args)
+
+        {
+
             if (args == null || args.Length == 0 || args[0] is not StoreBuySlotData slot) return;
+
             if (slot.isPurchased) return;
 
+
+
             bool freePick = _model.CardsIncludedInBoxPrice && slot.price <= 0;
+
             if (freePick && _model.HasBoxPickCompleted()) return;
 
 
@@ -189,21 +243,37 @@ namespace Module.Store
                 cancelText = "取消",
 
                 onConfirm = () =>
+
                 {
+
                     if (!freePick && !PlayerDataManager.Instance.SpendMoney(slot.price)) return;
 
+
+
                     PlayerDataManager.Instance.AddCard(slot.id);
+
                     LevelFlow.Instance.AddMaterial(slot.id);
+
                     slot.isPurchased = true;
 
+
+
                     if (freePick)
+
                     {
+
                         returnToShop();
+
                         return;
+
                     }
 
+
+
                     _model.RefreshBag();
+
                     RefreshView();
+
                 }
 
             });
@@ -217,8 +287,11 @@ namespace Module.Store
         {
 
             if (freePick)
+
             {
+
                 return $"将「{slot.name}」加入牌组？\n（随机展示 {ShopCatalog.BoxMaterialOfferCount} 张候选，选 1 张，已含在材料箱价格内）";
+
             }
 
 
@@ -233,7 +306,7 @@ namespace Module.Store
 
         {
 
-            var view = GameApp.ViewManager.GetView((int)ViewType.StoreView);
+            var view = GameApp.ViewManager.GetView(ViewType.StoreView);
 
             if (view is StoreView storeView)
 
