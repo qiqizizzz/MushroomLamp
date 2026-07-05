@@ -45,6 +45,8 @@ namespace Module.Cook
         private int _nextSubmitOrder;
         private float _magicBoxBonus;
         private float _devilRisk;
+        private float _vegetableMagicBoxBonusApplied;
+        private readonly HashSet<int> _vegetableMagicBoxBonusMaterialIds = new();
         private int _turnProcessCount;
         private bool _hasPlacedHandThisTurn;
 
@@ -362,9 +364,12 @@ namespace Module.Cook
             material.Ability.OnSubmitToPot(this);
 
             refreshPreviewValue();
-            LastTip = IsPotTrayFull
-                ? $"暂存槽已集满 {_potTrayCapacity} 个，可投入锅中"
-                : $"已放入暂存槽 {material.Config.name}（{PotTrayFilledCount}/{_potTrayCapacity}）";
+            if (!tryApplyVegetableMagicBoxBonus(material))
+            {
+                LastTip = IsPotTrayFull
+                    ? $"暂存槽已集满 {_potTrayCapacity} 个，可投入锅中"
+                    : $"已放入暂存槽 {material.Config.name}（{PotTrayFilledCount}/{_potTrayCapacity}）";
+            }
             return true;
         }
 
@@ -751,6 +756,8 @@ namespace Module.Cook
             _nextSubmitOrder = 1;
             _turnProcessCount = 0;
             _hasPlacedHandThisTurn = false;
+            _vegetableMagicBoxBonusApplied = 0f;
+            _vegetableMagicBoxBonusMaterialIds.Clear();
 
             for (int i = 0; i < _slots.Length; i++)
                 _slots[i].Clear();
@@ -969,7 +976,6 @@ namespace Module.Cook
             int comboCount = 0;
             float comboBonus = 0f;
             float roundScore = baseScore + processBonus + slotBonus + comboBonus + _magicBoxBonus;
-            roundScore += MagicBoxBuffManager.GetVegetableScoreBonus(countVegetableMaterialsInPot());
             bool isTargetMatched = roundScore >= TargetMin && roundScore <= TargetMax;
             bool isOverHeat = roundScore > TargetMax;
             bool isAngelRescued = includePenalty && isOverHeat && LevelFlow.Instance.AngelRescueCount > 0;
@@ -1099,16 +1105,22 @@ namespace Module.Cook
             return true;
         }
 
-        private int countVegetableMaterialsInPot()
+        // 魔盒 Buff：星级加算，蔬菜放入暂存槽（入锅）时立即 +1，本局上限 +6
+        private bool tryApplyVegetableMagicBoxBonus(CookMaterialData material)
         {
-            int count = 0;
-            for (int i = 0; i < _potEntries.Count; i++)
-            {
-                string category = _potEntries[i].Category;
-                if (category == "蔬菜") count++;
-            }
+            if (material?.Config == null || material.Config.category != "蔬菜") return false;
+            if (!_vegetableMagicBoxBonusMaterialIds.Add(material.RuntimeId)) return false;
+            if (!MagicBoxBuffManager.TryGetPerVegetableBonusParams(out float perUnit, out float cap)) return false;
+            if (perUnit <= 0f) return false;
 
-            return count;
+            float remaining = cap - _vegetableMagicBoxBonusApplied;
+            if (remaining <= 0f) return false;
+
+            float add = Mathf.Min(perUnit, remaining);
+            _vegetableMagicBoxBonusApplied += add;
+            CurrentScore += add;
+            LastTip = $"星级加算：{material.Config.name} +{CookRoundResultData.FormatScore(add)}（本局蔬菜加成 {_vegetableMagicBoxBonusApplied}/{cap}）";
+            return true;
         }
 
         private static string getSettleTip(CookRoundResultData result)

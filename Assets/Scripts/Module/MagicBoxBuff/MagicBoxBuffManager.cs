@@ -89,6 +89,14 @@ namespace Module.MagicBoxBuff
             return Mathf.Min(vegetableCount * perUnit, cap);
         }
 
+        public static bool TryGetPerVegetableBonusParams(out float perUnit, out float cap)
+        {
+            perUnit = 0f;
+            cap = float.MaxValue;
+            accumulatePerVegetableParams(ref perUnit, ref cap);
+            return perUnit > 0f;
+        }
+
         public static int GetBustLimitBonus()
         {
             return Mathf.RoundToInt(sumBustLimitDelta(DurationMagicBoxSession));
