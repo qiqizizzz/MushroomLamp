@@ -58,7 +58,23 @@ namespace Module.Shop
                 }
             }
 
+            applyPurchasedVisual(data);
             bindBuyButton(data, onBuy);
+        }
+
+        // 已购材料箱：置灰且不可交互
+        private void applyPurchasedVisual(ShopSlotData data)
+        {
+            if (data == null || !data.isPurchased) return;
+
+            if (imgIcon != null)
+                imgIcon.color = new Color(0.55f, 0.55f, 0.55f, 0.88f);
+
+            if (txtPrice != null)
+                txtPrice.color = new Color(0.45f, 0.45f, 0.45f, 1f);
+
+            if (imgPriceTag != null)
+                imgPriceTag.color = new Color(0.65f, 0.65f, 0.65f, 0.9f);
         }
 
         // 确保预制体引用已经绑定
@@ -91,10 +107,12 @@ namespace Module.Shop
             if (data.isPurchased)
             {
                 btn.interactable = false;
+                btn.enabled = false;
                 hoverScale?.SetInteractable(false);
             }
             else
             {
+                btn.enabled = true;
                 btn.interactable = true;
                 btn.onClick.AddListener(() => onBuy?.Invoke(data));
             }

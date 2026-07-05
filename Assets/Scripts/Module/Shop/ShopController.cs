@@ -53,8 +53,14 @@ namespace Module.Shop
 
         private void OnOpenShopView(object[] args)
         {
-            _shopModel.ResetRecycleState();
-            _shopModel.Refresh();
+            // 从 Store 返回时仅重新打开界面，不刷新货架，保留已购箱子状态
+            bool reopenOnly = args != null && args.Length > 0 && args[0] is true;
+            if (!reopenOnly)
+            {
+                _shopModel.ResetRecycleState();
+                _shopModel.Refresh();
+            }
+
             GameApp.ViewManager.Open((int)ViewType.ShopView, args);
             RefreshView();
         }
@@ -122,6 +128,7 @@ namespace Module.Shop
         private void OnBuyItem(object[] args)
         {
             if (args == null || args.Length == 0 || args[0] is not ShopSlotData slotData) return;
+            if (slotData.isPurchased) return;
 
             if (_shopModel.Gold < slotData.price)
             {

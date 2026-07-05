@@ -136,7 +136,7 @@ namespace Module.Store
         {
             _model.ClearBoxContext();
             GameApp.ViewManager.Close((int)ViewType.StoreView);
-            ApplyControllerFunc(ControllerType.Shop, "OpenShopView");
+            ApplyControllerFunc(ControllerType.Shop, "OpenShopView", true);
         }
 
         private void OnBuy(object[] args)
