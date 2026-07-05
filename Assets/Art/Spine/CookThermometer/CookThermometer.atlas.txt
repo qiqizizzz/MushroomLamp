@@ -1,0 +1,76 @@
+
+CookThermometer.png
+size: 120,688
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+j1
+  rotate: false
+  xy: 85, 24
+  size: 32, 25
+  orig: 32, 25
+  offset: 0, 0
+  index: -1
+j2
+  rotate: false
+  xy: 2, 29
+  size: 29, 27
+  orig: 29, 27
+  offset: 0, 0
+  index: -1
+q1
+  rotate: false
+  xy: 69, 2
+  size: 27, 20
+  orig: 27, 20
+  offset: 0, 0
+  index: -1
+q2
+  rotate: false
+  xy: 2, 4
+  size: 33, 23
+  orig: 33, 23
+  offset: 0, 0
+  index: -1
+q3
+  rotate: false
+  xy: 37, 4
+  size: 30, 20
+  orig: 30, 21
+  offset: 0, 0
+  index: -1
+q4
+  rotate: false
+  xy: 2, 58
+  size: 46, 32
+  orig: 47, 32
+  offset: 0, 0
+  index: -1
+q5
+  rotate: false
+  xy: 50, 61
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
+q6
+  rotate: true
+  xy: 93, 51
+  size: 39, 25
+  orig: 39, 25
+  offset: 0, 0
+  index: -1
+wdj
+  rotate: false
+  xy: 2, 92
+  size: 113, 594
+  orig: 113, 595
+  offset: 0, 1
+  index: -1
+zz
+  rotate: false
+  xy: 50, 26
+  size: 33, 33
+  orig: 34, 34
+  offset: 0, 1
+  index: -1
