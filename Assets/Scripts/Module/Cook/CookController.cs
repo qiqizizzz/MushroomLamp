@@ -182,7 +182,15 @@ namespace Module.Cook
         // 集满后投入锅中
         private void submitPotTray(object[] args)
         {
-            GetCookModel().SubmitPotTray();
+            CookModel cookModel = GetCookModel();
+            if (!cookModel.SubmitPotTray())
+            {
+                refreshCookView();
+                return;
+            }
+
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            cookView?.PlayPotPutIntoAnimation();
             refreshCookView();
             openStageEndViewIfNeeded();
         }

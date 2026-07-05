@@ -105,6 +105,7 @@ namespace Module.Cook
         private RectTransform _imgDevil;          // 恶魔口袋（出牌终点）
         private SkeletonGraphic _angelSpine;      // 天使 Spine 展示（Img_Angel）
         private SkeletonGraphic _devilSpine;      // 恶魔 Spine 展示（Img_Devil）
+        private SkeletonGraphic _cookPotSpine;    // 大锅 Spine 展示（Spine_CookPot）
         private readonly List<CookMaterialItem> _handPool = new();   // 复用，不销毁
         private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
         private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
@@ -120,6 +121,8 @@ namespace Module.Cook
         private const string AngelLaunchAnim = "launch";
         private const string DevilIdleAnim = "idie";
         private const string DevilRecycleAnim = "recycle";
+        private const string CookPotIdleAnim = "idie";
+        private const string CookPotPutIntoAnim = "put into";
         private const string SfxDealAppear = "sfx_ingame_appear";
         private const string SfxDiscardDisappear = "sfx_ingame_disappear";
         private const string SfxHandSelect = "sfx_ingame_select";
@@ -769,6 +772,9 @@ namespace Module.Cook
         // 初始化 Pot 暂存槽与投入按钮
         private void initPotArea()
         {
+            Transform potSpineTf = findDeep(transform, "Spine_CookPot");
+            _cookPotSpine = potSpineTf != null ? potSpineTf.GetComponent<SkeletonGraphic>() : null;
+
             // 座位数依赖小局配置（PotTrayCapacity），此时 _cookModel 尚未就绪，
             // 真正建座位放到 refreshPotTray（model 已传入）按真实容量建
             if (_btnSubmitTray != null)
@@ -1255,6 +1261,34 @@ namespace Module.Cook
             if (state == null) return;
 
             state.SetAnimation(0, DevilIdleAnim, true);
+        }
+
+        // 暂存槽集满后投入锅中：播放 put into，结束后回到 idie
+        public void PlayPotPutIntoAnimation()
+        {
+            if (_cookPotSpine == null) return;
+
+            Spine.AnimationState state = _cookPotSpine.AnimationState;
+            if (state == null) return;
+
+            Spine.TrackEntry entry = state.SetAnimation(0, CookPotPutIntoAnim, false);
+            entry.Complete += onCookPotPutIntoComplete;
+        }
+
+        private void onCookPotPutIntoComplete(Spine.TrackEntry trackEntry)
+        {
+            trackEntry.Complete -= onCookPotPutIntoComplete;
+            playCookPotIdleAnimation();
+        }
+
+        private void playCookPotIdleAnimation()
+        {
+            if (_cookPotSpine == null) return;
+
+            Spine.AnimationState state = _cookPotSpine.AnimationState;
+            if (state == null) return;
+
+            state.SetAnimation(0, CookPotIdleAnim, true);
         }
 
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
