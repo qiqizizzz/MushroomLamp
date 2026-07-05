@@ -18,6 +18,7 @@ using Module.Confirm;
 
 using Module.Level;
 using Module.Player;
+using Module.Shop;
 
 using MVC;
 
@@ -217,7 +218,7 @@ namespace Module.Store
 
             if (freePick)
             {
-                return $"将「{slot.name}」加入牌组？\n（三选一，已含在材料箱价格内）";
+                return $"将「{slot.name}」加入牌组？\n（随机展示 {ShopCatalog.BoxMaterialOfferCount} 张候选，选 1 张，已含在材料箱价格内）";
             }
 
 

@@ -44,11 +44,14 @@ namespace Module.Shop
     public class ShopBoxPoolJsonConfig
     {
         public string boxId;
+        public string description;
         public string[] materialIds;
     }
 
     public static class ShopCatalog
     {
+        public const int BoxMaterialOfferCount = 3;
+
         private const string DefaultBoxIconPath = AddressDefines.Art_ShopMaterialBoxSample;
 
         private static ItemParamCatalogJsonConfig _itemConfig;
@@ -164,12 +167,15 @@ namespace Module.Shop
                 ShopBoxCatalogEntryJson data = pool[index];
                 pool.RemoveAt(index);
 
+                ShopBoxPoolJsonConfig poolConfig = LoadBoxPool(data.poolFile);
+                string description = resolveBoxDescription(data, poolConfig);
+
                 result.Add(new ShopSlotData
                 {
                     id = data.boxId,
                     name = string.IsNullOrWhiteSpace(data.name) ? data.boxId : data.name,
                     iconPath = iconPath,
-                    description = data.description,
+                    description = description,
                     price = data.price,
                     isBox = true,
                     isCard = false
@@ -177,6 +183,40 @@ namespace Module.Shop
             }
 
             return result;
+        }
+
+        public static string ResolveBoxDescription(string boxId)
+        {
+            ShopBoxCatalogEntryJson entry = GetShopEntry(boxId);
+            if (entry == null) return string.Empty;
+
+            ShopBoxPoolJsonConfig pool = LoadBoxPoolByBoxId(boxId);
+            return resolveBoxDescription(entry, pool);
+        }
+
+        public static int ResolveBoxPickCount(ShopBoxCatalogEntryJson entry)
+        {
+            if (entry == null) return 1;
+
+            if (entry.minMaterialCount > 0 && entry.maxMaterialCount > 0)
+            {
+                if (entry.minMaterialCount == entry.maxMaterialCount)
+                    return entry.minMaterialCount;
+
+                return entry.maxMaterialCount;
+            }
+
+            if (entry.minMaterialCount > 0) return entry.minMaterialCount;
+            if (entry.maxMaterialCount > 0) return entry.maxMaterialCount;
+            return 1;
+        }
+
+        private static string resolveBoxDescription(ShopBoxCatalogEntryJson entry, ShopBoxPoolJsonConfig pool)
+        {
+            if (pool != null && !string.IsNullOrWhiteSpace(pool.description))
+                return pool.description;
+
+            return entry?.description ?? string.Empty;
         }
 
         private static int pickWeightedIndex(List<ShopBoxCatalogEntryJson> pool)

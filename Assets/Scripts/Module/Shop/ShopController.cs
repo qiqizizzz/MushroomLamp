@@ -200,7 +200,10 @@ namespace Module.Shop
             int remain = PlayerDataManager.Instance.Money - slotData.price;
             if (slotData.isBox)
             {
-                return $"购买\"{slotData.name}\"材料箱\n\n花费{slotData.price}金币，剩余{remain}金币。";
+                string boxDesc = string.IsNullOrWhiteSpace(slotData.description)
+                    ? string.Empty
+                    : $"\n\n{slotData.description}";
+                return $"购买\"{slotData.name}\"材料箱{boxDesc}\n\n花费{slotData.price}金币，剩余{remain}金币。";
             }
 
             return $"购买\"{slotData.name}\"\n\n{slotData.description}\n\n花费{slotData.price}金币，剩余{remain}金币。";

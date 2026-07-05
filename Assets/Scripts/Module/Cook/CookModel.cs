@@ -6,11 +6,13 @@
 * └──────────────────────────────────┘
 */
 
+using Common;
 using Module.Card;
 using MVC.Model;
 using Module.Item;
 using Module.MagicBoxBuff;
 using Module.Level;
+using Module.Material;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +26,8 @@ namespace Module.Cook
         private const int HAND_COUNT = 6;
         private const int TURN_TAKE_COUNT = 2;
         private const int POT_TRAY_CAPACITY = 3;   // Pot 暂存槽数量（后续由关卡配置覆盖）
+        private const int COIN_PER_POT_SUBMIT = 2; // 每次投入锅中计分
+        private const int COIN_STAGE_CLEAR = 5;    // 小局达标通关固定奖励
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
         // 三区牌堆：天使抽牌堆 → 手牌筛选区 → 恶魔弃牌堆；卡实例全程复用，牌只在三区间流转、永不减少
@@ -518,15 +522,29 @@ namespace Module.Cook
                 return false;
             }
 
-            int processBonus = material.Ability.GetProcessBonus();
-            material.MarkProcessed(processBonus, "研磨");
+            string sourceName = material.Config.name;
             _turnProcessCount++;
             _turnTakenMaterialCount++;
             _handMaterials.Remove(material);
+
+            if (MaterialProcessResolver.TryResolveForGrinder(material.Config, out MaterialJsonData resultConfig, out string methodUsed))
+            {
+                Sprite resultIcon = string.IsNullOrWhiteSpace(resultConfig.iconPath)
+                    ? material.Icon
+                    : ArtAssetLoader.LoadSprite(resultConfig.iconPath, logOnFail: false);
+                material.TransformTo(resultConfig, resultIcon, methodUsed);
+                LastTip = $"已将 {sourceName} {methodUsed}为 {resultConfig.name}，本回合已拿 {_turnTakenMaterialCount}/{TURN_TAKE_COUNT}";
+            }
+            else
+            {
+                int processBonus = material.Ability.GetProcessBonus();
+                material.MarkProcessed(processBonus, "研磨");
+                LastTip = $"已加工 {sourceName}，本回合已拿 {_turnTakenMaterialCount}/{TURN_TAKE_COUNT}";
+            }
+
             _pendingProcessedMaterials.Add(material);
             material.Ability.OnProcessed(this);
             recycleRemainingHandIfTakeLimitReached();
-            LastTip = $"已放入研磨器 {material.Config.name}，本回合已拿 {_turnTakenMaterialCount}/{TURN_TAKE_COUNT}";
             return true;
         }
 
@@ -1070,7 +1088,7 @@ namespace Module.Cook
             if (isAngelRescued)
                 LevelFlow.Instance.ConsumeAngelRescue();
 
-            int coinReward = isTargetMatched ? 3 : 1;
+            int coinReward = includePenalty ? COIN_PER_POT_SUBMIT : 0;
             string comboText = "暂无连携";
 
             return new CookRoundResultData(
@@ -1106,7 +1124,13 @@ namespace Module.Cook
 
                 IsRunActive = false;
                 RoundState = CookRoundStateType.Finished;
-                LastTip = $"{LastTip}，整局结束";
+                if (IsStageTargetReached)
+                {
+                    Coin += COIN_STAGE_CLEAR;
+                    LastTip = $"{LastTip}，通关奖励 +{COIN_STAGE_CLEAR} 金币";
+                }
+                else
+                    LastTip = $"{LastTip}，整局结束";
                 return false;
             }
 
