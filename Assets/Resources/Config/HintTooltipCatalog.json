@@ -1,0 +1,19 @@
+{
+  "hints": [
+    {
+      "id": "hint_pot",
+      "title": "大锅",
+      "description": "将暂存区的材料投入大锅后结算分数。"
+    },
+    {
+      "id": "hint_grinder",
+      "title": "研磨",
+      "description": "回合结束时，若本回合有材料被研磨，会播放研磨动画并计入结算。"
+    },
+    {
+      "id": "hint_hand",
+      "title": "手牌区",
+      "description": "拖拽材料到对应区域进行操作。"
+    }
+  ]
+}
