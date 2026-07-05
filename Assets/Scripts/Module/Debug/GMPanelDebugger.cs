@@ -9,6 +9,7 @@ using Module.Player;
 using Module.Level;
 using Module.Select;
 using Module.Store;
+using Module.View;
 using MVC;
 using UnityEngine;
 
@@ -19,6 +20,9 @@ namespace Module.Debug
         [SerializeField] private KeyCode toggleKey = KeyCode.F1;
         [SerializeField] private bool visible;
         [SerializeField] private Vector2 scrollPosition;
+        [SerializeField] private Vector2 detailTutorialScroll;
+
+        private int _gmDetailViewTypeIndex;
 
         private void Update()
         {
@@ -116,6 +120,7 @@ namespace Module.Debug
             drawItemColumn(panelWidth);
             drawBuffColumn(panelWidth);
             drawBlackjackGmColumn();
+            drawDetailTutorialColumn(panelWidth);
         }
 
         // 关卡 GM：重启 / 跳关（重新发初始手牌）
@@ -370,6 +375,79 @@ namespace Module.Debug
                 ItemPassiveManager.GmResetRabbitFoot();
 
             GUILayout.EndArea();
+        }
+
+        // 教程弹窗 GM：打开 DetailView 并切换各界面说明文案
+        private void drawDetailTutorialColumn(float leftPanelWidth)
+        {
+            const float colWidth = 360f;
+            var rect = new Rect(16f + leftPanelWidth + 12f, 16f + 420f + 12f, colWidth, 300f);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+
+            ViewType current = (ViewType)_gmDetailViewTypeIndex;
+            string previewTitle = current.ToString();
+            if (DetailCatologJsonConfig.TryGetItem(current, out DetailItemJsonData item) && !string.IsNullOrEmpty(item.title))
+                previewTitle = item.title;
+
+            bool detailOpen = GameApp.ViewManager.IsOpen((int)ViewType.DetailView);
+            GUILayout.Label("教程弹窗 GM");
+            GUILayout.Label($"当前：{(int)current} · {current}");
+            GUILayout.Label($"标题：{previewTitle}");
+            GUILayout.Label($"状态：{(detailOpen ? "已打开" : "未打开")}");
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("◀ 上一个", GUILayout.Height(28f)))
+                gmDetailShift(-1);
+            if (GUILayout.Button("下一个 ▶", GUILayout.Height(28f)))
+                gmDetailShift(1);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("打开教程弹窗", GUILayout.Height(28f)))
+                gmOpenDetailTutorial(_gmDetailViewTypeIndex);
+            if (GUILayout.Button("关闭教程弹窗", GUILayout.Height(28f)))
+                GameApp.ViewManager.Close(ViewType.DetailView);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+            GUILayout.Label("快速切换（弹窗已开时即时刷新）");
+            detailTutorialScroll = GUILayout.BeginScrollView(detailTutorialScroll, GUILayout.Height(120f));
+            foreach (ViewType viewType in System.Enum.GetValues(typeof(ViewType)))
+            {
+                int index = (int)viewType;
+                bool selected = index == _gmDetailViewTypeIndex;
+                string label = selected ? $"▶ {(int)viewType} {viewType}" : $"  {(int)viewType} {viewType}";
+                if (GUILayout.Button(label, GUILayout.Height(24f)))
+                {
+                    _gmDetailViewTypeIndex = index;
+                    if (detailOpen)
+                        gmOpenDetailTutorial(_gmDetailViewTypeIndex);
+                }
+            }
+            GUILayout.EndScrollView();
+
+            GUILayout.EndArea();
+        }
+
+        private void gmDetailShift(int delta)
+        {
+            int count = System.Enum.GetValues(typeof(ViewType)).Length;
+            _gmDetailViewTypeIndex = (_gmDetailViewTypeIndex + delta % count + count) % count;
+
+            if (GameApp.ViewManager.IsOpen((int)ViewType.DetailView))
+                gmOpenDetailTutorial(_gmDetailViewTypeIndex);
+        }
+
+        private static void gmOpenDetailTutorial(int viewTypeIndex)
+        {
+            if (GameApp.ViewManager == null) return;
+
+            ViewType viewType = (ViewType)viewTypeIndex;
+            if (DetailCatologJsonConfig.TryGetItem(viewType, out DetailItemJsonData item))
+                GameApp.ViewManager.Open(ViewType.DetailView, item);
+            else
+                GameApp.ViewManager.Open(ViewType.DetailView, viewType);
         }
 
         private static void gmBlackjackAddPoint(float delta)
