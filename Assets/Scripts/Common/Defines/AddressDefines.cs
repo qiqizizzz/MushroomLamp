@@ -31,6 +31,7 @@ namespace Common.Defines
         public const string UI_SettingsView = "UI/View/SettingsView";
         public const string UI_StageSettleView = "UI/View/StageSettleView";
         public const string UI_RecycleView = "UI/View/RecycleView";
+        public const string UI_MaterialPickView = "UI/View/MaterialPickView";
 
         // JSON 配置，对应 Assets/Config/（不含扩展名）
         public const string Config_SelectBoxCatalog = "SelectBoxCatalog";

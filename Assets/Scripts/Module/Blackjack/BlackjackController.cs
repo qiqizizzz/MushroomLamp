@@ -13,6 +13,7 @@ using Module.Cook;
 using Module.Item;
 using Module.MagicBoxBuff;
 using Module.Material;
+using Module.MaterialPick;
 using MVC;
 using MVC.Controller;
 using MVC.View;
@@ -58,7 +59,6 @@ namespace Module.Blackjack
         {
             RegisterFunc(EventDefines.OpenBlackjackView, onOpen);
             RegisterFunc(EventDefines.BlackjackUseItemSlot, onUseItemSlot);
-            RegisterFunc(EventDefines.BlackjackPickMaterial, onPickMaterial);
             RegisterFunc(EventDefines.BlackjackRestart, onRestart);
             RegisterFunc(EventDefines.BlackjackReturn, onReturn);
             RegisterFunc(EventDefines.BlackjackGmAddPoint, onGmAddPoint);
@@ -69,7 +69,6 @@ namespace Module.Blackjack
         {
             UnRegisterFunc(EventDefines.OpenBlackjackView, onOpen);
             UnRegisterFunc(EventDefines.BlackjackUseItemSlot, onUseItemSlot);
-            UnRegisterFunc(EventDefines.BlackjackPickMaterial, onPickMaterial);
             UnRegisterFunc(EventDefines.BlackjackRestart, onRestart);
             UnRegisterFunc(EventDefines.BlackjackReturn, onReturn);
             UnRegisterFunc(EventDefines.BlackjackGmAddPoint, onGmAddPoint);
@@ -151,18 +150,13 @@ namespace Module.Blackjack
             onDrawFlipFinished();
         }
 
-        private void onPickMaterial(object[] args)
+        private void onMaterialPickComplete(int pickIndex)
         {
             if (_phase != SessionPhase.MaterialPick) return;
+            if (pickIndex < 0 || pickIndex >= _materialCandidates.Count) return;
 
-            int slotIndex = resolveItemSlotIndex(args);
-            if (slotIndex < 0 || slotIndex >= _materialCandidates.Count) return;
-
-            MaterialJsonData material = _materialCandidates[slotIndex];
+            MaterialJsonData material = _materialCandidates[pickIndex];
             if (material == null) return;
-
-            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
-                cookModel.TryGrantMaterialFromCatalog(material.id);
 
             int drawSlot = _pendingMaterialSlot;
             _pendingMaterialSlot = -1;
@@ -170,10 +164,23 @@ namespace Module.Blackjack
 
             BlackjackView view = getBlackjackView();
             view?.RestorePlaySlotMode();
-            drawFromSlot(drawSlot, showMaterialConfirm: material);
+            view?.SetInteractionLocked(true);
+
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                cookModel.TryGrantMaterialFromCatalog(material.id);
+
+            MaterialJsonData picked = material;
+            ConfirmController.Show(new ConfirmModel
+            {
+                mode = ConfirmModel.Mode.ConfirmOnly,
+                title = "幸运三选一",
+                message = $"已获得材料：{picked.name}",
+                confirmText = "继续",
+                onConfirm = () => drawFromSlot(drawSlot)
+            });
         }
 
-        private void drawFromSlot(int slotIndex, MaterialJsonData showMaterialConfirm = null)
+        private void drawFromSlot(int slotIndex)
         {
             if (!_model.TryDrawFromSlot(slotIndex, out int cardIndex) || cardIndex < 0)
                 return;
@@ -185,16 +192,6 @@ namespace Module.Blackjack
             float point = _model.GetRevealedPoint(cardIndex);
             string faceKey = _model.GetFaceSpriteKey(cardIndex);
             view.PlayCardFlipReveal(cardIndex, point, slotIndex, faceKey, onDrawFlipFinished);
-
-            if (showMaterialConfirm == null) return;
-
-            ConfirmController.Show(new ConfirmModel
-            {
-                mode = ConfirmModel.Mode.ConfirmOnly,
-                title = "幸运三选一",
-                message = $"已获得材料：{showMaterialConfirm.name}",
-                confirmText = "继续"
-            });
         }
 
         private void onDrawFlipFinished()
@@ -319,9 +316,14 @@ namespace Module.Blackjack
             _phase = SessionPhase.MaterialPick;
             _materialCandidates = MagicBoxBuffManager.RollMaterialRewardCandidates(buff);
 
-            BlackjackView view = getBlackjackView();
-            view?.SetupMaterialPick(_materialCandidates);
-            refreshView();
+            getBlackjackView()?.SetInteractionLocked(true);
+
+            MaterialPickController.Show(new MaterialPickModel
+            {
+                title = "幸运三选一",
+                candidates = _materialCandidates,
+                onPicked = onMaterialPickComplete
+            });
         }
 
         private BlackjackView getBlackjackView()
