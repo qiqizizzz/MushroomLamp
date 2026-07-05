@@ -46,7 +46,6 @@ namespace Common.Defines
         // 图鉴
         public const string OpenAlmanacView = "OpenAlmanacView";
         public const string AlmanacReturn = "AlmanacReturn";
-        public const string AlmanacSwitchTab = "AlmanacSwitchTab";
 
         // 场景事件
         public const string LoadingScene = "LoadingScene";

@@ -1,7 +1,8 @@
 /*
 * ┌──────────────────────────────────┐
-* │  描    述: 图鉴控制器
+* │  描    述: 制作人名单控制器，负责打开界面与返回来源
 * │  类    名: AlmanacController.cs
+* │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
@@ -14,8 +15,10 @@ namespace Module.Almanac
 {
     public class AlmanacController : BaseController
     {
+        // ==================== 字段[私有] ====================
         private ViewType _returnView = ViewType.MainMenuView;
 
+        // ==================== 生命周期 ====================
         public AlmanacController()
         {
             GameApp.ViewManager.Register(ViewType.AlmanacView, new ViewInfo
@@ -33,22 +36,23 @@ namespace Module.Almanac
         {
             RegisterFunc(EventDefines.OpenAlmanacView, openAlmanacView);
             RegisterFunc(EventDefines.AlmanacReturn, onReturn);
-            RegisterFunc(EventDefines.AlmanacSwitchTab, onSwitchTab);
         }
 
         public override void RemoveModuleEvent()
         {
             UnRegisterFunc(EventDefines.OpenAlmanacView, openAlmanacView);
             UnRegisterFunc(EventDefines.AlmanacReturn, onReturn);
-            UnRegisterFunc(EventDefines.AlmanacSwitchTab, onSwitchTab);
         }
 
+        // ==================== Private Function ====================
+        // 打开制作人名单并记录返回来源
         private void openAlmanacView(object[] args)
         {
             _returnView = resolveReturnView(args);
             GameApp.ViewManager.Open(ViewType.AlmanacView, args);
         }
 
+        // 关闭制作人名单并回到来源界面
         private void onReturn(object[] args)
         {
             GameApp.ViewManager.Close(ViewType.AlmanacView);
@@ -59,20 +63,13 @@ namespace Module.Almanac
                 ApplyControllerFunc(ControllerType.GameUI, EventDefines.OpenMainMenuView, args);
         }
 
+        // 解析制作人名单关闭后的返回界面
         private static ViewType resolveReturnView(object[] args)
         {
             if (args != null && args.Length > 0 && args[0] is ViewType returnView)
                 return returnView;
 
             return ViewType.MainMenuView;
-        }
-
-        private void onSwitchTab(object[] args)
-        {
-            if (args == null || args.Length == 0 || args[0] is not bool isCard) return;
-
-            AlmanacView view = GameApp.ViewManager.GetView<AlmanacView>(ViewType.AlmanacView);
-            view?.SwitchTab(isCard);
         }
     }
 }
