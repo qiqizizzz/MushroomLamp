@@ -30,7 +30,8 @@ namespace Module.GameUI
                 PrefabName = AddressDefines.UI_DetailView,
                 parentTf = GameApp.ViewManager.canvasTf,
                 controller = this,
-                Sorting_Order = 99
+                Sorting_Order = 99,
+                IsOverlay = true
             });
 
             InitModuleEvent();

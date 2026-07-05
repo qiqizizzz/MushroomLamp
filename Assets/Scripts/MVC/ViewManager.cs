@@ -409,7 +409,11 @@ namespace MVC
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(assembly => assembly.GetTypes())
-                .FirstOrDefault(type => type.Name == typeName);
+                .FirstOrDefault(type =>
+                    type.Name == typeName
+                    && typeof(IBaseView).IsAssignableFrom(type)
+                    && typeof(Component).IsAssignableFrom(type)
+                    && !type.IsAbstract);
         }
     }
 }
