@@ -23,6 +23,7 @@ namespace MVC
         StoreView = 10,
         BlackjackView = 11,
         RecycleView = 12,
-        MaterialPickView = 13
+        MaterialPickView = 13,
+        DetailView = 14
     }
 }

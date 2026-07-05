@@ -25,6 +25,13 @@ namespace Module.GameUI
                 controller = this,
                 Sorting_Order = 0
             });
+            GameApp.ViewManager.Register(ViewType.DetailView, new ViewInfo
+            {
+                PrefabName = AddressDefines.UI_DetailView,
+                parentTf = GameApp.ViewManager.canvasTf,
+                controller = this,
+                Sorting_Order = 99
+            });
 
             InitModuleEvent();
             InitGlobalEvent();
