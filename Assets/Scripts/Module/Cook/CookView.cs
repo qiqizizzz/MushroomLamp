@@ -53,6 +53,7 @@ namespace Module.Cook
         private Transform _handContent;
         private Transform _dragRoot;
         private Transform _processArea;
+        private Transform _grinderItemRoot;
         private Transform _processedContent;
         private Transform _potArea;
 
@@ -178,6 +179,7 @@ namespace Module.Cook
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
             _dragRoot = Find<Transform>("DragRoot");
             _processArea = Find<Transform>("Right/Grinder");
+            _grinderItemRoot = Find<Transform>("Right/Grinder_Item");
             _potArea = Find<Transform>("Center/Pot");
             _potTrayRoot = Find<Transform>("Center/Pot/TrayRoot");
             _btnSubmitTray = Find<Button>("Center/Pot/Btn_SubmitTray");
@@ -748,13 +750,14 @@ namespace Module.Cook
         // 初始化研磨器出口材料容器
         private void initProcessedContent()
         {
-            if (_processArea == null) return;
+            Transform contentParent = _grinderItemRoot != null ? _grinderItemRoot : _processArea;
+            if (contentParent == null) return;
 
-            Transform contentTf = _processArea.Find("ProcessedContent");
+            Transform contentTf = contentParent.Find("ProcessedContent");
             if (contentTf == null)
             {
                 GameObject contentObj = new GameObject("ProcessedContent", typeof(RectTransform));
-                contentObj.transform.SetParent(_processArea, false);
+                contentObj.transform.SetParent(contentParent, false);
                 contentTf = contentObj.transform;
             }
 
@@ -762,8 +765,8 @@ namespace Module.Cook
             _processedContent.SetAsLastSibling();
             if (_processedContent is RectTransform rectTransform)
             {
-                rectTransform.anchorMin = new Vector2(0.08f, 0.04f);
-                rectTransform.anchorMax = new Vector2(0.92f, 0.38f);
+                rectTransform.anchorMin = new Vector2(0.12f, 0.12f);
+                rectTransform.anchorMax = new Vector2(0.88f, 0.88f);
                 rectTransform.offsetMin = Vector2.zero;
                 rectTransform.offsetMax = Vector2.zero;
             }
@@ -777,7 +780,7 @@ namespace Module.Cook
             layoutGroup.childControlHeight = false;
             layoutGroup.childForceExpandWidth = false;
             layoutGroup.childForceExpandHeight = false;
-            layoutGroup.spacing = 8f;
+            layoutGroup.spacing = -18f;
         }
 
         // 初始化 Pot 暂存槽与投入按钮

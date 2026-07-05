@@ -254,7 +254,7 @@ namespace Module.Cook
         private void settleTurn(object[] args)
         {
             CookModel cookModel = GetCookModel();
-            bool hasGrinderContent = cookModel.ProcessedMaterials.Count > 0;
+            bool hasGrinderContent = cookModel.HasPendingProcessedMaterial;
             cookModel.SettleTurn();
             if (hasGrinderContent)
             {

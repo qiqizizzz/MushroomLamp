@@ -30,6 +30,7 @@ namespace Module.Cook
         private readonly List<CookMaterialData> _discardPile = new();   // 恶魔弃牌堆（含放法阵的、作废的）
         private readonly List<CookMaterialData> _handMaterials = new();
         private readonly List<CookMaterialData> _processedMaterials = new();
+        private readonly List<CookMaterialData> _pendingProcessedMaterials = new();
         private readonly List<CookPotEntryData> _potEntries = new();
         private readonly CookSlotData[] _slots = new CookSlotData[GRID_SIZE];
         private readonly List<int> _placeHistory = new();
@@ -79,6 +80,7 @@ namespace Module.Cook
         // 本回合放牌后作废、需飞向恶魔的剩余手牌（仅供表现层做飞出动画，下次发牌前由 View 消费）
         public List<CookMaterialData> DiscardedHandThisTurn { get; } = new();
         public IReadOnlyList<CookMaterialData> ProcessedMaterials => _processedMaterials;
+        public bool HasPendingProcessedMaterial => _pendingProcessedMaterials.Count > 0;
         public IReadOnlyList<CookPotEntryData> PotEntries => _potEntries;
         public IReadOnlyList<CookSlotData> Slots => _slots;
 
@@ -135,7 +137,7 @@ namespace Module.Cook
         public bool ShouldOpenStageSettle => IsStageFinished && IsStageTargetReached && !IsFinalStage;
         // 结束回合：法阵有材料时可推进熟度；最后一回合无法阵材料时也允许手动结束小局
         public bool CanSettle => IsRunActive && RoundState != CookRoundStateType.Finished
-            && (HasCookingMaterial || isLastTurn);
+            && (HasCookingMaterial || HasPendingProcessedMaterial || isLastTurn);
         public bool IsOverHeatRisk => PreviewValue > TargetMax;
 
         public CookModel()
@@ -519,9 +521,9 @@ namespace Module.Cook
             material.MarkProcessed(processBonus, "研磨");
             _turnProcessCount++;
             _handMaterials.Remove(material);
-            _processedMaterials.Add(material);
+            _pendingProcessedMaterials.Add(material);
             material.Ability.OnProcessed(this);
-            LastTip = $"已研磨 {material.Config.name}，请从研磨器出口拖入法阵";
+            LastTip = $"已放入研磨器 {material.Config.name}，结束本回合后会出现在研磨器出口";
             return true;
         }
 
@@ -760,6 +762,7 @@ namespace Module.Cook
         {
             _potEntries.Clear();
             _processedMaterials.Clear();
+            _pendingProcessedMaterials.Clear();
             _placeHistory.Clear();
             _handBeforePlaceHistory.Clear();
             clearPotTray();
@@ -1067,6 +1070,7 @@ namespace Module.Cook
                     recycleToDiscard(_handMaterials[i]);
                 }
                 _handMaterials.Clear();
+                recyclePendingProcessedMaterials();
 
                 IsRunActive = false;
                 RoundState = CookRoundStateType.Finished;
@@ -1076,7 +1080,26 @@ namespace Module.Cook
 
             TurnIndex++;
             startRound();
+            flushPendingProcessedMaterials();
             return true;
+        }
+
+        // 将本回合研磨完成的材料放入下一回合研磨器出口
+        private void flushPendingProcessedMaterials()
+        {
+            if (_pendingProcessedMaterials.Count == 0) return;
+
+            _processedMaterials.AddRange(_pendingProcessedMaterials);
+            _pendingProcessedMaterials.Clear();
+        }
+
+        // 小局结束时回收未产出的研磨材料
+        private void recyclePendingProcessedMaterials()
+        {
+            for (int i = 0; i < _pendingProcessedMaterials.Count; i++)
+                recycleToDiscard(_pendingProcessedMaterials[i]);
+
+            _pendingProcessedMaterials.Clear();
         }
 
         // 给法阵中仍在烹饪的材料累积熟度
