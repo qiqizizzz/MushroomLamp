@@ -117,6 +117,49 @@
       "id": "sfx_poker_card_flipping_4",
       "path": "Effects/PokerCardFlipping_4",
       "volume": 1.0
+    },
+    {
+      "id": "sfx_magic_buff",
+      "path": "Effects/MagicBuff",
+      "volume": 1.0,
+      "breakable": true
+    },
+    {
+      "id": "sfx_magic_debuff",
+      "path": "Effects/MagicDebuff",
+      "volume": 1.0,
+      "breakable": true
+    },
+    {
+      "id": "sfx_pestle",
+      "path": "Effects/Pestle",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_refresh_button",
+      "path": "Effects/RefreshButton",
+      "volume": 1.0,
+      "breakable": true
+    },
+    {
+      "id": "sfx_scrolling",
+      "path": "Effects/Scrolling",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_select_wooden_box_1",
+      "path": "Effects/SelectWoodenBox_1",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_select_wooden_box_2",
+      "path": "Effects/SelectWoodenBox_2",
+      "volume": 1.0
+    },
+    {
+      "id": "sfx_victory_sparkle",
+      "path": "Effects/Victory_Sparkle",
+      "volume": 1.0
     }
   ],
   "viewBindings": [
@@ -195,16 +238,28 @@
       "disableAutoButtonSound": false,
       "buttons": [
         {
-          "path": "Items/Item_0",
-          "muteClick": true
+          "path": "Items/",
+          "click": "sfx_magic_buff",
+          "hover": ""
+        }
+      ]
+    },
+    {
+      "view": "ShopView",
+      "bgms": [],
+      "buttonClick": "",
+      "buttonHover": "",
+      "disableAutoButtonSound": false,
+      "buttons": [
+        {
+          "path": "Middle/BoxGroup/",
+          "click": "",
+          "hover": "sfx_select_wooden_box_2"
         },
         {
-          "path": "Items/Item_1",
-          "muteClick": true
-        },
-        {
-          "path": "Items/Item_2",
-          "muteClick": true
+          "path": "Middle/PropGroup/",
+          "click": "",
+          "hover": "sfx_select_wooden_box_1"
         }
       ]
     }

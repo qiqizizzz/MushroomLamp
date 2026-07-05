@@ -1,0 +1,75 @@
+CookPotEffect.png
+size: 714,529
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+p1 拷贝
+  rotate: true
+  xy: 300, 13
+  size: 158, 215
+  orig: 158, 215
+  offset: 0, 0
+  index: -1
+p12
+  rotate: true
+  xy: 2, 6
+  size: 165, 190
+  orig: 166, 190
+  offset: 1, 0
+  index: -1
+p2
+  rotate: true
+  xy: 194, 11
+  size: 160, 104
+  orig: 160, 104
+  offset: 0, 0
+  index: -1
+p3
+  rotate: false
+  xy: 317, 186
+  size: 175, 135
+  orig: 175, 135
+  offset: 0, 0
+  index: -1
+p4
+  rotate: false
+  xy: 514, 341
+  size: 184, 186
+  orig: 184, 186
+  offset: 0, 0
+  index: -1
+p5
+  rotate: false
+  xy: 517, 2
+  size: 195, 197
+  orig: 195, 197
+  offset: 0, 0
+  index: -1
+p6
+  rotate: false
+  xy: 317, 323
+  size: 195, 204
+  orig: 196, 204
+  offset: 0, 0
+  index: -1
+sh
+  rotate: false
+  xy: 494, 201
+  size: 186, 120
+  orig: 186, 120
+  offset: 0, 0
+  index: -1
+sz
+  rotate: true
+  xy: 682, 306
+  size: 33, 30
+  orig: 33, 30
+  offset: 0, 0
+  index: -1
+图层 1
+  rotate: true
+  xy: 2, 173
+  size: 354, 313
+  orig: 354, 324
+  offset: 0, 11
+  index: -1

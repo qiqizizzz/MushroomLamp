@@ -118,14 +118,25 @@ namespace Sound
         {
             if (viewBinding?.buttons == null || string.IsNullOrEmpty(buttonPath)) return null;
 
+            SoundButtonBindingJsonData prefixMatch = null;
+            int prefixLength = 0;
+
             foreach (SoundButtonBindingJsonData binding in viewBinding.buttons)
             {
                 if (binding == null || string.IsNullOrEmpty(binding.path)) continue;
+
                 if (binding.path == buttonPath)
                     return binding;
+
+                if (!binding.path.EndsWith("/")) continue;
+                if (!buttonPath.StartsWith(binding.path)) continue;
+                if (binding.path.Length <= prefixLength) continue;
+
+                prefixMatch = binding;
+                prefixLength = binding.path.Length;
             }
 
-            return null;
+            return prefixMatch;
         }
 
         private static bool tryGetClipData(string id, out SoundClipJsonData clipData)

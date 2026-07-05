@@ -103,23 +103,33 @@ namespace Module.Cook
         // ── 手牌对象池 + 发牌/出牌飞行动画 ──
         private RectTransform _imgAngel;          // 天使口袋（发牌起点）
         private RectTransform _imgDevil;          // 恶魔口袋（出牌终点）
+        private RectTransform _potSubmitAnchor;   // 锅中投入落点（可在 prefab 里手动微调）
         private SkeletonGraphic _angelSpine;      // 天使 Spine 展示（Img_Angel）
         private SkeletonGraphic _devilSpine;      // 恶魔 Spine 展示（Img_Devil）
+        private SkeletonGraphic _cookPotSpine;    // 大锅 Spine 展示（Spine_CookPot）
+        private SkeletonGraphic _grinderSpine;    // 研磨器 Spine 展示（Spine_CookGrinder）
         private readonly List<CookMaterialItem> _handPool = new();   // 复用，不销毁
         private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
         private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
         private bool _isHandAnimating;            // 发牌/出牌动画期间锁操作
         private bool _dealAnimating;              // 发牌动画进行中（与弃牌兜底解锁区分）
+        private bool _isPotSubmitAnimating;       // 暂存槽投入锅中飞行动画
         private GameObject _imgBlock;             // ActionBar 上方的透明遮挡，卡牌飞行时挡住按钮点击
         private const float DealStagger = 0.07f;  // 依次发牌的间隔
         private const float DealDuration = 0.45f;  // 发牌飞行时长（飞久一点）
         private const float DiscardStagger = 0.06f;
         private const float DiscardDuration = 0.5f;   // 出牌飞行时长（飞久一点，飞到才淡出）
+        private const float PotSubmitStagger = 0.08f;
+        private const float PotSubmitDuration = 0.55f;
         [SerializeField] private float _dealEnterDelay = 0.3f; // 每次发牌飞行动画开始前的等待（秒），CookView 预制体 Inspector 可调
         private const string AngelIdleAnim = "Idle";
         private const string AngelLaunchAnim = "launch";
         private const string DevilIdleAnim = "idie";
         private const string DevilRecycleAnim = "recycle";
+        private const string CookPotIdleAnim = "idie";
+        private const string CookPotPutIntoAnim = "put into";
+        private const string CookGrinderIdleAnim = "idie";
+        private const string CookGrinderGrindingAnim = "grinding";
         private const string SfxDealAppear = "sfx_ingame_appear";
         private const string SfxDiscardDisappear = "sfx_ingame_disappear";
         private const string SfxHandSelect = "sfx_ingame_select";
@@ -204,6 +214,7 @@ namespace Module.Cook
         {
             _imgAngel = findDeep(transform, "DealAnchor_Angel") as RectTransform;
             _imgDevil = findDeep(transform, "RecycleAnchor_Devil") as RectTransform;
+            _potSubmitAnchor = findDeep(transform, "PotSubmitAnchor") as RectTransform;
             // 兜底：没配锚点时退回用天使/恶魔图片节点
             if (_imgAngel == null) _imgAngel = findDeep(transform, "Img_Angel") as RectTransform;
             if (_imgDevil == null) _imgDevil = findDeep(transform, "Img_Devil") as RectTransform;
@@ -729,6 +740,9 @@ namespace Module.Cook
 
             processAreaItem.Init(this);
             initProcessedContent();
+
+            Transform grinderSpineTf = findDeep(transform, "Spine_CookGrinder");
+            _grinderSpine = grinderSpineTf != null ? grinderSpineTf.GetComponent<SkeletonGraphic>() : null;
         }
 
         // 初始化研磨器出口材料容器
@@ -769,6 +783,9 @@ namespace Module.Cook
         // 初始化 Pot 暂存槽与投入按钮
         private void initPotArea()
         {
+            Transform potSpineTf = findDeep(transform, "Spine_CookPot");
+            _cookPotSpine = potSpineTf != null ? potSpineTf.GetComponent<SkeletonGraphic>() : null;
+
             // 座位数依赖小局配置（PotTrayCapacity），此时 _cookModel 尚未就绪，
             // 真正建座位放到 refreshPotTray（model 已传入）按真实容量建
             if (_btnSubmitTray != null)
@@ -1257,6 +1274,144 @@ namespace Module.Cook
             state.SetAnimation(0, DevilIdleAnim, true);
         }
 
+        // 暂存槽集满后投入锅中：材料从槽位飞向大锅并缩小至 0，完成后回调
+        public bool PlayPotSubmitFlyAnimation(System.Action onComplete)
+        {
+            if (_isPotSubmitAnimating) return false;
+            if (_cookModel == null || !_cookModel.IsPotTrayFull) return false;
+
+            RectTransform dragRootRt = GetDragRoot() as RectTransform;
+            Transform potTarget = _potSubmitAnchor != null
+                ? _potSubmitAnchor
+                : (_cookPotSpine != null ? _cookPotSpine.transform : findDeep(transform, "Spine_CookPot"));
+            if (dragRootRt == null || potTarget == null || _potTrayItems == null || _potTrayItems.Length == 0)
+                return false;
+
+            Vector2 potPos = worldToDragRoot(potTarget.position);
+
+            var flyItems = new List<(Sprite sprite, Vector2 startPos, Vector2 size)>();
+            for (int i = 0; i < _potTrayItems.Length; i++)
+            {
+                CookPotTrayItem trayItem = _potTrayItems[i];
+                if (trayItem == null) continue;
+                if (!trayItem.TryGetSubmitFlyData(dragRootRt, out Sprite sprite, out Vector2 startPos, out Vector2 size))
+                    continue;
+
+                flyItems.Add((sprite, startPos, size));
+                trayItem.HideIconForSubmitFly();
+            }
+
+            if (flyItems.Count == 0)
+                return false;
+
+            _isPotSubmitAnimating = true;
+            if (_btnSubmitTray != null)
+                _btnSubmitTray.interactable = false;
+
+            PlayPotPutIntoAnimation();
+
+            int finished = 0;
+            int total = flyItems.Count;
+            for (int i = 0; i < flyItems.Count; i++)
+            {
+                (Sprite sprite, Vector2 startPos, Vector2 size) data = flyItems[i];
+                float delay = i * PotSubmitStagger;
+
+                GameObject flyObj = new GameObject($"PotSubmitFly_{i}", typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
+                flyObj.transform.SetParent(dragRootRt, false);
+                flyObj.transform.SetAsLastSibling();
+
+                RectTransform rt = flyObj.GetComponent<RectTransform>();
+                rt.sizeDelta = data.size;
+                rt.anchoredPosition = data.startPos;
+                rt.localScale = Vector3.one;
+
+                Image flyImage = flyObj.GetComponent<Image>();
+                flyImage.sprite = data.sprite;
+                flyImage.preserveAspect = true;
+                flyImage.raycastTarget = false;
+
+                CanvasGroup canvasGroup = flyObj.GetComponent<CanvasGroup>();
+                canvasGroup.blocksRaycasts = false;
+
+                DG.Tweening.Sequence seq = DOTween.Sequence().SetDelay(delay)
+                    .Append(rt.DOAnchorPos(potPos, PotSubmitDuration).SetEase(Ease.InCubic))
+                    .Join(rt.DOScale(0f, PotSubmitDuration).SetEase(Ease.InCubic));
+                seq.OnComplete(() =>
+                {
+                    if (flyObj != null)
+                        Destroy(flyObj);
+                    finished++;
+                    if (finished >= total)
+                        completePotSubmitFly(onComplete);
+                });
+            }
+
+            return true;
+        }
+
+        private void completePotSubmitFly(System.Action onComplete)
+        {
+            _isPotSubmitAnimating = false;
+            onComplete?.Invoke();
+        }
+
+        // 暂存槽集满后投入锅中：播放 put into，结束后回到 idie
+        public void PlayPotPutIntoAnimation()
+        {
+            if (_cookPotSpine == null) return;
+
+            Spine.AnimationState state = _cookPotSpine.AnimationState;
+            if (state == null) return;
+
+            Spine.TrackEntry entry = state.SetAnimation(0, CookPotPutIntoAnim, false);
+            entry.Complete += onCookPotPutIntoComplete;
+        }
+
+        private void onCookPotPutIntoComplete(Spine.TrackEntry trackEntry)
+        {
+            trackEntry.Complete -= onCookPotPutIntoComplete;
+            playCookPotIdleAnimation();
+        }
+
+        private void playCookPotIdleAnimation()
+        {
+            if (_cookPotSpine == null) return;
+
+            Spine.AnimationState state = _cookPotSpine.AnimationState;
+            if (state == null) return;
+
+            state.SetAnimation(0, CookPotIdleAnim, true);
+        }
+
+        // 结束回合且研磨区出口有材料时播放 grinding，结束后回到 idie
+        public void PlayGrinderGrindingAnimation()
+        {
+            if (_grinderSpine == null) return;
+
+            Spine.AnimationState state = _grinderSpine.AnimationState;
+            if (state == null) return;
+
+            Spine.TrackEntry entry = state.SetAnimation(0, CookGrinderGrindingAnim, false);
+            entry.Complete += onGrinderGrindingComplete;
+        }
+
+        private void onGrinderGrindingComplete(Spine.TrackEntry trackEntry)
+        {
+            trackEntry.Complete -= onGrinderGrindingComplete;
+            playGrinderIdleAnimation();
+        }
+
+        private void playGrinderIdleAnimation()
+        {
+            if (_grinderSpine == null) return;
+
+            Spine.AnimationState state = _grinderSpine.AnimationState;
+            if (state == null) return;
+
+            state.SetAnimation(0, CookGrinderIdleAnim, true);
+        }
+
         // 出牌动画：把 model 标记作废的手牌从当前位置飞向恶魔口袋后隐藏
         private float playDiscardAnimationIfNeeded(CookModel cookModel)
         {
@@ -1338,6 +1493,15 @@ namespace Module.Cook
             if (contentRt == null) return Vector2.zero;
 
             Vector3 local = contentRt.InverseTransformPoint(worldPos);
+            return new Vector2(local.x, local.y);
+        }
+
+        private Vector2 worldToDragRoot(Vector3 worldPos)
+        {
+            RectTransform dragRootRt = GetDragRoot() as RectTransform;
+            if (dragRootRt == null) return Vector2.zero;
+
+            Vector3 local = dragRootRt.InverseTransformPoint(worldPos);
             return new Vector2(local.x, local.y);
         }
 

@@ -23,6 +23,7 @@ namespace Module.Blackjack
     public class BlackjackController : BaseController
     {
         private const float DefaultBustDebuff = 5f;
+        private const string SfxMagicDebuff = "sfx_magic_debuff";
 
         private enum SessionPhase
         {
@@ -224,6 +225,8 @@ namespace Module.Blackjack
 
         private void showBustResult()
         {
+            GameApp.SoundManager?.PlayEffect(SfxMagicDebuff, UnityEngine.Vector3.zero);
+
             float debuff = DefaultBustDebuff * MagicBoxBuffManager.GetBlackjackBustPenaltyMultiplier();
             string guardText = debuff < DefaultBustDebuff ? "\n（天使底护：惩罚减半）" : string.Empty;
 

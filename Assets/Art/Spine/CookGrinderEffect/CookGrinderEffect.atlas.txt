@@ -1,0 +1,75 @@
+CookGrinderEffect.png
+size: 236,437
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bowl
+  rotate: false
+  xy: 2, 102
+  size: 152, 147
+  orig: 154, 152
+  offset: 1, 1
+  index: -1
+bowl q
+  rotate: true
+  xy: 156, 2
+  size: 144, 76
+  orig: 146, 78
+  offset: 1, 1
+  index: -1
+g2
+  rotate: true
+  xy: 2, 251
+  size: 117, 165
+  orig: 120, 176
+  offset: 2, 0
+  index: -1
+g2 拷贝
+  rotate: false
+  xy: 175, 275
+  size: 59, 160
+  orig: 60, 165
+  offset: 0, 0
+  index: -1
+g2 拷贝 2
+  rotate: true
+  xy: 2, 370
+  size: 65, 171
+  orig: 67, 181
+  offset: 1, 1
+  index: -1
+stick
+  rotate: false
+  xy: 2, 9
+  size: 96, 91
+  orig: 98, 93
+  offset: 1, 1
+  index: -1
+x1
+  rotate: true
+  xy: 217, 242
+  size: 12, 13
+  orig: 13, 13
+  offset: 0, 0
+  index: -1
+x2
+  rotate: true
+  xy: 100, 77
+  size: 23, 24
+  orig: 23, 24
+  offset: 0, 0
+  index: -1
+x3
+  rotate: false
+  xy: 217, 256
+  size: 17, 17
+  orig: 17, 17
+  offset: 0, 0
+  index: -1
+图层 8
+  rotate: false
+  xy: 169, 148
+  size: 46, 125
+  orig: 49, 137
+  offset: 2, 1
+  index: -1

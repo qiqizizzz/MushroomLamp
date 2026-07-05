@@ -133,7 +133,7 @@ namespace Module.Shop
             }
             else
             {
-                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView);
+                ApplyControllerFunc(ControllerType.Summary, EventDefines.OpenSummaryView, true);
             }
         }
 

@@ -28,6 +28,9 @@ namespace Sound
         private readonly List<float> _extraBgmVolumeScales = new();
         private readonly List<AudioSource> _breakableEffects = new();
 
+        private AudioSource _overlayClipSource;
+        private float _overlayClipVolumeScale = 1f;
+
         private string[] _bgmPlaylist;
         private bool _isBgmPlaylistLoaded;
         private bool _isStop;
@@ -119,6 +122,9 @@ namespace Sound
                 if (_wasBgmPlayingBeforePause)
                     _bgmSource.Pause();
 
+                if (_overlayClipSource != null && _overlayClipSource.isPlaying)
+                    _overlayClipSource.Pause();
+
                 _wasExtraBgmPlayingBeforePause.Clear();
                 for (int i = 0; i < _extraBgmSources.Count; i++)
                 {
@@ -133,6 +139,9 @@ namespace Sound
             {
                 if (_wasBgmPlayingBeforePause && !IsStop && _bgmSource.clip != null)
                     _bgmSource.Play();
+
+                if (_overlayClipSource != null && _overlayClipSource.clip != null && !IsStop)
+                    _overlayClipSource.Play();
 
                 for (int i = 0; i < _extraBgmSources.Count; i++)
                 {
@@ -230,6 +239,32 @@ namespace Sound
                 _breakableEffects.Add(effectSource);
         }
 
+        // 播放界面级长音效（如胜利结算），可用 StopOverlayClip 提前停止
+        public void PlayOverlayClip(string clipId, bool loop = false)
+        {
+            StopOverlayClip();
+            if (IsStop) return;
+            if (!SoundConfigLoader.TryResolveClip(clipId, out SoundClipResolveData clipData)) return;
+
+            AudioClip clip = loadClip(clipData.Path);
+            if (clip == null) return;
+
+            _overlayClipSource = getOrCreateOverlayClipSource();
+            _overlayClipVolumeScale = clipData.VolumeScale;
+            _overlayClipSource.clip = clip;
+            _overlayClipSource.loop = loop;
+            _overlayClipSource.volume = _bgmVolume * _overlayClipVolumeScale;
+            _overlayClipSource.Play();
+        }
+
+        public void StopOverlayClip()
+        {
+            if (_overlayClipSource == null) return;
+
+            _overlayClipSource.Stop();
+            _overlayClipSource.clip = null;
+        }
+
         private void stopBreakableEffects()
         {
             pruneBreakableEffects();
@@ -262,6 +297,9 @@ namespace Sound
         {
             if (_bgmSource != null)
                 _bgmSource.volume = _bgmVolume * _currentBgmVolumeScale;
+
+            if (_overlayClipSource != null)
+                _overlayClipSource.volume = _bgmVolume * _overlayClipVolumeScale;
 
             for (int i = 0; i < _extraBgmSources.Count; i++)
             {
@@ -424,6 +462,26 @@ namespace Sound
             }
 
             return _extraBgmSources[index];
+        }
+
+        private AudioSource getOrCreateOverlayClipSource()
+        {
+            if (_overlayClipSource != null)
+                return _overlayClipSource;
+
+            Transform overlayTf = _audioRootTf.Find("BGM_Overlay");
+            if (overlayTf == null)
+            {
+                GameObject overlayObj = new GameObject("BGM_Overlay");
+                overlayObj.transform.SetParent(_audioRootTf, false);
+                overlayTf = overlayObj.transform;
+            }
+
+            _overlayClipSource = overlayTf.GetComponent<AudioSource>();
+            if (_overlayClipSource == null)
+                _overlayClipSource = overlayTf.gameObject.AddComponent<AudioSource>();
+
+            return _overlayClipSource;
         }
 
         private void playNextPlaylistBgm()
