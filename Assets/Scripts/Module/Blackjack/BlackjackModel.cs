@@ -18,7 +18,7 @@ namespace Module.Blackjack
     [Serializable]
     public class BlackjackCardData
     {
-        public int revealedPoint;     // 翻开后得到的点数
+        public float revealedPoint;   // 翻开后得到的点数
         public bool revealed;         // 是否已翻开
         public string faceSpriteKey;  // 牌面 Resources 名（如 7H），花色随机
     }
@@ -27,12 +27,12 @@ namespace Module.Blackjack
     {
         public const int DefaultItemSlotCount = 3;
         public const int BustLimit = 21;
+        public const float AcePoint = 0.5f;
+        public const float FacePoint = 0.5f;
 
         public int EffectiveBustLimit => BustLimit + MagicBoxBuffManager.GetBustLimitBonus();
 
-        private const int MinPoint = 1;
-        private const int MaxPoint = 11;
-
+        private readonly List<string> _drawPile = new();
         private readonly HashSet<int> _usedItemSlots = new();
         private int _lastUsedItemSlot = -1;
         private int _lastUndoneItemSlot = -1;
@@ -48,7 +48,7 @@ namespace Module.Blackjack
         public int CardCount => ItemSlotCount;
 
         // 当前累计点数（已翻开牌之和）
-        public int TotalPoint { get; private set; }
+        public float TotalPoint { get; private set; }
 
         // 已翻开数量
         public int RevealedCount { get; private set; }
@@ -96,6 +96,8 @@ namespace Module.Blackjack
 
             TotalPoint = 0;
             RevealedCount = 0;
+            _drawPile.Clear();
+            _drawPile.AddRange(PokerCardSpriteLoader.CreateShuffledDeck());
         }
 
         private static int resolveItemSlotCount(int itemSlotCount)
@@ -116,10 +118,16 @@ namespace Module.Blackjack
             _usedItemSlots.Add(slotIndex);
             _lastUsedItemSlot = slotIndex;
 
+            if (!tryDrawNextCard(out string spriteKey, out float point))
+            {
+                _usedItemSlots.Remove(slotIndex);
+                _lastUsedItemSlot = -1;
+                return false;
+            }
+
             BlackjackCardData card = Cards[slotIndex];
-            int point = rollNextPoint();
             card.revealedPoint = point;
-            card.faceSpriteKey = PokerCardSpriteLoader.RollFaceSpriteKey(point);
+            card.faceSpriteKey = spriteKey;
             card.revealed = true;
             TotalPoint += point;
             RevealedCount++;
@@ -138,6 +146,8 @@ namespace Module.Blackjack
             TotalPoint -= card.revealedPoint;
             card.revealed = false;
             card.revealedPoint = 0;
+            if (!string.IsNullOrEmpty(card.faceSpriteKey))
+                _drawPile.Add(card.faceSpriteKey);
             card.faceSpriteKey = null;
             RevealedCount--;
             _usedItemSlots.Remove(_lastUsedItemSlot);
@@ -147,10 +157,17 @@ namespace Module.Blackjack
         }
 
         // 获取指定牌位的显示点数
-        public int GetRevealedPoint(int index)
+        public float GetRevealedPoint(int index)
         {
-            if (index < 0 || index >= Cards.Count) return 0;
-            return Cards[index].revealed ? Cards[index].revealedPoint : 0;
+            if (index < 0 || index >= Cards.Count) return 0f;
+            return Cards[index].revealed ? Cards[index].revealedPoint : 0f;
+        }
+
+        public static string FormatPoint(float point)
+        {
+            if (Mathf.Abs(point - Mathf.Round(point)) < 0.001f)
+                return Mathf.RoundToInt(point).ToString();
+            return point.ToString("0.#");
         }
 
         public string GetFaceSpriteKey(int index)
@@ -159,23 +176,52 @@ namespace Module.Blackjack
             return Cards[index].revealed ? Cards[index].faceSpriteKey : null;
         }
 
-        private int rollNextPoint()
+        // 从牌堆抽一张未发过的牌（同点数同花色不重复）
+        private bool tryDrawNextCard(out string spriteKey, out float point)
         {
-            if (ItemPassiveManager.IsPandoraSafeDrawActive)
-                return rollSafePoint();
+            spriteKey = null;
+            point = 0f;
+            if (_drawPile.Count == 0) return false;
 
-            return UnityEngine.Random.Range(MinPoint, MaxPoint + 1);
+            if (ItemPassiveManager.IsPandoraSafeDrawActive)
+                spriteKey = pickSafeCardFromPile();
+            else
+                spriteKey = _drawPile[UnityEngine.Random.Range(0, _drawPile.Count)];
+
+            if (string.IsNullOrEmpty(spriteKey)) return false;
+
+            _drawPile.Remove(spriteKey);
+            point = PokerCardSpriteLoader.ResolvePointFromSpriteKey(spriteKey);
+            return true;
         }
 
-        // 潘多拉钥匙：抽牌点数保证累计仍低于 21
-        private int rollSafePoint()
+        // 潘多拉钥匙：从未发牌堆中抽一张保证累计仍低于爆牌线
+        private string pickSafeCardFromPile()
         {
-            int maxSafe = EffectiveBustLimit - 1 - TotalPoint;
-            if (maxSafe < MinPoint)
-                return MinPoint;
+            var safeKeys = new List<string>();
+            for (int i = 0; i < _drawPile.Count; i++)
+            {
+                string key = _drawPile[i];
+                float nextPoint = PokerCardSpriteLoader.ResolvePointFromSpriteKey(key);
+                if (TotalPoint + nextPoint < EffectiveBustLimit)
+                    safeKeys.Add(key);
+            }
 
-            int upper = Math.Min(MaxPoint, maxSafe);
-            return UnityEngine.Random.Range(MinPoint, upper + 1);
+            if (safeKeys.Count > 0)
+                return safeKeys[UnityEngine.Random.Range(0, safeKeys.Count)];
+
+            string lowestKey = _drawPile[0];
+            float lowestPoint = PokerCardSpriteLoader.ResolvePointFromSpriteKey(lowestKey);
+            for (int i = 1; i < _drawPile.Count; i++)
+            {
+                string key = _drawPile[i];
+                float nextPoint = PokerCardSpriteLoader.ResolvePointFromSpriteKey(key);
+                if (nextPoint >= lowestPoint) continue;
+                lowestPoint = nextPoint;
+                lowestKey = key;
+            }
+
+            return lowestKey;
         }
     }
 }

@@ -340,7 +340,7 @@ namespace Module.Blackjack
                 CardSlot slot = _smallCards[i];
                 bool revealed = i < model.Cards.Count && model.Cards[i].revealed;
                 string faceKey = model.GetFaceSpriteKey(i);
-                int point = revealed ? model.GetRevealedPoint(i) : 0;
+                float point = revealed ? model.GetRevealedPoint(i) : 0f;
                 applySmallCardVisual(slot, revealed, faceKey, point);
             }
 
@@ -367,7 +367,7 @@ namespace Module.Blackjack
         }
 
         // 点击道具后播放小牌翻转；数值与累计点数在动画结束后由 onComplete 触发刷新
-        public void PlayCardFlipReveal(int cardIndex, int pointValue, int usedItemSlot, string faceSpriteKey, Action onComplete)
+        public void PlayCardFlipReveal(int cardIndex, float pointValue, int usedItemSlot, string faceSpriteKey, Action onComplete)
         {
             if (cardIndex < 0 || cardIndex >= _smallCards.Count)
             {
@@ -416,7 +416,7 @@ namespace Module.Blackjack
             }
 
             if (_txtBottom != null)
-                _txtBottom.text = $"累计点数：{model.TotalPoint} / {model.EffectiveBustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
+                _txtBottom.text = $"累计点数：{BlackjackModel.FormatPoint(model.TotalPoint)} / {model.EffectiveBustLimit}　已翻 {model.RevealedCount}/{model.CardCount}";
         }
 
         public void SetupSlotBuffs(IReadOnlyList<MagicBoxBuffJsonData> slotBuffs)
@@ -835,7 +835,7 @@ namespace Module.Blackjack
             };
         }
 
-        private void applyBigCardVisual(CardSlot slot, int totalPoint)
+        private void applyBigCardVisual(CardSlot slot, float totalPoint)
         {
             if (slot?.face == null) return;
 
@@ -848,12 +848,12 @@ namespace Module.Blackjack
             if (slot.point != null)
             {
                 slot.point.gameObject.SetActive(true);
-                slot.point.text = totalPoint.ToString();
+                slot.point.text = BlackjackModel.FormatPoint(totalPoint);
                 slot.point.color = Color.white;
             }
         }
 
-        private void applySmallCardVisual(CardSlot slot, bool revealed, string faceSpriteKey, int pointValue)
+        private void applySmallCardVisual(CardSlot slot, bool revealed, string faceSpriteKey, float pointValue)
         {
             if (slot?.face == null) return;
 

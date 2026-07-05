@@ -11,6 +11,9 @@ namespace Module.Blackjack
         private static Sprite _back;
         private static readonly Dictionary<string, Sprite> _faces = new();
 
+        private static readonly char[] Suits = { 'C', 'D', 'H', 'S' };
+        private static readonly string[] Ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+
         public static Sprite Back =>
             _back ??= ArtAssetLoader.LoadSprite(AddressDefines.Art_PokerCardBack);
 
@@ -27,26 +30,46 @@ namespace Module.Blackjack
             return loaded;
         }
 
-        // 按 21 点点数随机花色，生成资源名（如 7H、AS）
-        public static string RollFaceSpriteKey(int point)
+        // 生成并洗牌 52 张不重复牌堆（如 7H、AS）
+        public static List<string> CreateShuffledDeck()
         {
-            string rank = resolveRank(point);
-            char suit = Suits[Random.Range(0, Suits.Length)];
-            return $"{rank}{suit}";
-        }
-
-        private static readonly char[] Suits = { 'C', 'D', 'H', 'S' };
-
-        private static string resolveRank(int point)
-        {
-            return point switch
+            var deck = new List<string>(52);
+            for (int i = 0; i < Ranks.Length; i++)
             {
-                1 => "A",
-                11 => FaceRanks[Random.Range(0, FaceRanks.Length)],
-                _ => point.ToString()
-            };
+                for (int j = 0; j < Suits.Length; j++)
+                    deck.Add($"{Ranks[i]}{Suits[j]}");
+            }
+
+            for (int i = deck.Count - 1; i > 0; i--)
+            {
+                int swap = Random.Range(0, i + 1);
+                (deck[i], deck[swap]) = (deck[swap], deck[i]);
+            }
+
+            return deck;
         }
 
-        private static readonly string[] FaceRanks = { "J", "Q", "K" };
+        public static float ResolvePointFromSpriteKey(string spriteKey)
+        {
+            string rank = parseRank(spriteKey);
+            if (rank == "A")
+                return BlackjackModel.AcePoint;
+            if (rank == "J" || rank == "Q" || rank == "K")
+                return BlackjackModel.FacePoint;
+
+            return rank == "10" ? 10f : float.Parse(rank);
+        }
+
+        private static string parseRank(string spriteKey)
+        {
+            if (string.IsNullOrWhiteSpace(spriteKey) || spriteKey.Length < 2)
+                return string.Empty;
+
+            char last = spriteKey[spriteKey.Length - 1];
+            if (last is not ('C' or 'D' or 'H' or 'S'))
+                return string.Empty;
+
+            return spriteKey.Substring(0, spriteKey.Length - 1);
+        }
     }
 }

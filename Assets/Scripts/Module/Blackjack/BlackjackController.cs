@@ -147,7 +147,7 @@ namespace Module.Blackjack
             if (view == null) return;
 
             view.MarkSlotUsed(slotIndex);
-            int point = _model.GetRevealedPoint(cardIndex);
+            float point = _model.GetRevealedPoint(cardIndex);
             string faceKey = _model.GetFaceSpriteKey(cardIndex);
             view.PlayCardFlipReveal(cardIndex, point, slotIndex, faceKey, onDrawFlipFinished);
 
@@ -199,7 +199,7 @@ namespace Module.Blackjack
             {
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "爆牌！",
-                message = $"累计 {_model.TotalPoint} 点，达到/超过 {_model.EffectiveBustLimit} 点。\n恶魔风险 +{debuff:0.#}{guardText}",
+                message = $"累计 {BlackjackModel.FormatPoint(_model.TotalPoint)} 点，达到/超过 {_model.EffectiveBustLimit} 点。\n恶魔风险 +{debuff:0.#}{guardText}",
                 confirmText = "认栽",
                 onConfirm = () =>
                 {
@@ -216,7 +216,7 @@ namespace Module.Blackjack
             {
                 mode = ConfirmModel.Mode.ConfirmOnly,
                 title = "安全过关",
-                message = $"全部牌翻完，累计 {_model.TotalPoint} 点，未爆牌。",
+                message = $"全部牌翻完，累计 {BlackjackModel.FormatPoint(_model.TotalPoint)} 点，未爆牌。",
                 confirmText = "收手",
                 onConfirm = () => returnToCookView()
             });
