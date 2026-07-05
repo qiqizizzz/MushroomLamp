@@ -16,6 +16,7 @@ using Module.Material;
 using MVC.View;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Module.Blackjack
@@ -47,6 +48,7 @@ namespace Module.Blackjack
         [SerializeField] private float _flipHalfDuration = 0.18f;
 
         private readonly List<Button> _itemButtons = new();
+        private readonly List<UnityAction> _itemClickActions = new();
         private readonly List<UIButtonHoverItem> _itemHovers = new();
         private readonly List<TextMeshProUGUI> _itemLabels = new();
         private readonly List<CardSlot> _smallCardPool = new();
@@ -678,6 +680,7 @@ namespace Module.Blackjack
         private void collectItemButtons()
         {
             _itemButtons.Clear();
+            _itemClickActions.Clear();
             _itemHovers.Clear();
             _itemLabels.Clear();
             Transform items = Find<Transform>("Items");
@@ -705,17 +708,20 @@ namespace Module.Blackjack
                 int itemIndex = i;
                 Button btn = _itemButtons[i];
                 if (btn == null) continue;
-                btn.onClick.RemoveAllListeners();
 
-                switch (_itemMode)
-                {
-                    case ItemInteractionMode.PickMaterial:
-                        btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackPickMaterial, itemIndex));
-                        break;
-                    default:
-                        btn.onClick.AddListener(() => ApplyFunc(EventDefines.BlackjackUseItemSlot, itemIndex));
-                        break;
-                }
+                if (i < _itemClickActions.Count && _itemClickActions[i] != null)
+                    btn.onClick.RemoveListener(_itemClickActions[i]);
+
+                UnityAction action = _itemMode == ItemInteractionMode.PickMaterial
+                    ? () => ApplyFunc(EventDefines.BlackjackPickMaterial, itemIndex)
+                    : () => ApplyFunc(EventDefines.BlackjackUseItemSlot, itemIndex);
+
+                if (i >= _itemClickActions.Count)
+                    _itemClickActions.Add(action);
+                else
+                    _itemClickActions[i] = action;
+
+                btn.onClick.AddListener(action);
             }
         }
 
