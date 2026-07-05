@@ -33,6 +33,7 @@ namespace Module.Cook
         private readonly List<CookPotEntryData> _potEntries = new();
         private readonly CookSlotData[] _slots = new CookSlotData[GRID_SIZE];
         private readonly List<int> _placeHistory = new();
+        private readonly List<List<CookMaterialData>> _handBeforePlaceHistory = new();
         private readonly System.Random _random = new System.Random();
 
         // Pot 暂存槽：法阵材料先拖到这里集齐，再一并投入锅参与计分
@@ -210,15 +211,17 @@ namespace Module.Cook
                 return false;
             }
 
+            List<CookMaterialData> handBeforePlace = new List<CookMaterialData>(_handMaterials);
             removeAvailableMaterial(material);
             slot.Place(material, _nextPlaceOrder++);
             _placeHistory.Add(slotIndex);
             _hasPlacedHandThisTurn = true;
             material.Ability.OnPlaced(this, slotIndex);
 
-            // 放一张即锁定本回合：剩余手牌作废，回收进恶魔弃牌堆（视觉飞向恶魔），不可撤回
+            // 放一张即锁定本回合：剩余手牌先回收进恶魔弃牌堆，同时记录快照供撤回恢复
             DiscardedHandThisTurn.Clear();
             DiscardedHandThisTurn.AddRange(_handMaterials);
+            _handBeforePlaceHistory.Add(handBeforePlace);
             for (int i = 0; i < _handMaterials.Count; i++)
                 recycleToDiscard(_handMaterials[i]);
             _handMaterials.Clear();
@@ -554,11 +557,14 @@ namespace Module.Cook
                 return false;
             }
 
-            int slotIndex = _placeHistory[^1];
+            int historyIndex = _placeHistory.Count - 1;
+            int slotIndex = _placeHistory[historyIndex];
+            List<CookMaterialData> handBeforePlace = popHandBeforePlaceHistory(historyIndex);
             _placeHistory.RemoveAt(_placeHistory.Count - 1);
 
             CookMaterialData material = _slots[slotIndex].Clear();
-            if (material != null)
+            restoreHandBeforePlace(handBeforePlace);
+            if (material != null && !isMaterialInList(handBeforePlace, material))
                 returnMaterialToAvailableArea(material);
 
             _hasPlacedHandThisTurn = false;
@@ -577,11 +583,14 @@ namespace Module.Cook
                 if (!isValidSlotIndex(slotIndex)) continue;
 
                 CookMaterialData material = _slots[slotIndex].Clear();
-                if (material != null)
+                List<CookMaterialData> handBeforePlace = popHandBeforePlaceHistory(i);
+                restoreHandBeforePlace(handBeforePlace);
+                if (material != null && !isMaterialInList(handBeforePlace, material))
                     returnMaterialToAvailableArea(material);
             }
 
             _placeHistory.Clear();
+            _handBeforePlaceHistory.Clear();
             _hasPlacedHandThisTurn = false;
             refreshPreviewValue();
             RoundState = CookRoundStateType.Operating;
@@ -717,6 +726,7 @@ namespace Module.Cook
 
             _handMaterials.Clear();
             _placeHistory.Clear();
+            _handBeforePlaceHistory.Clear();
             _processedMaterials.Clear();
             // 注意：暂存槽（PotTray）跨回合保留，只在投入时清空
             _hasPlacedHandThisTurn = false;
@@ -751,6 +761,7 @@ namespace Module.Cook
             _potEntries.Clear();
             _processedMaterials.Clear();
             _placeHistory.Clear();
+            _handBeforePlaceHistory.Clear();
             clearPotTray();
             _nextPlaceOrder = 1;
             _nextSubmitOrder = 1;
@@ -928,6 +939,43 @@ namespace Module.Cook
             if (_handMaterials.Remove(material)) return;
 
             _processedMaterials.Remove(material);
+        }
+
+        // 取出指定放置操作前的完整手牌快照
+        private List<CookMaterialData> popHandBeforePlaceHistory(int historyIndex)
+        {
+            if (historyIndex < 0 || historyIndex >= _handBeforePlaceHistory.Count)
+                return null;
+
+            List<CookMaterialData> handBeforePlace = _handBeforePlaceHistory[historyIndex];
+            _handBeforePlaceHistory.RemoveAt(historyIndex);
+            return handBeforePlace;
+        }
+
+        // 按放置前快照恢复手牌顺序
+        private void restoreHandBeforePlace(List<CookMaterialData> handBeforePlace)
+        {
+            if (handBeforePlace == null || handBeforePlace.Count == 0) return;
+
+            _handMaterials.Clear();
+            for (int i = 0; i < handBeforePlace.Count; i++)
+            {
+                CookMaterialData material = handBeforePlace[i];
+                if (material == null) continue;
+
+                _discardPile.Remove(material);
+                DiscardedHandThisTurn.Remove(material);
+                if (!_handMaterials.Contains(material))
+                    _handMaterials.Add(material);
+            }
+        }
+
+        // 判断指定材料是否存在于列表中
+        private static bool isMaterialInList(List<CookMaterialData> materials, CookMaterialData material)
+        {
+            if (materials == null || material == null) return false;
+
+            return materials.Contains(material);
         }
 
         // 将撤回材料返回对应可用区域
