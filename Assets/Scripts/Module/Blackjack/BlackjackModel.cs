@@ -28,7 +28,7 @@ namespace Module.Blackjack
         public const int DefaultItemSlotCount = 3;
         public const int BustLimit = 21;
         public const float AcePoint = 0.5f;
-        public const float FacePoint = 0.5f;
+        public const float FacePoint = 10f; // J / Q / K
 
         public int EffectiveBustLimit => BustLimit + MagicBoxBuffManager.GetBustLimitBonus();
 

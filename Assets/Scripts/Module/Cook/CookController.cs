@@ -11,6 +11,7 @@ using Common.Defines;
 using MVC;
 using MVC.Controller;
 using MVC.View;
+using Module.Confirm;
 using Module.Item;
 using Module.Level;
 using Module.MagicBoxBuff;
@@ -216,7 +217,26 @@ namespace Module.Cook
         // 触碰魔盒：打开 21 点玩法界面
         private void touchMagicBox(object[] args)
         {
-            if (!GetCookModel().TouchMagicBox())
+            CookModel cookModel = GetCookModel();
+            if (!cookModel.IsRunActive || cookModel.IsMagicBoxUsed)
+            {
+                refreshCookView();
+                return;
+            }
+
+            if (cookModel.CurrentScore < CookModel.MagicBoxUnlockMinScore)
+            {
+                ConfirmController.Show(new ConfirmModel
+                {
+                    mode = ConfirmModel.Mode.ConfirmOnly,
+                    title = "无法解锁魔盒",
+                    message = $"分数未达到{CookModel.MagicBoxUnlockMinScore}分，无法解锁魔盒",
+                    confirmText = "知道了"
+                });
+                return;
+            }
+
+            if (!cookModel.TouchMagicBox())
             {
                 refreshCookView();
                 return;
