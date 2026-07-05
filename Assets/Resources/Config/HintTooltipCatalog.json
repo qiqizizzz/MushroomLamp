@@ -14,6 +14,21 @@
       "id": "hint_hand",
       "title": "手牌区",
       "description": "拖拽材料到对应区域进行操作。"
+    },
+    {
+      "id": "hint_slot_center",
+      "title": "法阵·中心格",
+      "description": "大格。每回合结束时，此格上的材料熬煮进度 +2 点。"
+    },
+    {
+      "id": "hint_slot_edge",
+      "title": "法阵·中格",
+      "description": "中格。每回合结束时，此格上的材料熬煮进度 +1 点。"
+    },
+    {
+      "id": "hint_slot_corner",
+      "title": "法阵·小格",
+      "description": "小格。每回合结束时，此格上的材料熬煮进度 +0.5 点。"
     }
   ]
 }
