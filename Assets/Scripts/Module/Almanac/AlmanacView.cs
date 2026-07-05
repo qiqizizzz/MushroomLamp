@@ -1,192 +1,145 @@
 /*
 * ┌──────────────────────────────────┐
-* │  描    述: 图鉴界面（卡片/道具切换 + 循环网格）
+* │  描    述: 制作人名单界面，负责名单自动滚动与结束后返回
 * │  类    名: AlmanacView.cs
+* │  创    建: By qiqizizzz
 * └──────────────────────────────────┘
 */
 
-using System;
-using System.Collections.Generic;
-using Common;
+using System.Collections;
 using Common.Defines;
-using Common.UI;
-using Module.Material;
 using MVC.View;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Module.Almanac
 {
+    // 制作人名单界面，进入后自动滚动并在播放完成前锁定返回
     public class AlmanacView : BaseView
     {
-        // 网格参数：4 列 × 可见 3 行（12），对象池 5 行（20，多 2 行缓冲防滚太快出空位）
-        private const int Columns = 4;
-        private const int PoolRows = 5;
-        private static readonly Vector2 CellSize = new Vector2(160f, 200f);
-        private static readonly Vector2 Spacing = new Vector2(20f, 20f);
+        // ==================== 常量与静态字段 ====================
+        private const float FINISH_EPSILON = 0.5f;
 
+        // ==================== 字段[外部设置] ====================
+        [Header("滚动设置")]
+        [Tooltip("制作人名单向上滚动速度")]
+        [SerializeField, Min(1f)] private float ScrollSpeed = 85f;
+
+        [Tooltip("名单完全离开视口后的额外滚动距离")]
+        [SerializeField, Min(0f)] private float FinishPadding = 120f;
+
+        // ==================== 字段[私有] ====================
         private Button _btnBack;
-        private Button _btnTabCard;
-        private Button _btnTabProp;
-        private ScrollRect _scroll;
+        private RectTransform _creditsViewport;
+        private RectTransform _creditsContent;
+        private GameObject _lockedOverlay;
+        private Coroutine _scrollCoroutine;
+        private bool _isScrollFinished;
 
-        private LoopGridView _grid;
-
-        private bool _isCardTab = true;
-        private readonly List<AlmanacEntry> _entries = new();
-
-        // 运行时条目
-        private class AlmanacEntry
-        {
-            public string name;
-            public string iconPath;
-        }
-
-        // ---- 图鉴自带的 JSON 解析结构（与商店表结构同构，不依赖商店代码）----
-        [Serializable]
-        private class CatalogRow
-        {
-            public string id;
-            public string name;
-            public string iconPath;
-            public string description;
-            public int price;
-        }
-
-        [Serializable]
-        private class ItemCatalog
-        {
-            public CatalogRow[] items;
-        }
-        // ----------------------------------------------------------------
-
+        // ==================== Public Function ====================
         public override void InitUI()
         {
             _btnBack = Find<Button>("Btn_Back");
-            _btnTabCard = Find<Button>("TopTabs/Btn_TabCard");
-            _btnTabProp = Find<Button>("TopTabs/Btn_TabProp");
-            _scroll = Find<ScrollRect>("ScrollView");
+            _creditsViewport = Find<RectTransform>("CreditsViewport");
+            _creditsContent = Find<RectTransform>("CreditsViewport/CreditsContent");
+            _lockedOverlay = transform.Find("Btn_Back/LockedOverlay")?.gameObject;
         }
 
         public override void InitData()
         {
             base.InitData();
-
-            bindButton(_btnBack, () => ApplyFunc(EventDefines.AlmanacReturn));
-            bindButton(_btnTabCard, () => ApplyFunc(EventDefines.AlmanacSwitchTab, true));
-            bindButton(_btnTabProp, () => ApplyFunc(EventDefines.AlmanacSwitchTab, false));
-
-            setupGrid();
+            _btnBack.onClick.RemoveAllListeners();
+            _btnBack.onClick.AddListener(tryReturn);
         }
 
+        // 打开界面时从头播放制作人名单
         public override void Open(params object[] args)
         {
-            // 打开默认显示卡片页
-            SwitchTab(true);
+            startCreditsScroll();
         }
 
-        // 切换卡片/道具页（由 Controller 转发调用）
-        public void SwitchTab(bool isCard)
+        public override void Close(params object[] args)
         {
-            _isCardTab = isCard;
-            loadEntries(isCard);
-            highlightTab(isCard);
-
-            if (_grid != null)
-                _grid.SetTotalCount(_entries.Count);
+            stopCreditsScroll();
+            base.Close(args);
         }
 
-        private void setupGrid()
+        // ==================== Private Function ====================
+        // 从视口下方重置内容并启动自动滚动
+        private void startCreditsScroll()
         {
-            if (_scroll == null)
+            stopCreditsScroll();
+            _isScrollFinished = false;
+            setReturnEnabled(false);
+            _scrollCoroutine = StartCoroutine(playCreditsCoroutine());
+        }
+
+        // 停止当前滚动协程
+        private void stopCreditsScroll()
+        {
+            if (_scrollCoroutine == null) return;
+
+            StopCoroutine(_scrollCoroutine);
+            _scrollCoroutine = null;
+        }
+
+        // 名单未滚动结束时屏蔽返回操作
+        private void tryReturn()
+        {
+            if (!_isScrollFinished) return;
+
+            ApplyFunc(EventDefines.AlmanacReturn);
+        }
+
+        // 切换返回按钮可点击状态与锁定提示
+        private void setReturnEnabled(bool isEnabled)
+        {
+            _btnBack.interactable = isEnabled;
+
+            if (_lockedOverlay != null)
+                _lockedOverlay.SetActive(!isEnabled);
+        }
+
+        // 刷新自动布局，确保新增姓名后也能正确计算滚动距离
+        private float rebuildAndGetContentHeight()
+        {
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_creditsContent);
+
+            float preferredHeight = LayoutUtility.GetPreferredHeight(_creditsContent);
+            float contentHeight = Mathf.Max(_creditsContent.rect.height, preferredHeight);
+            _creditsContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight);
+            return contentHeight;
+        }
+
+        // ==================== Coroutine ====================
+        // 播放制作人名单滚动，内容完全离开后解锁返回
+        private IEnumerator playCreditsCoroutine()
+        {
+            yield return null;
+
+            float viewportHeight = _creditsViewport.rect.height;
+            float contentHeight = rebuildAndGetContentHeight();
+            float startY = -viewportHeight;
+            float targetY = contentHeight + FinishPadding;
+
+            _creditsContent.anchoredPosition = new Vector2(_creditsContent.anchoredPosition.x, startY);
+
+            while (_creditsContent.anchoredPosition.y < targetY - FINISH_EPSILON)
             {
-                QLog.Error($"[{nameof(AlmanacView)}] 未找到 ScrollView");
-                return;
+                float nextY = Mathf.MoveTowards(
+                    _creditsContent.anchoredPosition.y,
+                    targetY,
+                    ScrollSpeed * Time.unscaledDeltaTime);
+
+                _creditsContent.anchoredPosition = new Vector2(_creditsContent.anchoredPosition.x, nextY);
+                yield return null;
             }
 
-            GameObject itemPrefab = ResManager.LoadAsset<GameObject>(AddressDefines.UI_ShopCardSlot);
-            if (itemPrefab == null)
-            {
-                QLog.Error($"[{nameof(AlmanacView)}] 未找到 item 预制体：{AddressDefines.UI_ShopCardSlot}");
-                return;
-            }
-
-            _grid = _scroll.gameObject.GetComponent<LoopGridView>();
-            if (_grid == null) _grid = _scroll.gameObject.AddComponent<LoopGridView>();
-
-            var padding = new RectOffset(20, 20, 20, 20);
-            _grid.Init(_scroll, itemPrefab, Columns, PoolRows, CellSize, Spacing, onUpdateItem, padding);
-        }
-
-        // 网格刷新回调：把第 dataIndex 条数据填到 item 上
-        private void onUpdateItem(int dataIndex, GameObject item)
-        {
-            if (dataIndex < 0 || dataIndex >= _entries.Count) return;
-            AlmanacEntry entry = _entries[dataIndex];
-
-            Transform iconTf = item.transform.Find("Img_Icon");
-            if (iconTf != null)
-            {
-                Image img = iconTf.GetComponent<Image>();
-                if (img != null)
-                {
-                    Sprite sprite = ArtAssetLoader.LoadSprite(entry.iconPath);
-                    img.sprite = sprite;
-                    img.enabled = sprite != null;
-                }
-            }
-
-            Transform nameTf = item.transform.Find("Txt_Name");
-            if (nameTf != null)
-            {
-                TextMeshProUGUI txt = nameTf.GetComponent<TextMeshProUGUI>();
-                if (txt != null) txt.text = entry.name;
-            }
-        }
-
-        // 读取卡片表 / 道具表
-        private void loadEntries(bool isCard)
-        {
-            _entries.Clear();
-
-            if (isCard)
-            {
-                foreach (MaterialJsonData material in MaterialCatalogLoader.GetAll())
-                    addEntry(material);
-            }
-            else
-            {
-                var cfg = JsonConfigLoader.LoadFromConfig<ItemCatalog>(AddressDefines.Config_ItemParamCatalog);
-                if (cfg?.items != null)
-                    foreach (var it in cfg.items)
-                        addEntry(it);
-            }
-        }
-
-        private void addEntry(CatalogRow row)
-        {
-            if (row == null) return;
-            _entries.Add(new AlmanacEntry { name = row.name, iconPath = row.iconPath });
-        }
-
-        private void addEntry(MaterialJsonData material)
-        {
-            if (material == null) return;
-            _entries.Add(new AlmanacEntry { name = material.name, iconPath = material.iconPath });
-        }
-
-        private void highlightTab(bool isCard)
-        {
-            if (_btnTabCard != null) _btnTabCard.transform.localScale = isCard ? Vector3.one * 1.1f : Vector3.one;
-            if (_btnTabProp != null) _btnTabProp.transform.localScale = isCard ? Vector3.one : Vector3.one * 1.1f;
-        }
-
-        private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
-        {
-            if (button == null || action == null) return;
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(action);
+            _creditsContent.anchoredPosition = new Vector2(_creditsContent.anchoredPosition.x, targetY);
+            _isScrollFinished = true;
+            _scrollCoroutine = null;
+            setReturnEnabled(true);
         }
     }
 }
