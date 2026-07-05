@@ -32,6 +32,7 @@ namespace Common.Defines
         public const string UI_StageSettleView = "UI/View/StageSettleView";
         public const string UI_RecycleView = "UI/View/RecycleView";
         public const string UI_MaterialPickView = "UI/View/MaterialPickView";
+        public const string UI_DetailView = "UI/View/DetailView";
         public const string UI_HintTooltip = "UI/Common/HintTooltip";
 
         // JSON 配置，对应 Assets/Config/（不含扩展名）
