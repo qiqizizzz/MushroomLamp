@@ -18,7 +18,7 @@ using UnityEngine.UI;
 
 namespace Module.Shop
 {
-    public class ShopView : BaseView
+    public class ShopView : BaseView, IShopItemTooltipHost
     {
         private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
 

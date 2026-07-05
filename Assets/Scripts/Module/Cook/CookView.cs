@@ -15,6 +15,7 @@ using Common.Defines;
 using Module.Player;
 using MVC.View;
 using Module.Item;
+using Module.Shop;
 using Module.View;
 using MVC;
 using Spine.Unity;
@@ -26,7 +27,7 @@ using UnityEngine.UI;
 namespace Module.Cook
 {
     // 烹饪核心玩法界面，负责刷新一阶段玩法状态与转发操作事件
-    public class CookView : BaseView
+    public class CookView : BaseView, IShopItemTooltipHost
     {
         private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
         private const string POT_TRAY_PLUS_SPRITE = "Art/CookView/Pot/加号";
@@ -90,6 +91,7 @@ namespace Module.Cook
         {
             public string name;
             public string iconPath;
+            public ShopSlotData tooltipData;
         }
 
         private CookModel _cookModel;
@@ -294,7 +296,8 @@ namespace Module.Cook
                 _ownedItems.Add(new CookOwnedItemEntry
                 {
                     name = cfg.name,
-                    iconPath = OWNED_ITEM_ICON_PATH
+                    iconPath = OWNED_ITEM_ICON_PATH,
+                    tooltipData = ShopCatalog.CreateItemSlotData(cfg)
                 });
             }
 
@@ -331,6 +334,30 @@ namespace Module.Cook
             {
                 TextMeshProUGUI txt = nameTf.GetComponent<TextMeshProUGUI>();
                 if (txt != null) txt.text = entry.name ?? string.Empty;
+            }
+
+            Image hit = item.GetComponent<Image>();
+            if (hit == null)
+            {
+                hit = item.AddComponent<Image>();
+                hit.color = Color.clear;
+            }
+
+            hit.raycastTarget = true;
+
+            ShopHoverScaleItem hover = item.GetComponent<ShopHoverScaleItem>();
+            if (hover == null)
+                hover = item.AddComponent<ShopHoverScaleItem>();
+
+            hover.BindTooltip(this, entry.tooltipData);
+            hover.SetInteractable(entry.tooltipData != null);
+
+            RectTransform slotRt = item.transform as RectTransform;
+            if (slotRt != null)
+            {
+                hover.SetHitSize(
+                    slotRt.rect.width > 1f ? slotRt.rect.width : OwnedItemCellSize.x,
+                    slotRt.rect.height > 1f ? slotRt.rect.height : OwnedItemCellSize.y);
             }
         }
 
@@ -438,9 +465,26 @@ namespace Module.Cook
                 _itemTooltip.Hide();
         }
 
+        // 显示商店道具详情浮层（ItemScroll 已拥有道具，与 ShopView 同款）
+        public void ShowShopTooltip(object owner, ShopSlotData slotData, Vector2 screenPosition)
+        {
+            if (slotData == null) return;
+            if (!ensureItemTooltip()) return;
+
+            _itemTooltipOwner = owner;
+            _itemTooltip.transform.SetAsLastSibling();
+            _itemTooltip.Bind(slotData);
+            MoveShopTooltip(screenPosition);
+        }
+
+        public void MoveShopTooltip(Vector2 screenPosition) => MoveItemTooltip(screenPosition);
+
+        public void HideShopTooltip(object owner = null) => HideItemTooltip(owner);
+
         // GM / 商店购买后刷新右侧道具列表
         public void RefreshOwnedItemsDisplay()
         {
+            HideItemTooltip();
             refreshOwnedItems();
         }
 

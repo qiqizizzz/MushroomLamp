@@ -200,6 +200,23 @@ namespace Module.Shop
             return pool.Count - 1;
         }
 
+        // 由道具配置构建 Tooltip 用槽位数据（Cook 已拥有道具 / 商店展示）
+        public static ShopSlotData CreateItemSlotData(ItemParamJsonData data)
+        {
+            if (data == null) return null;
+
+            return new ShopSlotData
+            {
+                id = data.id,
+                name = data.name,
+                iconPath = data.iconPath,
+                description = data.description,
+                price = data.price,
+                isBox = false,
+                isCard = false
+            };
+        }
+
         private static IReadOnlyList<ShopSlotData> PickItems(int count)
         {
             var result = new List<ShopSlotData>();

@@ -28,7 +28,7 @@ namespace Module.Shop
             Sprite fallbackSprite,
             TMP_FontAsset font,
             Action<ShopSlotData> onBuy = null,
-            ShopView view = null)
+            IShopItemTooltipHost view = null)
         {
             if (data == null) return;
             ensureReferences();

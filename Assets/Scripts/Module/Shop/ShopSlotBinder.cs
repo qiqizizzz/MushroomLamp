@@ -23,7 +23,7 @@ namespace Module.Shop
         [SerializeField] private ShopHoverScaleItem hoverScale;
 
         // 绑定商店道具槽位显示与交互
-        public void Bind(ShopSlotData data, Action<ShopSlotData> onBuy = null, ShopView view = null)
+        public void Bind(ShopSlotData data, Action<ShopSlotData> onBuy = null, IShopItemTooltipHost view = null)
         {
             if (data == null) return;
 

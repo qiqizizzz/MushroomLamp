@@ -26,7 +26,7 @@ namespace Module.Shop
         private float _targetScale = 1f;
         private float _width = 200f;
         private float _height = 200f;
-        private ShopView _view;
+        private IShopItemTooltipHost _view;
         private ShopSlotData _slotData;
         private bool _isTooltipVisible;
 
@@ -51,7 +51,7 @@ namespace Module.Shop
         }
 
         // 绑定商品详情浮层数据
-        public void BindTooltip(ShopView view, ShopSlotData slotData)
+        public void BindTooltip(IShopItemTooltipHost view, ShopSlotData slotData)
         {
             hideTooltip();
             _view = view;
