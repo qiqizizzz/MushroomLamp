@@ -69,21 +69,33 @@ namespace Module.Shop
 
         private void OnRefresh(object[] args)
         {
-            if (PlayerDataManager.Instance.Money < RefreshCost)
+            int gold = PlayerDataManager.Instance.Money;
+            if (gold < RefreshCost)
             {
                 ConfirmController.Show(new ConfirmModel
                 {
                     mode = ConfirmModel.Mode.ConfirmOnly,
                     title = "金币不足",
-                    message = $"刷新货架需要{RefreshCost}金币\n\n当前金币{PlayerDataManager.Instance.Money}。",
+                    message = $"刷新货架需要 {RefreshCost} 金币\n\n当前金币 {gold}，差 {RefreshCost - gold} 枚。",
                     confirmText = "知道了"
                 });
                 return;
             }
 
-            PlayerDataManager.Instance.SpendMoney(RefreshCost);
-            _shopModel.Refresh();
-            RefreshView();
+            ConfirmController.Show(new ConfirmModel
+            {
+                mode = ConfirmModel.Mode.ConfirmCancel,
+                title = "刷新货架",
+                message = $"花费 {RefreshCost} 金币重新随机货架上的材料箱与道具？\n\n当前金币 {gold}，刷新后剩余 {gold - RefreshCost} 金币。",
+                confirmText = "刷新",
+                cancelText = "取消",
+                onConfirm = () =>
+                {
+                    if (!PlayerDataManager.Instance.SpendMoney(RefreshCost)) return;
+                    _shopModel.Refresh();
+                    RefreshView();
+                }
+            });
         }
 
         private void OnRecycle(object[] args)
