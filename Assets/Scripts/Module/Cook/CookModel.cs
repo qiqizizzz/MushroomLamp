@@ -969,7 +969,6 @@ namespace Module.Cook
             int comboCount = 0;
             float comboBonus = 0f;
             float roundScore = baseScore + processBonus + slotBonus + comboBonus + _magicBoxBonus;
-            roundScore += MagicBoxBuffManager.GetRoundScoreFlatBonus();
             roundScore += MagicBoxBuffManager.GetVegetableScoreBonus(countVegetableMaterialsInPot());
             bool isTargetMatched = roundScore >= TargetMin && roundScore <= TargetMax;
             bool isOverHeat = roundScore > TargetMax;
@@ -1071,6 +1070,16 @@ namespace Module.Cook
         public void AddBonus(float value) { _magicBoxBonus += value; }
         public void AddDevil(float value) { _devilRisk = Mathf.Max(0f, _devilRisk + value); }
         public void ExpandTarget(int value) { LevelFlow.Instance.ExpandTarget(value); }
+
+        // 魔盒 Buff：计分校准等，点击即计入本局总分（CookView 火候条立即更新）
+        public void AddImmediateScore(float value)
+        {
+            if (value == 0f) return;
+
+            CurrentScore = Mathf.Max(0f, CurrentScore + value);
+            refreshPreviewValue();
+            LastTip = $"获得魔盒加分 +{CookRoundResultData.FormatScore(value)}";
+        }
 
         // 魔盒 Buff：将配置表材料加入天使抽牌堆（幸运三选一等）
         public bool TryGrantMaterialFromCatalog(string materialId)

@@ -104,7 +104,9 @@ namespace Module.Blackjack
             MagicBoxBuffJsonData buff = _slotBuffs[slotIndex];
             if (buff == null) return;
 
-            MagicBoxBuffManager.GrantBuff(buff.id);
+            if (!MagicBoxBuffManager.GrantBuff(buff.id)) return;
+
+            applyCookBuffEffects(buff);
 
             if (buff.effectType == MagicBoxBuffManager.EffectPickMaterialReward)
             {
@@ -227,6 +229,16 @@ namespace Module.Blackjack
             ItemPassiveManager.EndMagicBoxSession();
             MagicBoxBuffManager.EndMagicBoxSession();
             GameApp.ViewManager.Close((int)ViewType.BlackjackView);
+
+            // CookView 未关闭则只刷新状态，避免 Open 清空手牌 diff 导致重新发牌
+            if (GameApp.ViewManager.IsOpen((int)ViewType.CookView))
+            {
+                CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+                if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is CookModel cookModel)
+                    cookView?.Refresh(cookModel);
+                return;
+            }
+
             ApplyControllerFunc(ControllerType.Cook, EventDefines.OpenCookView);
         }
 
@@ -296,6 +308,21 @@ namespace Module.Blackjack
         {
             if (args == null || args.Length == 0) return 0;
             return args[0] is int index ? index : 0;
+        }
+
+        private static void applyCookBuffEffects(MagicBoxBuffJsonData buff)
+        {
+            if (buff == null) return;
+            if (GameApp.ControllerManager.GetControllerModel((int)ControllerType.Cook) is not CookModel cookModel)
+                return;
+
+            if (buff.effectType == MagicBoxBuffManager.EffectAddRoundScoreFlat && buff.roundScoreFlatBonus != 0f)
+                cookModel.AddImmediateScore(buff.roundScoreFlatBonus);
+
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.CookView)) return;
+
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            cookView?.Refresh(cookModel);
         }
     }
 }

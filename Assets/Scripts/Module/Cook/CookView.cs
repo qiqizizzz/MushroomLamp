@@ -606,14 +606,13 @@ namespace Module.Cook
             bindButton(_btnMagicBoxLegacy, onMagicBoxClick);
         }
 
-        // 点击魔盒后打开 21 点界面并隐藏烹饪界面
+        // 点击魔盒：由 Controller 打开 Blackjack 叠加层，CookView 保持打开
         private void onMagicBoxClick()
         {
             if (_cookModel != null && (!_cookModel.IsRunActive || _cookModel.IsMagicBoxUsed))
                 return;
 
             ApplyFunc(EventDefines.CookTouchMagicBox);
-            GameApp.ViewManager.Close(ViewType.CookView);
         }
 
         private void initSlots()
