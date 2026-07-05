@@ -162,13 +162,14 @@ namespace Module.Recycle
                 clearChildren(areaRoots[i]);
             }
 
+            List<List<Vector2>> areaAnchorPools = buildOfferAnchorPools(areaRoots.Count);
             for (int i = 0; i < offers.Count; i++)
             {
                 int areaIndex = i % areaRoots.Count;
                 RectTransform areaRoot = areaRoots[areaIndex];
                 Vector2 itemSize = resolveOfferItemSize(areaRoot.rect);
                 float rotation = Random.Range(-OFFER_RANDOM_ROTATION, OFFER_RANDOM_ROTATION);
-                Vector2 anchorPreset = getRandomOfferAnchor();
+                Vector2 anchorPreset = takeUniqueOfferAnchor(areaAnchorPools[areaIndex]);
                 Vector2 anchoredPosition = getAnchorInsetPosition(areaRoot.rect, itemSize, rotation, anchorPreset);
 
                 RecycleOfferItem item = createOfferItem(areaRoot, i, anchorPreset, anchoredPosition, itemSize, rotation);
@@ -363,10 +364,42 @@ namespace Module.Recycle
             return desiredSize * scale;
         }
 
-        // 从九宫格锚点里随机选择一个材料生成位置
-        private static Vector2 getRandomOfferAnchor()
+        // 为每个散落区域创建独立的九宫格锚点池
+        private static List<List<Vector2>> buildOfferAnchorPools(int areaCount)
         {
-            return S_OfferAnchorPresets[Random.Range(0, S_OfferAnchorPresets.Length)];
+            List<List<Vector2>> anchorPools = new List<List<Vector2>>(areaCount);
+            for (int i = 0; i < areaCount; i++)
+                anchorPools.Add(createShuffledOfferAnchors());
+
+            return anchorPools;
+        }
+
+        // 从区域锚点池中取一个未使用的位置
+        private static Vector2 takeUniqueOfferAnchor(List<Vector2> anchorPool)
+        {
+            if (anchorPool == null)
+                return S_OfferAnchorPresets[Random.Range(0, S_OfferAnchorPresets.Length)];
+
+            if (anchorPool.Count == 0)
+                anchorPool.AddRange(createShuffledOfferAnchors());
+
+            int lastIndex = anchorPool.Count - 1;
+            Vector2 anchor = anchorPool[lastIndex];
+            anchorPool.RemoveAt(lastIndex);
+            return anchor;
+        }
+
+        // 打乱九宫格锚点顺序
+        private static List<Vector2> createShuffledOfferAnchors()
+        {
+            List<Vector2> anchors = new List<Vector2>(S_OfferAnchorPresets);
+            for (int i = anchors.Count - 1; i > 0; i--)
+            {
+                int swapIndex = Random.Range(0, i + 1);
+                (anchors[i], anchors[swapIndex]) = (anchors[swapIndex], anchors[i]);
+            }
+
+            return anchors;
         }
 
         // 根据锚点和旋转后的四角，把材料向区域内轻推，避免旋转后越界
