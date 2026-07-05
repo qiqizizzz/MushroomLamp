@@ -26,7 +26,6 @@ namespace Module.Shop
         private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
 
         private TextMeshProUGUI _txtGold;
-        private TextMeshProUGUI _txtTitle;
         private TextMeshProUGUI _txtSubtitle;
         private TextMeshProUGUI _txtInfo;
         private Button _btnRefresh;
@@ -49,7 +48,6 @@ namespace Module.Shop
         public override void InitUI()
         {
             _txtGold = Find<TextMeshProUGUI>("TopGold/Txt_GoldValue");
-            _txtTitle = Find<Transform>("Top")?.GetComponentInChildren<TextMeshProUGUI>();
             _txtSubtitle = Find<TextMeshProUGUI>("Subtitle/Txt_Subtitle");
             _txtInfo = Find<TextMeshProUGUI>("Right/Txt_Info");
             _btnRefresh = Find<Button>("Bottom/Btn_RefreshShelf");
@@ -133,7 +131,6 @@ namespace Module.Shop
             HideShopTooltip();
 
             if (_txtGold != null) _txtGold.text = model.Gold.ToString();
-            if (_txtTitle != null) _txtTitle.text = "黑猫夜市";
             if (_txtSubtitle != null) _txtSubtitle.text = "夜市补给铺·精选材料箱（卡包）";
             if (_txtInfo != null)
                 _txtInfo.text = model.BuildInfoText();
