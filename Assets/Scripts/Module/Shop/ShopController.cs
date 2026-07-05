@@ -170,6 +170,7 @@ namespace Module.Shop
                     else if (slotData.isCard)
                     {
                         PlayerDataManager.Instance.AddCard(slotData.id);
+                        LevelFlow.Instance.AddMaterial(slotData.id);
                     }
                 }
             });

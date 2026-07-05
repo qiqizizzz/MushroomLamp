@@ -3,13 +3,16 @@ using UnityEngine;
 
 namespace Module.Store
 {
-    // 购买卡牌悬停：仅放大上方图标，不影响下方材料介绍框
+    // 材料卡牌悬停：放大图标 + 显示与 CookView 相同的详情浮层
     public class StoreBuyHoverItem : BaseItem
     {
         private const float HoverScale = 1.2f;
         private const float ScaleLerpSpeed = 12f;
 
+        private IStoreMaterialTooltipHost _host;
         private RectTransform _iconRect;
+        private RectTransform _hitRect;
+        private string _materialId;
         private bool _interactable = true;
         private bool _isPointerInside;
         private float _baseScale = 1f;
@@ -17,11 +20,19 @@ namespace Module.Store
 
         public void Setup(RectTransform iconRect)
         {
+            Setup(null, iconRect, null);
+        }
+
+        public void Setup(IStoreMaterialTooltipHost host, RectTransform iconRect, string materialId)
+        {
+            _host = host;
+            _materialId = materialId;
             _iconRect = iconRect;
+            _hitRect = transform as RectTransform;
             captureBaseScale();
         }
 
-        public void SetInteractable(bool value)
+        public void SetHoverEnabled(bool value)
         {
             _interactable = value;
             if (value) return;
@@ -29,10 +40,15 @@ namespace Module.Store
             _isPointerInside = false;
             _targetScale = _baseScale;
             resetIconScale();
+            _host?.HideMaterialTooltip(this);
         }
+
+        public void SetInteractable(bool value) => SetHoverEnabled(value);
 
         protected override void OnAwake()
         {
+            _hitRect = transform as RectTransform;
+
             if (_iconRect == null)
             {
                 Transform iconTf = transform.Find("Img_Icon");
@@ -45,9 +61,9 @@ namespace Module.Store
 
         protected override void OnUpdate()
         {
-            if (_iconRect == null) return;
-
             updatePointerHover();
+
+            if (_iconRect == null) return;
 
             Vector3 current = _iconRect.localScale;
             Vector3 target = Vector3.one * _targetScale;
@@ -55,6 +71,12 @@ namespace Module.Store
                 _iconRect.localScale = Vector3.Lerp(current, target, Time.deltaTime * ScaleLerpSpeed);
             else
                 _iconRect.localScale = target;
+        }
+
+        protected override void OnDestroy()
+        {
+            _host?.HideMaterialTooltip(this);
+            base.OnDestroy();
         }
 
         private void updatePointerHover()
@@ -68,8 +90,16 @@ namespace Module.Store
             bool isInside = isPointerOverIcon();
             if (isInside)
             {
-                if (!_isPointerInside) _isPointerInside = true;
-                _targetScale = _baseScale * HoverScale;
+                if (!_isPointerInside)
+                {
+                    _isPointerInside = true;
+                    _targetScale = _baseScale * HoverScale;
+                    if (_host != null && !string.IsNullOrWhiteSpace(_materialId))
+                        _host.ShowMaterialTooltip(this, _materialId, Input.mousePosition);
+                    return;
+                }
+
+                _host?.MoveMaterialTooltip(Input.mousePosition);
                 return;
             }
 
@@ -77,21 +107,23 @@ namespace Module.Store
 
             _isPointerInside = false;
             _targetScale = _baseScale;
+            _host?.HideMaterialTooltip(this);
         }
 
         private bool isPointerOverIcon()
         {
-            if (_iconRect == null) return false;
+            RectTransform target = _hitRect != null ? _hitRect : _iconRect;
+            if (target == null) return false;
 
             Camera camera = resolveHoverCamera();
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    _iconRect,
+                    target,
                     Input.mousePosition,
                     camera,
                     out Vector2 localPoint))
                 return false;
 
-            Rect rect = _iconRect.rect;
+            Rect rect = target.rect;
             Vector2 halfSize = new Vector2(rect.width * 0.5f, rect.height * 0.5f);
             return localPoint.x >= -halfSize.x && localPoint.x <= halfSize.x
                 && localPoint.y >= -halfSize.y && localPoint.y <= halfSize.y;
@@ -99,7 +131,8 @@ namespace Module.Store
 
         private Camera resolveHoverCamera()
         {
-            Canvas canvas = _iconRect != null ? _iconRect.GetComponentInParent<Canvas>() : null;
+            RectTransform probe = _hitRect != null ? _hitRect : _iconRect;
+            Canvas canvas = probe != null ? probe.GetComponentInParent<Canvas>() : null;
             if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
                 return null;
 

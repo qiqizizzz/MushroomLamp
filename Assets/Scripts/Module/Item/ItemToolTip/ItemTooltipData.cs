@@ -50,6 +50,16 @@ namespace Module.Item
         public readonly List<string> Tags = new();
         public readonly List<ItemTooltipFieldData> Fields = new();
 
+        // 从材料配置构建 Tooltip（无运行时烹饪状态，用于商店/背包预览）
+        public static ItemTooltipData FromMaterialConfig(MaterialJsonData config, ItemTooltipMode mode = ItemTooltipMode.Full)
+        {
+            if (config == null) return null;
+
+            Sprite icon = ArtAssetLoader.LoadSprite(config.iconPath, logOnFail: false);
+            CookMaterialData material = new CookMaterialData(0, config, icon);
+            return FromMaterial(material, mode);
+        }
+
         // 从烹饪材料构建 Tooltip 展示数据
         public static ItemTooltipData FromMaterial(CookMaterialData material, ItemTooltipMode mode)
         {

@@ -28,7 +28,8 @@ namespace Module.Store
         {
             get
             {
-                if (_hover == null) _hover = GetComponent<StoreBuyHoverItem>();
+                if (_hover == null)
+                    _hover = GetComponent<StoreBuyHoverItem>() ?? gameObject.AddComponent<StoreBuyHoverItem>();
                 return _hover;
             }
         }

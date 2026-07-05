@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using Module.Cook;
+using Module.Material;
 using Module.Shop;
 using MVC.View;
 using TMPro;
@@ -51,6 +52,12 @@ namespace Module.Item
         public void Bind(CookMaterialData material, ItemTooltipMode mode = ItemTooltipMode.Cook)
         {
             Bind(ItemTooltipData.FromMaterial(material, mode));
+        }
+
+        // 绑定材料配置（商店/背包预览）
+        public void Bind(MaterialJsonData config, ItemTooltipMode mode = ItemTooltipMode.Full)
+        {
+            Bind(ItemTooltipData.FromMaterialConfig(config, mode));
         }
 
         // 绑定商店商品数据

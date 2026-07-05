@@ -18,14 +18,16 @@ namespace Module.Store
         [SerializeField] private TextMeshProUGUI txtName;
         [SerializeField] private TextMeshProUGUI txtCount;
 
-        public void Bind(StoreBagEntryData data)
+        private StoreBuyHoverItem _hover;
+
+        public void Bind(StoreBagEntryData data, IStoreMaterialTooltipHost tooltipHost = null)
         {
             if (data == null) return;
 
             EnsureRefs();
 
             if (txtName != null) txtName.text = data.name;
-            if (txtCount != null) txtCount.text = "x" + data.count;
+            if (txtCount != null) txtCount.text = data.count.ToString();
 
             if (imgIcon != null)
             {
@@ -34,6 +36,23 @@ namespace Module.Store
                 // 没有资源时保留白膜（保持可见的纯色占位）
                 imgIcon.enabled = true;
             }
+
+            setupHover(tooltipHost, data.id);
+        }
+
+        private void setupHover(IStoreMaterialTooltipHost tooltipHost, string materialId)
+        {
+            if (tooltipHost == null || string.IsNullOrWhiteSpace(materialId))
+            {
+                if (_hover != null) _hover.SetHoverEnabled(false);
+                return;
+            }
+
+            if (_hover == null)
+                _hover = GetComponent<StoreBuyHoverItem>() ?? gameObject.AddComponent<StoreBuyHoverItem>();
+
+            _hover.Setup(tooltipHost, imgIcon != null ? imgIcon.rectTransform : null, materialId);
+            _hover.SetHoverEnabled(true);
         }
 
         // 预制体若由代码生成，运行时按约定节点名补齐引用
@@ -51,7 +70,8 @@ namespace Module.Store
             }
             if (txtCount == null)
             {
-                Transform countTf = transform.Find("Txt_Count");
+                Transform countTf = transform.Find("CountBadge/Txt_Count");
+                if (countTf == null) countTf = transform.Find("Txt_Count");
                 if (countTf != null) txtCount = countTf.GetComponent<TextMeshProUGUI>();
             }
         }

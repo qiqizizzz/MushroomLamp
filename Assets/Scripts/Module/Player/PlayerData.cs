@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using Common;
 using Common.Defines;
+using Module.Cook;
 
 namespace Module.Player
 {
@@ -39,6 +40,19 @@ namespace Module.Player
         public void ClearItemsForNewRun()
         {
             _ownedItemIds.Clear();
+        }
+
+        // 新大局开始时，用选择页/箱子配置的材料池重置牌组
+        public void ResetCardsFromMaterialPool(IEnumerable<CookMaterialSeedData> materials)
+        {
+            _cardCounts.Clear();
+            if (materials == null) return;
+
+            foreach (CookMaterialSeedData seed in materials)
+            {
+                if (seed == null || string.IsNullOrWhiteSpace(seed.MaterialId) || seed.Count <= 0) continue;
+                _cardCounts[seed.MaterialId] = seed.Count;
+            }
         }
 
         public bool AddItem(string itemId)

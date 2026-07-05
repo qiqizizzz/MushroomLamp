@@ -8,6 +8,8 @@
 using System;
 using System.Collections.Generic;
 using Common;
+using Module.Cook;
+using Module.Level;
 using Module.Material;
 using Module.Player;
 using Module.Shop;
@@ -178,6 +180,17 @@ namespace Module.Store
             if (OverrideBagCount > 0)
             {
                 BuildMockBag(OverrideBagCount);
+                return;
+            }
+
+            // 优先读当前大局材料池（与 Cook 手牌来源一致）；无大局时回退 PlayerData
+            if (LevelFlow.Instance.HasFlow)
+            {
+                foreach (CookMaterialSeedData seed in LevelFlow.Instance.MaterialPool)
+                {
+                    if (seed == null || string.IsNullOrWhiteSpace(seed.MaterialId) || seed.Count <= 0) continue;
+                    fillBagEntryMeta(seed.MaterialId, seed.Count);
+                }
                 return;
             }
 

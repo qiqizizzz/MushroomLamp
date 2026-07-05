@@ -23,6 +23,7 @@ namespace Module.Level
             IEnumerable<CookMaterialSeedData> materials)
         {
             PlayerDataManager.Instance.ClearItemsForNewRun();
+            PlayerDataManager.Instance.ResetCardsFromMaterialPool(materials);
             ItemPassiveManager.ResetRun();
             MagicBoxBuffManager.ClearAll();
             LevelFlow.Instance.Begin(boxId, boxName, difficulty, materials);

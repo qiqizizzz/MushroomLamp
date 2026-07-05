@@ -24,6 +24,12 @@ using Common.Defines;
 
 using Common.UI;
 
+using Module.Cook;
+
+using Module.Item;
+
+using Module.Material;
+
 using MVC.View;
 
 using TMPro;
@@ -38,9 +44,13 @@ namespace Module.Store
 
 {
 
-    public class StoreView : BaseView
+    public class StoreView : BaseView, IStoreMaterialTooltipHost
 
     {
+
+        private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
+
+        private static readonly Vector2 TooltipOffset = new Vector2(18f, -18f);
 
         private Button _btnBack;
 
@@ -62,7 +72,7 @@ namespace Module.Store
 
         private static readonly Vector2 BagCellSize = new Vector2(140f, 180f);
 
-        private static readonly Vector2 BagSpacing = new Vector2(20f, 0f);
+        private static readonly Vector2 BagSpacing = new Vector2(50f, 0f);
 
 
 
@@ -73,6 +83,12 @@ namespace Module.Store
         private GameObject _bagItemPrefab;
 
         private StoreModel _model;
+
+        private ItemTooltip _itemTooltip;
+
+        private object _itemTooltipOwner;
+
+        private RectTransform _tooltipCanvasRect;
 
 
 
@@ -115,6 +131,8 @@ namespace Module.Store
         {
 
             if (model == null) return;
+
+            HideMaterialTooltip();
 
             _model = model;
 
@@ -254,7 +272,7 @@ namespace Module.Store
                     item.Button.onClick.AddListener(() => ApplyFunc(EventDefines.StoreBuy, captured));
                 }
 
-                setupBuyCardHover(item, canPick);
+                setupBuyCardHover(item, slot, canPick);
 
             }
 
@@ -262,13 +280,18 @@ namespace Module.Store
 
 
 
-        private static void setupBuyCardHover(StoreBuyItem item, bool canPick)
+        private void setupBuyCardHover(StoreBuyItem item, StoreBuySlotData slot, bool canPick)
+
         {
+
             StoreBuyHoverItem hover = item.Hover;
+
             if (hover == null) return;
 
-            hover.Setup(item.Icon != null ? item.Icon.rectTransform : null);
-            hover.SetInteractable(canPick);
+            hover.Setup(this, item.Icon != null ? item.Icon.rectTransform : null, slot?.id);
+
+            hover.SetHoverEnabled(true);
+
         }
 
 
@@ -321,7 +344,13 @@ namespace Module.Store
 
             if (_bagGrid == null) return;
 
-            _bagGrid.SetTotalCount(model.BagEntries?.Count ?? 0);
+            int count = model.BagEntries?.Count ?? 0;
+
+            _bagGrid.SetTotalCount(count);
+
+            if (count > 0)
+
+                _bagGrid.Refresh();
 
         }
 
@@ -341,7 +370,150 @@ namespace Module.Store
 
             if (item == null) item = slot.AddComponent<StoreBagItem>();
 
-            item.Bind(_model.BagEntries[dataIndex]);
+            item.Bind(_model.BagEntries[dataIndex], this);
+
+        }
+
+
+
+        public void ShowMaterialTooltip(object owner, string materialId, Vector2 screenPosition)
+
+        {
+
+            if (string.IsNullOrWhiteSpace(materialId)) return;
+
+            MaterialJsonData config = MaterialCatalogLoader.GetById(materialId);
+
+            if (config == null || !ensureItemTooltip()) return;
+
+            Sprite icon = ArtAssetLoader.LoadSprite(config.iconPath, logOnFail: false);
+
+            CookMaterialData preview = new CookMaterialData(0, config, icon);
+
+            _itemTooltipOwner = owner;
+
+            _itemTooltip.transform.SetAsLastSibling();
+
+            _itemTooltip.Bind(preview, ItemTooltipMode.Cook);
+
+            MoveMaterialTooltip(screenPosition);
+
+        }
+
+
+
+        public void MoveMaterialTooltip(Vector2 screenPosition)
+
+        {
+
+            if (_itemTooltip == null) return;
+
+            _itemTooltip.SetScreenPosition(screenPosition, _tooltipCanvasRect, TooltipOffset);
+
+        }
+
+
+
+        public void HideMaterialTooltip(object owner = null)
+
+        {
+
+            if (owner != null && _itemTooltipOwner != owner) return;
+
+            _itemTooltipOwner = null;
+
+            if (_itemTooltip != null)
+
+                _itemTooltip.Hide();
+
+        }
+
+
+
+        protected override void OnDestroy()
+
+        {
+
+            HideMaterialTooltip();
+
+            if (_itemTooltip != null)
+
+            {
+
+                Destroy(_itemTooltip.gameObject);
+
+                _itemTooltip = null;
+
+            }
+
+            base.OnDestroy();
+
+        }
+
+
+
+        private bool ensureItemTooltip()
+
+        {
+
+            if (_itemTooltip != null) return true;
+
+            // 挂在 StoreView 下，避免被 sortingOrder=20 的 Store Canvas 挡住（根 Canvas 上的 tooltip 不可见）
+            Transform parent = transform;
+
+            GameObject tooltipObj = ResManager.Instantiate(ITEM_TOOLTIP_PATH, parent);
+
+            if (tooltipObj == null) return false;
+
+            _itemTooltip = tooltipObj.GetComponent<ItemTooltip>();
+
+            if (_itemTooltip == null)
+
+                _itemTooltip = tooltipObj.AddComponent<ItemTooltip>();
+
+            tooltipObj.name = "StoreItemTooltip";
+
+            configureItemTooltipCanvas(tooltipObj);
+
+            tooltipObj.transform.SetAsLastSibling();
+
+            _tooltipCanvasRect = parent as RectTransform;
+
+            if (_tooltipCanvasRect == null)
+
+                _tooltipCanvasRect = tooltipObj.GetComponentInParent<Canvas>()?.transform as RectTransform;
+
+            if (_itemTooltip != null)
+
+            {
+
+                if (_txtGold != null)
+
+                    _itemTooltip.SetFontAsset(_txtGold.font);
+
+                _itemTooltip.Hide();
+
+            }
+
+            return _itemTooltip != null;
+
+        }
+
+
+
+        private static void configureItemTooltipCanvas(GameObject tooltipObj)
+
+        {
+
+            Canvas canvas = tooltipObj.GetComponent<Canvas>();
+
+            if (canvas == null) return;
+
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+            canvas.overrideSorting = true;
+
+            canvas.sortingOrder = 100;
 
         }
 
@@ -369,11 +541,11 @@ namespace Module.Store
 
             var layout = content.GetComponent<LayoutGroup>();
 
-            if (layout != null) Destroy(layout);
+            if (layout != null) DestroyImmediate(layout);
 
             var fitter = content.GetComponent<ContentSizeFitter>();
 
-            if (fitter != null) Destroy(fitter);
+            if (fitter != null) DestroyImmediate(fitter);
 
         }
 
@@ -403,15 +575,7 @@ namespace Module.Store
 
             createChildText(rt, "Txt_Name", new Vector2(0.02f, 0.0f), new Vector2(0.98f, 0.2f), 22, "");
 
-
-
-            TextMeshProUGUI countTxt = createChildText(rt, "Txt_Count", new Vector2(0.5f, 0.02f), new Vector2(0.98f, 0.28f), 24, "x0");
-
-            countTxt.alignment = TextAlignmentOptions.BottomRight;
-
-            countTxt.color = new Color(0.2f, 0.2f, 0.2f, 1f);
-
-
+            createCountBadge(rt);
 
             root.SetActive(false);
 
@@ -420,6 +584,29 @@ namespace Module.Store
         }
 
 
+
+        private void createCountBadge(RectTransform parent)
+        {
+            GameObject badgeGo = new GameObject("CountBadge", typeof(RectTransform), typeof(Image));
+            RectTransform badgeRt = badgeGo.GetComponent<RectTransform>();
+            badgeRt.SetParent(parent, false);
+            badgeRt.anchorMin = new Vector2(0.62f, 0.58f);
+            badgeRt.anchorMax = new Vector2(0.98f, 0.94f);
+            badgeRt.offsetMin = Vector2.zero;
+            badgeRt.offsetMax = Vector2.zero;
+
+            Image badgeImg = badgeGo.GetComponent<Image>();
+            Sprite badgeSprite = ArtAssetLoader.LoadSprite("Art/StoreView/数量小标签", logOnFail: false);
+            badgeImg.sprite = badgeSprite;
+            badgeImg.preserveAspect = true;
+            badgeImg.raycastTarget = false;
+            badgeImg.enabled = badgeSprite != null;
+
+            TextMeshProUGUI countTxt = createChildText(badgeRt, "Txt_Count", Vector2.zero, Vector2.one, 22, "0");
+            countTxt.alignment = TextAlignmentOptions.Center;
+            countTxt.fontStyle = FontStyles.Bold;
+            countTxt.color = Color.white;
+        }
 
         private static void bindButton(Button button, UnityEngine.Events.UnityAction action)
 

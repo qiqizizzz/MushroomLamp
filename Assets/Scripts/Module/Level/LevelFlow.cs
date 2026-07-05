@@ -67,6 +67,7 @@ namespace Module.Level
         private readonly HashSet<int> _recordedStageIndexes = new();
 
         public bool HasFlow => !string.IsNullOrEmpty(BoxId) && StageCount > 0;
+        public IReadOnlyList<CookMaterialSeedData> MaterialPool => _materials;
         public bool IsLastStage => HasStageConfig && StageCount > 0 && StageIndex >= StageCount - 1;
 
         // 放弃当前未完成的大局进度，回到第一小局（选择页再次进入时用）
