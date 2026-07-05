@@ -1289,7 +1289,7 @@ namespace Module.Cook
             state.SetAnimation(0, DevilIdleAnim, true);
         }
 
-        // 暂存槽集满后投入锅中：材料从槽位飞向大锅并缩小至 0，完成后回调
+        // 暂存槽集满后投入锅中：直接复用槽位图标，挂到 DragRoot 后飞向大锅
         public bool PlayPotSubmitFlyAnimation(System.Action onComplete)
         {
             if (_isPotSubmitAnimating) return false;
@@ -1302,22 +1302,28 @@ namespace Module.Cook
             if (dragRootRt == null || potTarget == null || _potTrayItems == null || _potTrayItems.Length == 0)
                 return false;
 
-            Vector2 potPos = worldToDragRoot(potTarget.position);
+            if (_potTrayRoot is RectTransform trayRootRt)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(trayRootRt);
 
-            var flyItems = new List<(Sprite sprite, Vector2 startPos, Vector2 size)>();
+            Canvas.ForceUpdateCanvases();
+
+            var flyingIcons = new List<RectTransform>();
             for (int i = 0; i < _potTrayItems.Length; i++)
             {
                 CookPotTrayItem trayItem = _potTrayItems[i];
                 if (trayItem == null) continue;
-                if (!trayItem.TryGetSubmitFlyData(dragRootRt, out Sprite sprite, out Vector2 startPos, out Vector2 size))
+                if (!trayItem.TryTakeIconForSubmitFly(out RectTransform iconRt))
                     continue;
 
-                flyItems.Add((sprite, startPos, size));
-                trayItem.HideIconForSubmitFly();
+                normalizeFlyIconTransform(iconRt, dragRootRt);
+                iconRt.SetAsLastSibling();
+                flyingIcons.Add(iconRt);
             }
 
-            if (flyItems.Count == 0)
+            if (flyingIcons.Count == 0)
                 return false;
+
+            Vector2 endPos = resolveAnchoredPosAtWorld(dragRootRt, potTarget.position);
 
             _isPotSubmitAnimating = true;
             if (_btnSubmitTray != null)
@@ -1326,39 +1332,23 @@ namespace Module.Cook
             PlayPotPutIntoAnimation();
 
             int finished = 0;
-            int total = flyItems.Count;
-            for (int i = 0; i < flyItems.Count; i++)
+            int launched = flyingIcons.Count;
+            for (int i = 0; i < flyingIcons.Count; i++)
             {
-                (Sprite sprite, Vector2 startPos, Vector2 size) data = flyItems[i];
+                RectTransform rt = flyingIcons[i];
                 float delay = i * PotSubmitStagger;
 
-                GameObject flyObj = new GameObject($"PotSubmitFly_{i}", typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
-                flyObj.transform.SetParent(dragRootRt, false);
-                flyObj.transform.SetAsLastSibling();
-
-                RectTransform rt = flyObj.GetComponent<RectTransform>();
-                rt.sizeDelta = data.size;
-                rt.anchoredPosition = data.startPos;
                 rt.localScale = Vector3.one;
 
-                Image flyImage = flyObj.GetComponent<Image>();
-                flyImage.sprite = data.sprite;
-                flyImage.preserveAspect = true;
-                flyImage.raycastTarget = false;
-                CookMaterialIconVisual.Apply(flyImage, data.size);
-
-                CanvasGroup canvasGroup = flyObj.GetComponent<CanvasGroup>();
-                canvasGroup.blocksRaycasts = false;
-
                 DG.Tweening.Sequence seq = DOTween.Sequence().SetDelay(delay)
-                    .Append(rt.DOAnchorPos(potPos, PotSubmitDuration).SetEase(Ease.InCubic))
+                    .Append(rt.DOAnchorPos(endPos, PotSubmitDuration).SetEase(Ease.InCubic))
                     .Join(rt.DOScale(0f, PotSubmitDuration).SetEase(Ease.InCubic));
                 seq.OnComplete(() =>
                 {
-                    if (flyObj != null)
-                        Destroy(flyObj);
+                    if (rt != null)
+                        Destroy(rt.gameObject);
                     finished++;
-                    if (finished >= total)
+                    if (finished >= launched)
                         completePotSubmitFly(onComplete);
                 });
             }
@@ -1512,13 +1502,40 @@ namespace Module.Cook
             return new Vector2(local.x, local.y);
         }
 
-        private Vector2 worldToDragRoot(Vector3 worldPos)
+        // 将暂存槽图标挂到 DragRoot，并固定为 center anchor，避免 stretch 父节点导致飞到屏幕中心
+        private static void normalizeFlyIconTransform(RectTransform iconRt, RectTransform dragRootRt)
         {
-            RectTransform dragRootRt = GetDragRoot() as RectTransform;
-            if (dragRootRt == null) return Vector2.zero;
+            if (iconRt == null || dragRootRt == null) return;
 
-            Vector3 local = dragRootRt.InverseTransformPoint(worldPos);
-            return new Vector2(local.x, local.y);
+            Vector2 size = iconRt.rect.size;
+            if (size.sqrMagnitude <= 0f)
+                size = new Vector2(92f, 92f);
+
+            Vector3 worldPos = iconRt.position;
+            iconRt.SetParent(dragRootRt, true);
+            iconRt.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRt.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRt.pivot = new Vector2(0.5f, 0.5f);
+            iconRt.sizeDelta = size;
+            iconRt.position = worldPos;
+        }
+
+        // 用探针节点反算 DragRoot 下某世界坐标对应的 anchoredPosition
+        private static Vector2 resolveAnchoredPosAtWorld(RectTransform host, Vector3 worldPos)
+        {
+            GameObject probeObj = new GameObject("PotFlyAnchorProbe", typeof(RectTransform));
+            probeObj.transform.SetParent(host, false);
+
+            RectTransform probeRt = probeObj.GetComponent<RectTransform>();
+            probeRt.anchorMin = new Vector2(0.5f, 0.5f);
+            probeRt.anchorMax = new Vector2(0.5f, 0.5f);
+            probeRt.pivot = new Vector2(0.5f, 0.5f);
+            probeRt.sizeDelta = Vector2.zero;
+            probeRt.position = worldPos;
+
+            Vector2 anchoredPos = probeRt.anchoredPosition;
+            Destroy(probeObj);
+            return anchoredPos;
         }
 
         // 锁/解锁全部手牌的交互（动画期间禁拖拽，并用透明遮挡挡住按钮点击）

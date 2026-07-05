@@ -81,34 +81,19 @@ namespace Module.View
                 stopFlash();
         }
 
-        // 投入锅中飞行动画：取图标与起点（DragRoot 局部坐标）
-        public bool TryGetSubmitFlyData(RectTransform dragRoot, out Sprite sprite, out Vector2 anchoredPos, out Vector2 size)
+        // 取出暂存槽上正在显示的材料图标，供投入飞行动画复用（保持当前屏幕位置）
+        public bool TryTakeIconForSubmitFly(out RectTransform iconRt)
         {
-            sprite = null;
-            anchoredPos = Vector2.zero;
-            size = new Vector2(92f, 92f);
+            iconRt = null;
             ensureReferences();
 
-            if (!_hasMaterial || _imgIcon == null || _imgIcon.sprite == null || dragRoot == null)
+            if (!_hasMaterial || _imgIcon == null || _imgIcon.sprite == null || !_imgIcon.enabled)
                 return false;
 
-            sprite = _imgIcon.sprite;
-            RectTransform iconRt = _imgIcon.rectTransform;
-            if (iconRt.rect.size.sqrMagnitude > 0f)
-                size = iconRt.rect.size;
-
-            Vector3 worldCenter = iconRt.TransformPoint(iconRt.rect.center);
-            Vector3 local = dragRoot.InverseTransformPoint(worldCenter);
-            anchoredPos = new Vector2(local.x, local.y);
-            return true;
-        }
-
-        // 飞行动画期间隐藏槽位上的图标，避免与飞行副本重叠
-        public void HideIconForSubmitFly()
-        {
             stopFlash();
-            if (_imgIcon != null)
-                _imgIcon.enabled = false;
+            iconRt = _imgIcon.rectTransform;
+            _imgIcon.raycastTarget = false;
+            return true;
         }
 
         private void startFlash()
