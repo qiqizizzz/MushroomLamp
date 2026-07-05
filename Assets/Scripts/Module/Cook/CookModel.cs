@@ -28,7 +28,6 @@ namespace Module.Cook
         private const int POT_TRAY_CAPACITY = 3;   // Pot 暂存槽数量（后续由关卡配置覆盖）
         private const int COIN_PER_POT_SUBMIT = 2; // 每次投入锅中计分
         private const int COIN_STAGE_CLEAR = 5;    // 小局达标通关固定奖励
-        public const int MagicBoxUnlockMinScore = 15; // 触碰魔盒所需最低分数
 
         private readonly List<CookMaterialSeedData> _materialSeeds = new();
         // 三区牌堆：天使抽牌堆 → 手牌筛选区 → 恶魔弃牌堆；卡实例全程复用，牌只在三区间流转、永不减少
@@ -561,12 +560,6 @@ namespace Module.Cook
             if (IsMagicBoxUsed)
             {
                 LastTip = "本回合已经触碰过魔盒";
-                return false;
-            }
-
-            if (CurrentScore < MagicBoxUnlockMinScore)
-            {
-                LastTip = $"分数未达到{MagicBoxUnlockMinScore}分，无法解锁魔盒";
                 return false;
             }
 
