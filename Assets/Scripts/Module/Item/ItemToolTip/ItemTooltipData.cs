@@ -213,8 +213,8 @@ namespace Module.Item
             data.AddField(FIELD_SHOP_CATEGORY, "类别", formatOptionalText(config.itemCategory));
             data.AddField(FIELD_SHOP_RARITY, "稀有度", formatRarity(config.rarity));
             data.AddField(FIELD_SHOP_EFFECT, "效果参数", buildShopEffectSummary(config));
-            data.AddField(FIELD_SHOP_TRIGGER, "触发方式", formatOptionalText(config.triggerType));
-            data.AddField(FIELD_SHOP_DURATION, "持续时间", formatOptionalText(config.durationType));
+            data.AddField(FIELD_SHOP_TRIGGER, "触发方式", formatOptionalText(ItemParamDisplayText.FormatTriggerType(config.triggerType)));
+            data.AddField(FIELD_SHOP_DURATION, "持续时间", formatOptionalText(ItemParamDisplayText.FormatDurationType(config.durationType)));
             data.AddField(FIELD_SHOP_RESET_RULE, "重置规则", formatOptionalText(config.resetRule));
             data.AddField(FIELD_SHOP_STACKABLE, "叠加规则", config.stackable ? "可叠加" : "不可叠加");
         }
@@ -227,13 +227,15 @@ namespace Module.Item
             int materialCount = pool?.materialIds == null ? 0 : pool.materialIds.Length;
 
             data.Subtitle = "材料箱";
-            if (!string.IsNullOrWhiteSpace(entry?.description))
-                data.Desc = entry.description;
+            string description = !string.IsNullOrWhiteSpace(slotData.description)
+                ? slotData.description
+                : ShopCatalog.ResolveBoxDescription(slotData.id);
+            if (!string.IsNullOrWhiteSpace(description))
+                data.Desc = description;
 
             data.AddField(FIELD_SHOP_CATEGORY, "商品类型", "材料箱");
             data.AddField(FIELD_SHOP_BOX_COUNT, "材料池", materialCount > 0 ? $"{materialCount} 种材料" : EMPTY_TEXT);
-            if (entry != null && (entry.minMaterialCount > 0 || entry.maxMaterialCount > 0))
-                data.AddField(FIELD_SHOP_BOX_PICK_COUNT, "可选数量", buildBoxPickCount(entry));
+            data.AddField(FIELD_SHOP_BOX_PICK_COUNT, "可选数量", buildBoxPickCount(entry));
         }
 
         // 构建商品副标题
@@ -249,8 +251,10 @@ namespace Module.Item
         private static string buildShopEffectSummary(ItemParamJsonData config)
         {
             List<string> parts = new List<string>();
-            if (!string.IsNullOrWhiteSpace(config.effectType)) parts.Add(config.effectType);
-            if (!string.IsNullOrWhiteSpace(config.effectTarget)) parts.Add(config.effectTarget);
+            string effectType = ItemParamDisplayText.FormatEffectType(config.effectType);
+            string effectTarget = ItemParamDisplayText.FormatEffectTarget(config.effectTarget);
+            if (!string.IsNullOrWhiteSpace(effectType)) parts.Add(effectType);
+            if (!string.IsNullOrWhiteSpace(effectTarget)) parts.Add(effectTarget);
             parts.Add(config.effectValue.ToString("0.##"));
             return parts.Count > 0 ? string.Join(" / ", parts) : EMPTY_TEXT;
         }
@@ -258,11 +262,10 @@ namespace Module.Item
         // 格式化材料箱抽取数量
         private static string buildBoxPickCount(ShopBoxCatalogEntryJson entry)
         {
-            if (entry.minMaterialCount > 0 && entry.maxMaterialCount > 0 && entry.minMaterialCount != entry.maxMaterialCount)
-                return $"{entry.minMaterialCount}-{entry.maxMaterialCount}";
+            int pickCount = ShopCatalog.ResolveBoxPickCount(entry);
+            if (pickCount <= 0) return EMPTY_TEXT;
 
-            int count = Mathf.Max(entry.minMaterialCount, entry.maxMaterialCount);
-            return count > 0 ? count.ToString() : EMPTY_TEXT;
+            return $"选 {pickCount} 张（展示 {ShopCatalog.BoxMaterialOfferCount} 张候选）";
         }
 
         // 格式化稀有度展示文本

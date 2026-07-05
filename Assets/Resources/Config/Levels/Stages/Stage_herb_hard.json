@@ -5,8 +5,8 @@
       "displayName": "困难·第一小局",
       "turnCount": 5,
       "potTrayCapacity": 4,
-      "targetMin": 26,
-      "targetMax": 32,
+      "targetMin": 28,
+      "targetMax": 34,
       "handCount": 5,
       "angelRescueCount": 1
     },
@@ -15,8 +15,8 @@
       "displayName": "困难·第二小局",
       "turnCount": 6,
       "potTrayCapacity": 4,
-      "targetMin": 36,
-      "targetMax": 44,
+      "targetMin": 38,
+      "targetMax": 46,
       "handCount": 5,
       "angelRescueCount": 0
     },
@@ -25,7 +25,7 @@
       "displayName": "困难·第三小局",
       "turnCount": 6,
       "potTrayCapacity": 4,
-      "targetMin": 46,
+      "targetMin": 48,
       "targetMax": 56,
       "handCount": 5,
       "angelRescueCount": 0

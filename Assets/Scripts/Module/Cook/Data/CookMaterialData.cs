@@ -42,7 +42,7 @@ namespace Module.Cook
             Ability = ability ?? CardAbility.Default;
         }
 
-        // 标记材料进入加工状态
+        // 标记材料进入加工状态（无对应产物配置时的兜底）
         public void MarkProcessed(int valueDelta, string extraTag)
         {
             if (Config == null || !Config.canProcess || IsProcessed) return;
@@ -51,6 +51,26 @@ namespace Module.Cook
             CurrentValue = Mathf.Max(0, CurrentValue + valueDelta);
             if (!string.IsNullOrWhiteSpace(extraTag))
                 TagText = $"{TagText}/{extraTag}";
+        }
+
+        // 加工完成后替换为产物配置（如土豆 → 土豆泥）
+        public void TransformTo(MaterialJsonData resultConfig, Sprite icon, string processMethodLabel)
+        {
+            if (resultConfig == null) return;
+
+            Config = resultConfig;
+            CurrentValue = resultConfig.baseValue;
+            IsProcessed = true;
+            CookProgress = 0f;
+            if (icon != null)
+                Icon = icon;
+
+            TagText = resultConfig.tags != null && resultConfig.tags.Length > 0
+                ? resultConfig.tags[0]
+                : "素材";
+
+            if (!string.IsNullOrWhiteSpace(processMethodLabel))
+                TagText = $"{TagText}/{processMethodLabel}";
         }
 
         // 增加材料在法阵中的烹饪熟度

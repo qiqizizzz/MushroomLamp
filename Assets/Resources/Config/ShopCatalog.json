@@ -6,61 +6,61 @@
       "boxId": "shop_box_veg_basic",
       "name": "蔬菜基础材料箱",
       "price": 5,
-      "description": "对应蔬菜基础卡包的后续补充箱。",
+      "description": "基础蔬菜补充箱。",
       "poolFile": "Shop/Pools/shop_box_veg_basic",
       "baseWeight": 90,
       "enabled": true,
       "unlockStage": "default",
-      "minMaterialCount": 4,
-      "maxMaterialCount": 5
+      "minMaterialCount": 1,
+      "maxMaterialCount": 1
     },
     {
       "boxId": "shop_box_leaf_order",
       "name": "叶菜顺序箱",
       "price": 6,
-      "description": "玩家形成叶菜顺序 build 时的补强箱。",
+      "description": "叶菜顺序 build 补强箱。",
       "poolFile": "Shop/Pools/shop_box_leaf_order",
       "baseWeight": 55,
       "enabled": true,
       "unlockStage": "easy_2",
-      "minMaterialCount": 3,
-      "maxMaterialCount": 4
+      "minMaterialCount": 1,
+      "maxMaterialCount": 1
     },
     {
       "boxId": "shop_box_root_process",
       "name": "根茎加工箱",
       "price": 6,
-      "description": "玩家形成根茎加工 build 时的补强箱。",
+      "description": "根茎加工 build 补强箱。",
       "poolFile": "Shop/Pools/shop_box_root_process",
       "baseWeight": 55,
       "enabled": true,
       "unlockStage": "easy_2",
-      "minMaterialCount": 3,
-      "maxMaterialCount": 4
+      "minMaterialCount": 1,
+      "maxMaterialCount": 1
     },
     {
       "boxId": "shop_box_tool_support",
       "name": "加工工具箱",
       "price": 5,
-      "description": "缺少加工工具时的补缺箱。",
+      "description": "加工工具补缺箱。",
       "poolFile": "Shop/Pools/shop_box_tool_support",
       "baseWeight": 45,
       "enabled": true,
       "unlockStage": "easy_2",
-      "minMaterialCount": 2,
-      "maxMaterialCount": 3
+      "minMaterialCount": 1,
+      "maxMaterialCount": 1
     },
     {
       "boxId": "shop_box_core_rare",
       "name": "核心稀有箱",
       "price": 8,
-      "description": "中后段低频高价值核心材料箱。",
+      "description": "中后段核心稀有材料箱。",
       "poolFile": "Shop/Pools/shop_box_core_rare",
       "baseWeight": 20,
       "enabled": true,
       "unlockStage": "normal_2",
       "minMaterialCount": 1,
-      "maxMaterialCount": 2
+      "maxMaterialCount": 1
     }
   ]
 }
