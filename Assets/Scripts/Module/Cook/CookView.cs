@@ -315,7 +315,7 @@ namespace Module.Cook
                 _ownedItems.Add(new CookOwnedItemEntry
                 {
                     name = cfg.name,
-                    iconPath = OWNED_ITEM_ICON_PATH,
+                    iconPath = string.IsNullOrWhiteSpace(cfg.iconPath) ? OWNED_ITEM_ICON_PATH : cfg.iconPath,
                     tooltipData = ShopCatalog.CreateItemSlotData(cfg)
                 });
             }

@@ -4,7 +4,7 @@
     {
       "id": "item_001",
       "name": "防糊锅垫",
-      "iconPath": "Art/ShopView/道具样本",
+      "iconPath": "Art/ShopView/Items/item_001",
       "description": "每个小关卡第一次材料糊掉时，改为微焦，只损失20%分数。",
       "price": 8,
       "rarity": "common",
@@ -20,7 +20,7 @@
     {
       "id": "item_009",
       "name": "魔盒贴纸",
-      "iconPath": "Art/ShopView/道具样本",
+      "iconPath": "Art/ShopView/Items/item_009",
       "description": "魔盒选项数量+1。",
       "price": 8,
       "rarity": "common",
@@ -36,7 +36,7 @@
     {
       "id": "item_013",
       "name": "幸运兔脚",
-      "iconPath": "Art/ShopView/道具样本",
+      "iconPath": "Art/ShopView/Items/item_012",
       "description": "每个小关卡第一次凑出21点时可重抽一次牌。",
       "price": 12,
       "rarity": "rare",
@@ -52,7 +52,7 @@
     {
       "id": "item_006",
       "name": "计时沙漏",
-      "iconPath": "Art/ShopView/道具样本",
+      "iconPath": "Art/ShopView/Items/item_006",
       "description": "后续每个小关卡回合数+1。",
       "price": 15,
       "rarity": "rare",
@@ -68,7 +68,7 @@
     {
       "id": "item_010",
       "name": "潘多拉钥匙",
-      "iconPath": "Art/ShopView/道具样本",
+      "iconPath": "Art/ShopView/Items/item_009",
       "description": "每个小关卡第一次点击魔盒时，不获得21点牌。",
       "price": 13,
       "rarity": "rare",
