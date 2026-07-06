@@ -270,7 +270,7 @@ namespace Module.MaterialPick
 
         private static CookMaterialData createPreviewMaterial(int index, MaterialJsonData config)
         {
-            Sprite icon = ArtAssetLoader.LoadSprite(config.iconPath, logOnFail: false);
+            Sprite icon = MaterialIconLoader.LoadSprite(config, logOnFail: false);
             return new CookMaterialData(-1000 - index, config, icon);
         }
 

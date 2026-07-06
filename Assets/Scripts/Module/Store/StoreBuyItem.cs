@@ -6,6 +6,7 @@
 */
 
 using Common;
+using Module.Material;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -47,7 +48,7 @@ namespace Module.Store
 
             if (imgIcon != null)
             {
-                Sprite sprite = string.IsNullOrEmpty(slot.iconPath) ? null : ArtAssetLoader.LoadSprite(slot.iconPath);
+                Sprite sprite = MaterialIconLoader.LoadSprite(slot.id, logOnFail: false);
                 imgIcon.sprite = sprite;
                 imgIcon.preserveAspect = true;
                 imgIcon.color = sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);

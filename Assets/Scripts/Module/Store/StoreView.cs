@@ -419,7 +419,7 @@ namespace Module.Store
 
             if (config == null || !ensureItemTooltip()) return;
 
-            Sprite icon = ArtAssetLoader.LoadSprite(config.iconPath, logOnFail: false);
+            Sprite icon = MaterialIconLoader.LoadSprite(materialId, logOnFail: false);
 
             CookMaterialData preview = new CookMaterialData(0, config, icon);
 

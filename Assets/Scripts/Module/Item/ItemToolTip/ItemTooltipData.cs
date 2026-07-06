@@ -56,7 +56,7 @@ namespace Module.Item
         {
             if (config == null) return null;
 
-            Sprite icon = ArtAssetLoader.LoadSprite(config.iconPath, logOnFail: false);
+            Sprite icon = MaterialIconLoader.LoadSprite(config, logOnFail: false);
             CookMaterialData material = new CookMaterialData(0, config, icon);
             return FromMaterial(material, mode);
         }
@@ -97,7 +97,7 @@ namespace Module.Item
                 Subtitle = string.IsNullOrWhiteSpace(offer.category) ? "可回收材料" : $"可回收材料 / {offer.category}",
                 Desc = offer.description,
                 PriceText = $"回收 ￥{offer.price}",
-                Icon = ArtAssetLoader.LoadSprite(offer.iconPath, logOnFail: false)
+                Icon = MaterialIconLoader.LoadSprite(offer.id, logOnFail: false)
             };
 
             if (!string.IsNullOrWhiteSpace(offer.category))

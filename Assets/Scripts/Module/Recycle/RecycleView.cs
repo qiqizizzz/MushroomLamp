@@ -11,6 +11,7 @@ using Common;
 using Common.Defines;
 using Common.UI;
 using Module.Item;
+using Module.Material;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -278,7 +279,7 @@ namespace Module.Recycle
             Image icon = createImage(rt, "Img_Icon", Color.white, new Vector2(0.04f, 0.22f), new Vector2(0.24f, 0.80f), false);
             if (icon != null)
             {
-                Sprite sprite = string.IsNullOrEmpty(data.iconPath) ? null : ArtAssetLoader.LoadSprite(data.iconPath, false);
+                Sprite sprite = MaterialIconLoader.LoadSprite(data.id, logOnFail: false);
                 icon.sprite = sprite;
                 icon.preserveAspect = true;
                 icon.enabled = true;

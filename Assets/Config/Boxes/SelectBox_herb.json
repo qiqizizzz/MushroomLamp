@@ -4,73 +4,73 @@
   "lines": [
     {
       "materialId": "VEG_001",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/土豆",
       "label": "土豆",
       "count": 5
     },
     {
       "materialId": "VEG_002",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/胡萝卜",
       "label": "胡萝卜",
       "count": 3
     },
     {
       "materialId": "VEG_003",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/白菜叶",
       "label": "白菜叶",
       "count": 2
     },
     {
       "materialId": "VEG_004",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/生菜叶",
       "label": "生菜叶",
       "count": 2
     },
     {
       "materialId": "VEG_005",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/小番茄",
       "label": "小番茄",
       "count": 2
     },
     {
       "materialId": "VEG_006",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/洋葱",
       "label": "洋葱",
       "count": 2
     },
     {
       "materialId": "VEG_007",
-      "iconPath": "Art/Card_img/mushroom",
+      "iconPath": "Art/Card_img/蘑菇",
       "label": "蘑菇",
       "count": 2
     },
     {
       "materialId": "VEG_008",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/南瓜块",
       "label": "南瓜块",
       "count": 2
     },
     {
       "materialId": "VEG_101",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/卷心菜叶",
       "label": "卷心菜叶",
       "count": 1
     },
     {
       "materialId": "VEG_102",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/香草叶",
       "label": "香草叶",
       "count": 1
     },
     {
       "materialId": "VEG_103",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/藤蔓叶",
       "label": "藤蔓叶",
       "count": 1
     },
     {
       "materialId": "VEG_104",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/月光叶",
       "label": "月光叶",
       "count": 1
     }

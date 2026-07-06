@@ -4,49 +4,49 @@
   "lines": [
     {
       "materialId": "VEG_001",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/土豆",
       "label": "土豆",
       "count": 2
     },
     {
       "materialId": "VEG_002",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/胡萝卜",
       "label": "胡萝卜",
       "count": 2
     },
     {
       "materialId": "VEG_003",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/白菜叶",
       "label": "白菜叶",
       "count": 2
     },
     {
       "materialId": "VEG_004",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/生菜叶",
       "label": "生菜叶",
       "count": 2
     },
     {
       "materialId": "VEG_005",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/小番茄",
       "label": "小番茄",
       "count": 1
     },
     {
       "materialId": "VEG_006",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/洋葱",
       "label": "洋葱",
       "count": 1
     },
     {
       "materialId": "VEG_007",
-      "iconPath": "Art/Card_img/mushroom",
+      "iconPath": "Art/Card_img/蘑菇",
       "label": "蘑菇",
       "count": 1
     },
     {
       "materialId": "VEG_008",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/南瓜块",
       "label": "南瓜块",
       "count": 1
     }

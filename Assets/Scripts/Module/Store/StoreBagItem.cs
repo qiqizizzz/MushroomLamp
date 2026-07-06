@@ -6,6 +6,7 @@
 */
 
 using Common;
+using Module.Material;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,7 +32,7 @@ namespace Module.Store
 
             if (imgIcon != null)
             {
-                Sprite sprite = string.IsNullOrEmpty(data.iconPath) ? null : ArtAssetLoader.LoadSprite(data.iconPath);
+                Sprite sprite = MaterialIconLoader.LoadSprite(data.id, logOnFail: false);
                 imgIcon.sprite = sprite;
                 // 没有资源时保留白膜（保持可见的纯色占位）
                 imgIcon.enabled = true;

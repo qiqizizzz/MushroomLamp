@@ -533,9 +533,7 @@ namespace Module.Cook
 
             if (MaterialProcessResolver.TryResolveForGrinder(material.Config, out MaterialJsonData resultConfig, out string methodUsed))
             {
-                Sprite resultIcon = string.IsNullOrWhiteSpace(resultConfig.iconPath)
-                    ? material.Icon
-                    : ArtAssetLoader.LoadSprite(resultConfig.iconPath, logOnFail: false);
+                Sprite resultIcon = MaterialIconLoader.LoadSprite(resultConfig, logOnFail: false) ?? material.Icon;
                 material.TransformTo(resultConfig, resultIcon, methodUsed);
                 LastTip = $"已将 {sourceName} {methodUsed}为 {resultConfig.name}，本回合已拿 {_turnTakenMaterialCount}/{TURN_TAKE_COUNT}";
             }
@@ -1017,7 +1015,23 @@ namespace Module.Cook
                 };
             }
 
-            return new CookMaterialData(_nextMaterialId++, cfg, seed.Icon, CardAbility.Default);
+            Sprite icon = resolveMaterialIcon(cfg, seed);
+            return new CookMaterialData(_nextMaterialId++, cfg, icon, CardAbility.Default);
+        }
+
+        // 优先用 MaterialCatalog 的 iconPath，避免 SelectBox 里旧占位图覆盖配置表新图
+        private static Sprite resolveMaterialIcon(MaterialJsonData cfg, CookMaterialSeedData seed)
+        {
+            Sprite icon = MaterialIconLoader.LoadSprite(cfg, logOnFail: false);
+            if (icon != null) return icon;
+
+            if (seed != null && !string.IsNullOrWhiteSpace(seed.MaterialId))
+            {
+                icon = MaterialIconLoader.LoadSprite(seed.MaterialId, logOnFail: false);
+                if (icon != null) return icon;
+            }
+
+            return seed?.Icon;
         }
 
 

@@ -7,6 +7,7 @@
 
 using System;
 using Common;
+using Module.Material;
 using UnityEngine;
 
 namespace Module.Select
@@ -42,9 +43,7 @@ namespace Module.Select
 
         public SelectMaterialLineData ToRuntime()
         {
-            Sprite icon = null;
-            if (!string.IsNullOrEmpty(iconPath))
-                icon = ArtAssetLoader.LoadSprite(iconPath);
+            Sprite icon = MaterialIconLoader.LoadSpriteOrFallback(materialId, iconPath);
 
             return new SelectMaterialLineData
             {

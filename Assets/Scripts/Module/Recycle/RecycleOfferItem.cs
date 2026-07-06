@@ -8,6 +8,7 @@
 
 using System;
 using Common;
+using Module.Material;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -66,9 +67,7 @@ namespace Module.Recycle
 
             if (_imgIcon != null)
             {
-                Sprite sprite = data == null || string.IsNullOrEmpty(data.iconPath)
-                    ? null
-                    : ArtAssetLoader.LoadSprite(data.iconPath, false);
+                Sprite sprite = data == null ? null : MaterialIconLoader.LoadSprite(data.id, logOnFail: false);
                 _imgIcon.sprite = sprite;
                 _imgIcon.enabled = sprite != null;
                 _imgIcon.preserveAspect = true;
