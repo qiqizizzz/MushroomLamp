@@ -1,9 +1,0 @@
-{
-  "boxId": "shop_box_tool_support",
-  "description": "加工工具与辅助道具补缺箱。",
-  "materialIds": [
-    "VEG_301",
-    "VEG_302",
-    "VEG_303"
-  ]
-}

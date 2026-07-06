@@ -39,18 +39,6 @@
       "maxMaterialCount": 1
     },
     {
-      "boxId": "shop_box_tool_support",
-      "name": "加工工具箱",
-      "price": 5,
-      "description": "加工工具补缺箱。",
-      "poolFile": "Shop/Pools/shop_box_tool_support",
-      "baseWeight": 45,
-      "enabled": true,
-      "unlockStage": "easy_2",
-      "minMaterialCount": 1,
-      "maxMaterialCount": 1
-    },
-    {
       "boxId": "shop_box_core_rare",
       "name": "核心稀有箱",
       "price": 8,
