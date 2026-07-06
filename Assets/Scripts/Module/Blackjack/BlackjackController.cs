@@ -40,6 +40,7 @@ namespace Module.Blackjack
         private int _pendingMaterialSlot = -1;
         private int _sessionBuffClaimLimit;
         private int _sessionBuffsClaimed;
+        private bool _cookViewHiddenForSession;
 
         public BlackjackController()
         {
@@ -82,6 +83,7 @@ namespace Module.Blackjack
         {
             _dialogSession.Reset();
             _pendingMaterialSlot = -1;
+            hideCookViewForBlackjack();
             GameApp.ViewManager.Open((int)ViewType.BlackjackView, args);
             beginSession();
         }
@@ -298,6 +300,7 @@ namespace Module.Blackjack
             ItemPassiveManager.EndMagicBoxSession();
             MagicBoxBuffManager.EndMagicBoxSession();
             GameApp.ViewManager.Close((int)ViewType.BlackjackView);
+            restoreCookViewFromBlackjack();
 
             // CookView 未关闭则只刷新状态，避免 Open 清空手牌 diff 导致重新发牌
             if (GameApp.ViewManager.IsOpen((int)ViewType.CookView))
@@ -309,6 +312,31 @@ namespace Module.Blackjack
             }
 
             ApplyControllerFunc(ControllerType.Cook, EventDefines.OpenCookView);
+        }
+
+        private void hideCookViewForBlackjack()
+        {
+            _cookViewHiddenForSession = false;
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.CookView)) return;
+
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            if (cookView == null || !cookView.gameObject.activeSelf) return;
+
+            cookView.gameObject.SetActive(false);
+            _cookViewHiddenForSession = true;
+        }
+
+        private void restoreCookViewFromBlackjack()
+        {
+            if (!_cookViewHiddenForSession) return;
+            _cookViewHiddenForSession = false;
+
+            if (!GameApp.ViewManager.IsOpen((int)ViewType.CookView)) return;
+
+            CookView cookView = GameApp.ViewManager.GetView<CookView>(ViewType.CookView);
+            if (cookView == null) return;
+
+            cookView.gameObject.SetActive(true);
         }
 
         private void refreshView()

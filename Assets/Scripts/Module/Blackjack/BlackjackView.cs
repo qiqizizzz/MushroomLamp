@@ -8,9 +8,11 @@
 
 using System;
 using System.Collections.Generic;
+using Common;
 using Common.Defines;
 using Common.UI;
 using DG.Tweening;
+using Module.Item;
 using Module.MagicBoxBuff;
 using MVC.View;
 using Sound;
@@ -21,12 +23,13 @@ using UnityEngine.UI;
 
 namespace Module.Blackjack
 {
-    public class BlackjackView : BaseView
+    public class BlackjackView : BaseView, IItemTooltipDataHost
     {
+        private const string ITEM_TOOLTIP_PATH = "UI/Cook/ItemTooltip";
+        private static readonly Vector2 S_TooltipOffset = new Vector2(18f, -18f);
+
         private const float BubbleAnimDuration = 0.32f;
         private const float BubbleHideScale = 0.08f;
-
-        private const float ItemHoverScale = 1.2f;
         private const float DealStagger = 0.08f;
         private const float DealDuration = 0.42f;
 
@@ -46,8 +49,11 @@ namespace Module.Blackjack
 
         private readonly List<Button> _itemButtons = new();
         private readonly List<UnityAction> _itemClickActions = new();
-        private readonly List<UIButtonHoverItem> _itemHovers = new();
+        private readonly List<ItemTooltipHoverScaleItem> _itemHovers = new();
         private readonly List<TextMeshProUGUI> _itemLabels = new();
+        private ItemTooltip _itemTooltip;
+        private object _itemTooltipOwner;
+        private RectTransform _tooltipCanvasRect;
         private readonly List<CardSlot> _smallCardPool = new();
         private readonly List<CardSlot> _smallCards = new();
 
@@ -256,11 +262,50 @@ namespace Module.Blackjack
 
         public override void Close(params object[] args)
         {
+            HideItemTooltipData();
             killIntroSequence();
             killAllCardFlipTweens();
             _devilBubble?.killTween();
             _angelBubble?.killTween();
             base.Close(args);
+        }
+
+        protected override void OnDestroy()
+        {
+            if (_itemTooltip != null)
+            {
+                Destroy(_itemTooltip.gameObject);
+                _itemTooltip = null;
+            }
+
+            base.OnDestroy();
+        }
+
+        public void ShowItemTooltipData(object owner, ItemTooltipData data, Vector2 screenPosition)
+        {
+            if (data == null) return;
+            if (!ensureItemTooltip()) return;
+
+            _itemTooltipOwner = owner;
+            _itemTooltip.transform.SetAsLastSibling();
+            _itemTooltip.Bind(data);
+            MoveItemTooltipData(screenPosition);
+        }
+
+        public void MoveItemTooltipData(Vector2 screenPosition)
+        {
+            if (_itemTooltip == null) return;
+
+            _itemTooltip.SetScreenPosition(screenPosition, _tooltipCanvasRect, S_TooltipOffset);
+        }
+
+        public void HideItemTooltipData(object owner = null)
+        {
+            if (owner != null && _itemTooltipOwner != owner)
+                return;
+
+            _itemTooltipOwner = null;
+            _itemTooltip?.Hide();
         }
 
         public int GetItemSlotCount()
@@ -423,6 +468,7 @@ namespace Module.Blackjack
 
             bindItemButtons();
             syncSlotBuffItems(_slotBuffs.Count);
+            syncSlotBuffItemLabels();
             setInteractionLocked(false);
         }
 
@@ -661,9 +707,16 @@ namespace Module.Blackjack
                 Button btn = child.GetComponent<Button>();
                 if (btn == null) btn = child.gameObject.AddComponent<Button>();
 
-                UIButtonHoverItem hover = child.GetComponent<UIButtonHoverItem>();
-                if (hover == null) hover = child.gameObject.AddComponent<UIButtonHoverItem>();
-                hover.Setup(btn, null, ItemHoverScale);
+                ItemTooltipHoverScaleItem hover = child.GetComponent<ItemTooltipHoverScaleItem>();
+                if (hover == null) hover = child.gameObject.AddComponent<ItemTooltipHoverScaleItem>();
+
+                RectTransform slotRt = child as RectTransform;
+                if (slotRt != null)
+                {
+                    hover.SetHitSize(
+                        slotRt.rect.width > 1f ? slotRt.rect.width : 150f,
+                        slotRt.rect.height > 1f ? slotRt.rect.height : 150f);
+                }
 
                 _itemHovers.Add(hover);
                 _itemButtons.Add(btn);
@@ -716,11 +769,51 @@ namespace Module.Blackjack
 
         private void syncSlotBuffItemLabels()
         {
-            for (int i = 0; i < _slotBuffs.Count && i < _itemLabels.Count; i++)
+            for (int i = 0; i < _itemLabels.Count; i++)
             {
-                MagicBoxBuffJsonData buff = _slotBuffs[i];
+                MagicBoxBuffJsonData buff = i < _slotBuffs.Count ? _slotBuffs[i] : null;
                 setItemLabel(i, buff?.name ?? "Buff");
+                bindItemTooltip(i, buff);
             }
+        }
+
+        private void bindItemTooltip(int index, MagicBoxBuffJsonData buff)
+        {
+            if (index < 0 || index >= _itemHovers.Count) return;
+
+            ItemTooltipHoverScaleItem hover = _itemHovers[index];
+            if (hover == null) return;
+
+            Sprite icon = null;
+            if (index < _itemButtons.Count && _itemButtons[index]?.targetGraphic is Image img)
+                icon = img.sprite;
+
+            ItemTooltipData tooltipData = ItemTooltipData.FromMagicBoxBuff(buff, icon);
+            hover.BindTooltip(this, tooltipData);
+            hover.SetInteractable(buff != null);
+        }
+
+        private bool ensureItemTooltip()
+        {
+            if (_itemTooltip != null)
+                return true;
+
+            Transform parent = GameApp.ViewManager?.canvasTf ?? transform;
+            GameObject tooltipObj = ResManager.Instantiate(ITEM_TOOLTIP_PATH, parent);
+            if (tooltipObj == null) return false;
+
+            _itemTooltip = tooltipObj.GetComponent<ItemTooltip>();
+            if (_itemTooltip == null)
+                _itemTooltip = tooltipObj.AddComponent<ItemTooltip>();
+
+            tooltipObj.name = "ItemTooltip";
+            tooltipObj.transform.SetAsLastSibling();
+            _tooltipCanvasRect = parent as RectTransform;
+            if (_tooltipCanvasRect == null)
+                _tooltipCanvasRect = tooltipObj.GetComponentInParent<Canvas>()?.transform as RectTransform;
+
+            _itemTooltip.Hide();
+            return _itemTooltip != null;
         }
 
         private void setItemLabel(int index, string text)
@@ -739,9 +832,13 @@ namespace Module.Blackjack
         {
             for (int i = 0; i < _itemLabels.Count; i++)
             {
-                if (_itemLabels[i] == null) continue;
-                _itemLabels[i].text = string.Empty;
-                _itemLabels[i].gameObject.SetActive(false);
+                if (_itemLabels[i] != null)
+                {
+                    _itemLabels[i].text = string.Empty;
+                    _itemLabels[i].gameObject.SetActive(false);
+                }
+
+                bindItemTooltip(i, null);
             }
         }
 

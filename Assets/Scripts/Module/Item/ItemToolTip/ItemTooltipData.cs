@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using Common;
 using Module.Cook;
+using Module.MagicBoxBuff;
 using Module.Material;
 using Module.Player;
 using Module.Recycle;
@@ -106,6 +107,30 @@ namespace Module.Item
             data.AddField(FIELD_BASIC_SCORE, "回收收益", $"￥{offer.price}");
             data.AddField(FIELD_STATE, "类别", string.IsNullOrWhiteSpace(offer.category) ? "材料" : offer.category);
             data.AddField(FIELD_EFFECT, "用途", "卖出后立即获得金币");
+            return data;
+        }
+
+        // 从魔盒 Buff 构建 Tooltip 展示数据（与 CookView 道具同款 Shop 布局）
+        public static ItemTooltipData FromMagicBoxBuff(MagicBoxBuffJsonData buff, Sprite icon = null)
+        {
+            if (buff == null)
+                return null;
+
+            ItemTooltipData data = new ItemTooltipData
+            {
+                Mode = ItemTooltipMode.Shop,
+                Name = string.IsNullOrWhiteSpace(buff.name) ? "未知 Buff" : buff.name,
+                Subtitle = buildMagicBoxBuffSubtitle(buff),
+                Desc = buff.description,
+                PriceText = string.Empty,
+                Icon = icon
+            };
+
+            data.AddField(FIELD_SHOP_CATEGORY, "类别", formatOptionalText(buff.category));
+            data.AddField(FIELD_SHOP_RARITY, "稀有度", MagicBoxBuffDisplayText.FormatRarity(buff.rarity));
+            data.AddField(FIELD_SHOP_EFFECT, "效果参数", buildMagicBoxBuffEffectSummary(buff));
+            data.AddField(FIELD_SHOP_DURATION, "持续时间", formatOptionalText(MagicBoxBuffDisplayText.FormatDurationType(buff.durationType)));
+            data.AddField(FIELD_SHOP_STACKABLE, "叠加规则", buff.stackable ? "可叠加" : "不可叠加");
             return data;
         }
 
@@ -236,6 +261,47 @@ namespace Module.Item
             data.AddField(FIELD_SHOP_CATEGORY, "商品类型", "材料箱");
             data.AddField(FIELD_SHOP_BOX_COUNT, "材料池", materialCount > 0 ? $"{materialCount} 种材料" : EMPTY_TEXT);
             data.AddField(FIELD_SHOP_BOX_PICK_COUNT, "可选数量", buildBoxPickCount(entry));
+        }
+
+        // 构建魔盒 Buff 副标题
+        private static string buildMagicBoxBuffSubtitle(MagicBoxBuffJsonData buff)
+        {
+            List<string> parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(buff.rarity))
+                parts.Add(MagicBoxBuffDisplayText.FormatRarity(buff.rarity));
+            if (!string.IsNullOrWhiteSpace(buff.category))
+                parts.Add(buff.category);
+            return string.Join(" / ", parts);
+        }
+
+        // 构建魔盒 Buff 效果字段（仅展示数值参数，避免文本过长）
+        private static string buildMagicBoxBuffEffectSummary(MagicBoxBuffJsonData buff)
+        {
+            string paramText = buildMagicBoxBuffParamSummary(buff);
+            return string.IsNullOrWhiteSpace(paramText) ? EMPTY_TEXT : paramText;
+        }
+
+        private static string buildMagicBoxBuffParamSummary(MagicBoxBuffJsonData buff)
+        {
+            if (buff == null) return string.Empty;
+
+            switch (buff.effectType)
+            {
+                case MagicBoxBuffManager.EffectAddRoundScoreFlat when buff.roundScoreFlatBonus != 0f:
+                    return $"+{buff.roundScoreFlatBonus:0.##} 分";
+                case MagicBoxBuffManager.EffectAddPerVegetableCap:
+                    return $"+{buff.perVegetableBonus:0.##} 分/蔬菜，上限 {buff.vegetableBonusCap:0.##}";
+                case MagicBoxBuffManager.EffectModifyBustLimit when buff.bustLimitDelta != 0f:
+                    return buff.bustLimitDelta > 0f
+                        ? $"阈值 +{buff.bustLimitDelta:0.##}"
+                        : $"阈值 {buff.bustLimitDelta:0.##}";
+                case MagicBoxBuffManager.EffectReduceBustPenalty when buff.bustPenaltyMultiplier > 0f:
+                    return $"惩罚 ×{buff.bustPenaltyMultiplier:0.##}";
+                case MagicBoxBuffManager.EffectPickMaterialReward:
+                    return $"展示 {buff.materialChoiceCount} 选 {buff.materialPickCount}";
+                default:
+                    return string.Empty;
+            }
         }
 
         // 构建商品副标题
