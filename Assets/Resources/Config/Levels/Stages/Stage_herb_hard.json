@@ -3,30 +3,30 @@
     {
       "stageId": "herb_hard_1",
       "displayName": "困难·第一小局",
-      "turnCount": 5,
-      "potTrayCapacity": 4,
-      "targetMin": 28,
-      "targetMax": 34,
+      "turnCount": 6,
+      "potTrayCapacity": 3,
+      "targetMin": 26,
+      "targetMax": 38,
       "handCount": 5,
       "angelRescueCount": 1
     },
     {
       "stageId": "herb_hard_2",
       "displayName": "困难·第二小局",
-      "turnCount": 6,
-      "potTrayCapacity": 4,
-      "targetMin": 38,
-      "targetMax": 46,
+      "turnCount": 7,
+      "potTrayCapacity": 3,
+      "targetMin": 36,
+      "targetMax": 50,
       "handCount": 5,
       "angelRescueCount": 0
     },
     {
       "stageId": "herb_hard_3",
       "displayName": "困难·第三小局",
-      "turnCount": 6,
-      "potTrayCapacity": 4,
+      "turnCount": 8,
+      "potTrayCapacity": 3,
       "targetMin": 48,
-      "targetMax": 56,
+      "targetMax": 64,
       "handCount": 5,
       "angelRescueCount": 0
     }

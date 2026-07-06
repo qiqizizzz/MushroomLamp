@@ -3,30 +3,30 @@
     {
       "stageId": "herb_normal_1",
       "displayName": "普通·第一小局",
-      "turnCount": 5,
+      "turnCount": 6,
       "potTrayCapacity": 3,
-      "targetMin": 18,
-      "targetMax": 24,
+      "targetMin": 22,
+      "targetMax": 34,
       "handCount": 5,
       "angelRescueCount": 1
     },
     {
       "stageId": "herb_normal_2",
       "displayName": "普通·第二小局",
-      "turnCount": 6,
+      "turnCount": 7,
       "potTrayCapacity": 3,
-      "targetMin": 26,
-      "targetMax": 32,
+      "targetMin": 30,
+      "targetMax": 44,
       "handCount": 5,
       "angelRescueCount": 1
     },
     {
       "stageId": "herb_normal_3",
       "displayName": "普通·第三小局",
-      "turnCount": 6,
+      "turnCount": 8,
       "potTrayCapacity": 3,
-      "targetMin": 34,
-      "targetMax": 40,
+      "targetMin": 40,
+      "targetMax": 56,
       "handCount": 5,
       "angelRescueCount": 1
     }
