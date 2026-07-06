@@ -109,6 +109,8 @@ namespace Module.Cook
         private SkeletonGraphic _devilSpine;      // 恶魔 Spine 展示（Img_Devil）
         private SkeletonGraphic _cookPotSpine;    // 大锅 Spine 展示（Spine_CookPot）
         private SkeletonGraphic _grinderSpine;    // 研磨器 Spine 展示（Spine_CookGrinder）
+        private SkeletonGraphic _thermometerSpine; // 温度计 Spine 展示（Spine_Thermometer）
+        private int _thermometerAnimTier = -1;
         private readonly List<CookMaterialItem> _handPool = new();   // 复用，不销毁
         private readonly List<int> _lastHandIds = new();             // 上次显示的手牌 id（用于 diff）
         private readonly HashSet<CookMaterialItem> _discardingItems = new();   // 正飞向恶魔、由动画收尾隐藏的 item
@@ -131,6 +133,9 @@ namespace Module.Cook
         private const string CookPotPutIntoAnim = "put into";
         private const string CookGrinderIdleAnim = "idie";
         private const string CookGrinderGrindingAnim = "grinding";
+        private const string ThermometerIdleAnim = "idling";
+        private const string ThermometerMediumAnim = "Medium";
+        private const string ThermometerHighSpeedAnim = "high speed";
         private const string SfxDealAppear = "sfx_ingame_appear";
         private const string SfxDiscardDisappear = "sfx_ingame_disappear";
         private const string SfxHandSelect = "sfx_ingame_select";
@@ -174,6 +179,7 @@ namespace Module.Cook
                 previewRt.anchorMax = new Vector2(previewRt.anchorMax.x, 0f);
                 resetHeatBarVerticalOffset(previewRt);
             }
+            initThermometerSpine();
             _slotRoot = Find<Transform>("Center/Grid");
             _handArea = Find<Transform>("Bottom/HandScroll");
             _handContent = Find<Transform>("Bottom/HandScroll/Viewport/Content");
@@ -1058,6 +1064,47 @@ namespace Module.Cook
                     }
                 }
             }
+
+            refreshThermometerAnimation(cookModel);
+        }
+
+        private void initThermometerSpine()
+        {
+            Transform thermometerTf = findDeep(transform, "Spine_Thermometer");
+            _thermometerSpine = thermometerTf != null ? thermometerTf.GetComponent<SkeletonGraphic>() : null;
+            if (_thermometerSpine == null) return;
+
+            _thermometerSpine.color = Color.white;
+            playThermometerAnimation(0);
+        }
+
+        // 分数进度每跨 33% 切换一档更激进的温度计动画：idling → Medium → high speed
+        private void refreshThermometerAnimation(CookModel cookModel)
+        {
+            if (_thermometerSpine == null || cookModel == null) return;
+
+            float denom = Mathf.Max(1f, cookModel.TargetMax);
+            float ratio = Mathf.Clamp01(cookModel.CurrentScore / denom);
+            int tier = ratio >= 2f / 3f ? 2 : ratio >= 1f / 3f ? 1 : 0;
+            playThermometerAnimation(tier);
+        }
+
+        private void playThermometerAnimation(int tier)
+        {
+            if (_thermometerSpine == null || tier == _thermometerAnimTier) return;
+
+            _thermometerAnimTier = tier;
+            string anim = tier switch
+            {
+                2 => ThermometerHighSpeedAnim,
+                1 => ThermometerMediumAnim,
+                _ => ThermometerIdleAnim,
+            };
+
+            Spine.AnimationState state = _thermometerSpine.AnimationState;
+            if (state == null) return;
+
+            state.SetAnimation(0, anim, true);
         }
 
         // 初始化温度条图像，避免遮挡素材文字和拖拽操作

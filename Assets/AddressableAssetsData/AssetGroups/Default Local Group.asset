@@ -182,11 +182,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 53d5f6dbba04b2441aadba23d4585180
-    m_Address: "Art/CookView/Pot/\u52A0\u53F7"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5541095182bb65c4fa1be606d0fc796b
     m_Address: Art/SelectBoxView/6
     m_ReadOnly: 0
@@ -452,11 +447,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c10c2c46e21105c42a81b190e627139a
-    m_Address: Art/SummaryView/BtnNextRoundHover
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c2678f104d7680c439a06d6edc9a77ec
     m_Address: Art/SelectBoxView/IMG_9176
     m_ReadOnly: 0
@@ -532,18 +522,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: de389ca3aa0389645a450f1b63907392
-    m_Address: Art/SummaryView/BtnBackHomeHover
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e4a346a59365930429d805a697a01188
     m_Address: Art/Card_img/carrot
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e7e7b3cfdb496774f9f6e92033fac8f0
-    m_Address: "Art/CookView/Pot/\u6446\u653E\u5C0F\u6846"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
