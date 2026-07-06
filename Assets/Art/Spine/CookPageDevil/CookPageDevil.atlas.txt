@@ -1,4 +1,3 @@
-
 CookPageDevil.png
 size: 477,205
 format: RGBA8888
