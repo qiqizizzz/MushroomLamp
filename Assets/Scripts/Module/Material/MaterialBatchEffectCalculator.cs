@@ -75,7 +75,7 @@ namespace Module.Material
                     applyFlatEffect(mods, index, config, parseSignedInt(config.effectParam));
                     break;
                 case "倍率":
-                    applyMultiplierEffect(mods, index, config, parseMultiplier(config.multiplierParam));
+                    applyMultiplierEffect(mods, index, config, config.multiplierParam);
                     break;
             }
         }
@@ -219,14 +219,6 @@ namespace Module.Material
                 trimmed = trimmed.Substring(1);
 
             return int.TryParse(trimmed, out int value) ? value : 0;
-        }
-
-        private static float parseMultiplier(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return 1f;
-
-            string trimmed = text.Trim().Replace("×", string.Empty).Replace("x", string.Empty).Replace("X", string.Empty);
-            return float.TryParse(trimmed, out float value) && value > 0f ? value : 1f;
         }
 
         private static bool hasTagBefore(IReadOnlyList<CookMaterialData> batch, int index, string tag)

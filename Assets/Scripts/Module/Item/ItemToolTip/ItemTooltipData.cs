@@ -219,7 +219,7 @@ namespace Module.Item
             data.AddField(FIELD_PROCESS_METHOD, "加工方式", formatOptionalText(config.processMethods));
             data.AddField(FIELD_TRIGGER_CONDITION, "触发条件", formatOptionalText(config.triggerCondition));
             data.AddField(FIELD_EFFECT, "效果", buildEffectSummary(config));
-            data.AddField(FIELD_MULTIPLIER, "倍率", formatOptionalText(config.multiplierParam));
+            data.AddField(FIELD_MULTIPLIER, "倍率", formatMultiplierParam(config.multiplierParam));
             data.AddField(FIELD_PROCESS_RESULT, "加工结果", formatOptionalText(config.processResult));
         }
 
@@ -374,6 +374,15 @@ namespace Module.Item
                 return effectParam;
 
             return effectType;
+        }
+
+        // 倍率配置值展示为 ×1.2 形式，0 或 1 显示为无
+        private static string formatMultiplierParam(float multiplier)
+        {
+            if (multiplier <= 0f || Mathf.Approximately(multiplier, 1f))
+                return EMPTY_TEXT;
+
+            return $"×{multiplier:0.##}";
         }
 
         // 统一把空值显示为无

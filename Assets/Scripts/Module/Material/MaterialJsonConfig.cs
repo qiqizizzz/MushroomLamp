@@ -40,7 +40,7 @@ namespace Module.Material
         public string effectType;          // 效果类型：加分/倍率/加工/状态变化/加分复制/减分...
         public string effectTarget;        // 效果目标：自身/下一个材料/最终分数/指定材料
         public string effectParam;         // 效果参数（如 +2）
-        public string multiplierParam;     // 倍率参数（如 ×1.5）
+        public float multiplierParam;      // 倍率参数（如 1.5；0 或 1 表示无倍率）
 
         public bool isCore;                // 是否核心牌
         public string priority;            // 优先级：高/中/低

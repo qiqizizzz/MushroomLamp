@@ -22,7 +22,7 @@
       "effectType": "加工",
       "effectTarget": "自身",
       "effectParam": "可通过加工提升价值",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "基础根茎材料，是根茎加工流的底层材料。"
@@ -49,7 +49,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+3",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "基础根茎材料，可以吃叶菜顺序加成。"
@@ -76,7 +76,7 @@
       "effectType": "加分",
       "effectTarget": "下一个材料",
       "effectParam": "+3",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "叶菜顺序流的基础铺垫牌，用来强化后一个蔬菜。"
@@ -103,7 +103,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+3",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "依赖后续蔬菜触发的基础叶菜牌。"
@@ -130,7 +130,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+2",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "连接叶菜顺序流的基础果实材料。"
@@ -157,7 +157,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+3",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "用于连接根茎材料的调味牌。"
@@ -184,7 +184,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+3",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "鼓励多蔬菜组合的泛用材料。"
@@ -212,7 +212,7 @@
       "effectType": "加工",
       "effectTarget": "自身",
       "effectParam": "可切碎为更高价值材料",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "基础高分材料，可通过切碎进入根茎加工流的组合。"
@@ -240,7 +240,7 @@
       "effectType": "倍率",
       "effectTarget": "下一个材料",
       "effectParam": "无",
-      "multiplierParam": "×1.5",
+      "multiplierParam": 1.5,
       "isCore": true,
       "priority": "高",
       "desc": "叶菜顺序流的核心倍率牌，强化下一个蔬菜材料。"
@@ -268,7 +268,7 @@
       "effectType": "加分",
       "effectTarget": "下一个材料",
       "effectParam": "+4",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "专门强化根茎材料的叶菜辅助牌。"
@@ -296,7 +296,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+5",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "鼓励玩家安排前后顺序的叶菜牌。"
@@ -324,7 +324,7 @@
       "effectType": "加分复制",
       "effectTarget": "下一个材料",
       "effectParam": "下一个材料的加法效果额外触发一次，但数值减半",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": true,
       "priority": "高",
       "desc": "让顺序流产生更强连锁收益的稀有叶菜牌。"
@@ -352,7 +352,7 @@
       "effectType": "倍率",
       "effectTarget": "最终分数",
       "effectParam": "无",
-      "multiplierParam": "×1.2",
+      "multiplierParam": 1.2,
       "isCore": true,
       "priority": "高",
       "desc": "叶菜顺序流的最终结算核心牌。"
@@ -380,7 +380,7 @@
       "effectType": "状态变化",
       "effectTarget": "自身",
       "effectParam": "由土豆加工升级而来",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "土豆研磨后的高价值形态。"
@@ -408,7 +408,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+3",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "中",
       "desc": "胡萝卜切碎后的加工形态，仍然可以吃叶菜加成。"
@@ -436,7 +436,7 @@
       "effectType": "倍率",
       "effectTarget": "自身",
       "effectParam": "无",
-      "multiplierParam": "×1.5",
+      "multiplierParam": 1.5,
       "isCore": false,
       "priority": "中",
       "desc": "南瓜切碎后的高收益加工材料。"
@@ -464,7 +464,7 @@
       "effectType": "倍率",
       "effectTarget": "自身",
       "effectParam": "无",
-      "multiplierParam": "×1.5",
+      "multiplierParam": 1.5,
       "isCore": true,
       "priority": "高",
       "desc": "根茎加工流的核心高分材料，可以与叶菜流产生联动。"
@@ -492,7 +492,7 @@
       "effectType": "加分",
       "effectTarget": "自身",
       "effectParam": "+5",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": true,
       "priority": "高",
       "desc": "依赖加工次数触发的高价值根茎材料。"
@@ -520,7 +520,7 @@
       "effectType": "倍率",
       "effectTarget": "最终分数",
       "effectParam": "无",
-      "multiplierParam": "×1.3",
+      "multiplierParam": 1.3,
       "isCore": true,
       "priority": "高",
       "desc": "根茎加工流的最终结算核心牌。"
@@ -548,7 +548,7 @@
       "effectType": "加工",
       "effectTarget": "指定材料",
       "effectParam": "使目标进入切碎状态",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "低",
       "desc": "提供切碎加工能力的辅助道具。"
@@ -576,7 +576,7 @@
       "effectType": "加工",
       "effectTarget": "指定材料",
       "effectParam": "使目标进入研磨状态",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "低",
       "desc": "提供研磨加工能力的辅助道具。"
@@ -605,7 +605,7 @@
       "effectType": "倍率",
       "effectTarget": "最终分数",
       "effectParam": "无",
-      "multiplierParam": "×1.2",
+      "multiplierParam": 1.2,
       "isCore": false,
       "priority": "低",
       "desc": "鼓励纯蔬菜组合的泛用倍率牌。"
@@ -633,7 +633,7 @@
       "effectType": "减分",
       "effectTarget": "自身",
       "effectParam": "-1",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "低",
       "desc": "叶菜加工失败或爆锅后产生的轻度负面材料。"
@@ -661,7 +661,7 @@
       "effectType": "减分",
       "effectTarget": "自身",
       "effectParam": "-2",
-      "multiplierParam": "",
+      "multiplierParam": 0,
       "isCore": false,
       "priority": "低",
       "desc": "根茎加工失败或爆锅后产生的负面材料。"
