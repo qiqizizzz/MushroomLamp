@@ -1,4 +1,4 @@
-MainMenuBegin.png
+﻿MainMenuBegin.png
 size: 1713,523
 format: RGBA8888
 filter: Linear,Linear
