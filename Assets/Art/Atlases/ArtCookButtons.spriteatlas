@@ -66,6 +66,8 @@ SpriteAtlas:
     - {fileID: 2800000, guid: 1daf3b681f71e9549afe214f89da847d, type: 3}
     - {fileID: 2800000, guid: 290dab1612815fa4db8f51f83001cf0f, type: 3}
     - {fileID: 2800000, guid: e43134772935e4a42baad135f9c8d206, type: 3}
+    - {fileID: 2800000, guid: 9488055d41cf9c1449d819243f6c2bda, type: 3}
+    - {fileID: 2800000, guid: 78e7af2c54337024a93713156ba326fa, type: 3}
     - {fileID: 2800000, guid: bb9ea4644e9903d4d9b88e993a7cb51d, type: 3}
     - {fileID: 2800000, guid: 47639d65483116c4fa0a491888753937, type: 3}
     bindAsDefault: 1
@@ -92,7 +94,9 @@ SpriteAtlas:
     - dc1bfa1b6b8d2b94f9d59a712b0547e1: 21300000
     - 7aa6192b78de80a4da74d305aa64b99f: 21300000
     - 02472eab6010f0e4da2c3fb20a231742: 21300000
+    - 78e7af2c54337024a93713156ba326fa: 21300000
     - f2b3d33cf82f45544b4c58ccdb41c6f9: 21300000
+    - 9488055d41cf9c1449d819243f6c2bda: 21300000
     - 6c3ea95d7862fd8489f6db11fde48ac6: 21300000
     - 4e17648e619e4b541a3b52113fa0d1ba: 21300000
   m_MasterAtlas: {fileID: 0}
@@ -117,7 +121,9 @@ SpriteAtlas:
   - {fileID: 21300000, guid: dc1bfa1b6b8d2b94f9d59a712b0547e1, type: 3}
   - {fileID: 21300000, guid: 7aa6192b78de80a4da74d305aa64b99f, type: 3}
   - {fileID: 21300000, guid: 02472eab6010f0e4da2c3fb20a231742, type: 3}
+  - {fileID: 21300000, guid: 78e7af2c54337024a93713156ba326fa, type: 3}
   - {fileID: 21300000, guid: f2b3d33cf82f45544b4c58ccdb41c6f9, type: 3}
+  - {fileID: 21300000, guid: 9488055d41cf9c1449d819243f6c2bda, type: 3}
   - {fileID: 21300000, guid: 6c3ea95d7862fd8489f6db11fde48ac6, type: 3}
   - {fileID: 21300000, guid: 4e17648e619e4b541a3b52113fa0d1ba, type: 3}
   m_PackedSpriteNamesToIndex:
@@ -141,7 +147,9 @@ SpriteAtlas:
   - "\u64A4\u56DE_\u70B9\u51FB"
   - Btn_continue_clicked
   - "\u63D0\u793A\u80CC\u666F_\u5C0F"
+  - "\u8BE6\u7EC6\u6309\u94AE_\u9ED8\u8BA4"
   - Btn_continue
+  - "\u8BE6\u7EC6\u6309\u94AE_\u70B9\u51FB"
   - Btn_setting_clicked
   - Btn_home_clicked
   m_RenderDataMap: {}

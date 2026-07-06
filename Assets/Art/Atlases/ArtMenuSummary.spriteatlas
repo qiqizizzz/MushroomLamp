@@ -45,6 +45,8 @@ SpriteAtlas:
     secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
+    - {fileID: 2800000, guid: 273abc53b28ef22468036fb8426baa7a, type: 3}
+    - {fileID: 2800000, guid: 1def070e496f07e4c8bc8ce2d0399644, type: 3}
     - {fileID: 2800000, guid: 59065c1d876ff8c4683e27cea035ab69, type: 3}
     - {fileID: 2800000, guid: 851069910579d024487e69cdbff60b93, type: 3}
     - {fileID: 2800000, guid: de389ca3aa0389645a450f1b63907392, type: 3}
@@ -71,6 +73,7 @@ SpriteAtlas:
     - 861d58a084da2ea4e9c24cb5741a993f: 21300000
     - 851069910579d024487e69cdbff60b93: 21300000
     - 80ce5c427a31b434aaaffd7221239157: 21300000
+    - 273abc53b28ef22468036fb8426baa7a: 21300000
     - de389ca3aa0389645a450f1b63907392: 21300000
     - 6dd418255208d4a408ee3393cd548921: 21300000
     - 5800117594255e94180fecf94c8a415c: 21300000
@@ -84,6 +87,7 @@ SpriteAtlas:
     - f5ffe36ca0388024699172f86ced6b7e: 21300000
     - 18cbbeac9260cb448b6f9fdbd0c067c8: 21300000
     - 59065c1d876ff8c4683e27cea035ab69: 21300000
+    - 1def070e496f07e4c8bc8ce2d0399644: 21300000
     - 4634c59fcaec6a346b05a0c3db713818: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -91,6 +95,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 861d58a084da2ea4e9c24cb5741a993f, type: 3}
   - {fileID: 21300000, guid: 851069910579d024487e69cdbff60b93, type: 3}
   - {fileID: 21300000, guid: 80ce5c427a31b434aaaffd7221239157, type: 3}
+  - {fileID: 21300000, guid: 273abc53b28ef22468036fb8426baa7a, type: 3}
   - {fileID: 21300000, guid: de389ca3aa0389645a450f1b63907392, type: 3}
   - {fileID: 21300000, guid: 6dd418255208d4a408ee3393cd548921, type: 3}
   - {fileID: 21300000, guid: 5800117594255e94180fecf94c8a415c, type: 3}
@@ -104,12 +109,14 @@ SpriteAtlas:
   - {fileID: 21300000, guid: f5ffe36ca0388024699172f86ced6b7e, type: 3}
   - {fileID: 21300000, guid: 18cbbeac9260cb448b6f9fdbd0c067c8, type: 3}
   - {fileID: 21300000, guid: 59065c1d876ff8c4683e27cea035ab69, type: 3}
+  - {fileID: 21300000, guid: 1def070e496f07e4c8bc8ce2d0399644, type: 3}
   - {fileID: 21300000, guid: 4634c59fcaec6a346b05a0c3db713818, type: 3}
   m_PackedSpriteNamesToIndex:
   - "\u8BBE\u7F6E_\u9ED8\u8BA4"
   - FrameLeft
   - BtnBackHome
   - SuccessTitle
+  - 20260705-231302
   - BtnBackHomeHover
   - "\u56FE\u9274_\u672A\u89E3\u9501"
   - "\u5F00\u59CB\u6E38\u620F_\u9ED8\u8BA4"
@@ -123,6 +130,7 @@ SpriteAtlas:
   - "\u9000\u51FA_\u70B9\u51FB"
   - "\u5F00\u59CB\u6E38\u620F_\u70B9\u51FB"
   - AngelPuppy
+  - 20260705-231307
   - Cauldron
   m_RenderDataMap: {}
   m_Tag: ArtMenuSummary
