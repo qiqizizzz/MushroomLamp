@@ -136,6 +136,8 @@ namespace Module.Cook
         private const string ThermometerIdleAnim = "idling";
         private const string ThermometerMediumAnim = "Medium";
         private const string ThermometerHighSpeedAnim = "high speed";
+        private const string ThermometerRootPath = "Left/Spine_Thermometer";
+        private const string ThermometerHeatBarPath = "Left/Spine_Thermometer/HeatBar";
         private const string SfxDealAppear = "sfx_ingame_appear";
         private const string SfxDiscardDisappear = "sfx_ingame_disappear";
         private const string SfxHandSelect = "sfx_ingame_select";
@@ -155,9 +157,9 @@ namespace Module.Cook
             _txtTip = Find<TextMeshProUGUI>("Bottom/Txt_Tip");
             if (_txtTip != null) _txtTip.gameObject.SetActive(false);
 
-            _imgHeatFill = Find<Image>("Left/HeatBar/Img_Fill");
-            _imgHeatPreview = Find<Image>("Left/HeatBar/Img_HeatPreview");
-            _imgHeatBackground = Find<Image>("Left/HeatBar/Img_Background");
+            _imgHeatFill = Find<Image>($"{ThermometerHeatBarPath}/Img_Fill");
+            _imgHeatPreview = Find<Image>($"{ThermometerHeatBarPath}/Img_HeatPreview");
+            _imgHeatBackground = Find<Image>($"{ThermometerHeatBarPath}/Img_Background");
             if (_imgHeatBackground != null)
             {
                 _imgHeatBackground.raycastTarget = false;
@@ -1070,7 +1072,7 @@ namespace Module.Cook
 
         private void initThermometerSpine()
         {
-            Transform thermometerTf = findDeep(transform, "Spine_Thermometer");
+            Transform thermometerTf = Find<Transform>(ThermometerRootPath);
             _thermometerSpine = thermometerTf != null ? thermometerTf.GetComponent<SkeletonGraphic>() : null;
             if (_thermometerSpine == null) return;
 
