@@ -26,13 +26,16 @@ namespace Module.Debug
 
         private void Update()
         {
+            if (!GameDebugSettings.EnableGMPanel)
+                return;
+
             if (Input.GetKeyDown(toggleKey))
                 visible = !visible;
         }
 
         private void OnGUI()
         {
-            if (!visible || GameApp.ViewManager == null)
+            if (!GameDebugSettings.EnableGMPanel || !visible || GameApp.ViewManager == null)
                 return;
 
             const float panelWidth = 320f;

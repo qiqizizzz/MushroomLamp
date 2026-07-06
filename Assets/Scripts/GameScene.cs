@@ -53,7 +53,8 @@ public class GameScene : MonoBehaviour
         GameApp.Instance.SetRoot(transform);
         GameApp.Instance.Init();
         registerModule();
-        gameObject.AddComponent<GMPanelDebugger>();
+        if (GameDebugSettings.EnableGMPanel)
+            gameObject.AddComponent<GMPanelDebugger>();
         GameApp.ControllerManager.InitAllModules();
     }
 
