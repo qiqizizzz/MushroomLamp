@@ -3,7 +3,7 @@
     {
       "id": "VEG_001",
       "name": "土豆",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/土豆",
       "category": "蔬菜",
       "tags": [
         "根茎"
@@ -30,7 +30,7 @@
     {
       "id": "VEG_002",
       "name": "胡萝卜",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/胡萝卜",
       "category": "蔬菜",
       "tags": [
         "根茎"
@@ -57,7 +57,7 @@
     {
       "id": "VEG_003",
       "name": "白菜叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/白菜叶",
       "category": "蔬菜",
       "tags": [
         "叶菜"
@@ -84,7 +84,7 @@
     {
       "id": "VEG_004",
       "name": "生菜叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/生菜叶",
       "category": "蔬菜",
       "tags": [
         "叶菜"
@@ -111,7 +111,7 @@
     {
       "id": "VEG_005",
       "name": "小番茄",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/小番茄",
       "category": "蔬菜",
       "tags": [
         "果实"
@@ -138,7 +138,7 @@
     {
       "id": "VEG_006",
       "name": "洋葱",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/洋葱",
       "category": "蔬菜",
       "tags": [
         "调味"
@@ -165,7 +165,7 @@
     {
       "id": "VEG_007",
       "name": "蘑菇",
-      "iconPath": "Art/Card_img/mushroom",
+      "iconPath": "Art/Card_img/蘑菇",
       "category": "蔬菜",
       "tags": [
         "菌类"
@@ -192,7 +192,7 @@
     {
       "id": "VEG_008",
       "name": "南瓜块",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/南瓜块",
       "category": "蔬菜",
       "tags": [
         "果实",
@@ -220,7 +220,7 @@
     {
       "id": "VEG_101",
       "name": "卷心菜叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/卷心菜叶",
       "category": "蔬菜",
       "tags": [
         "叶菜",
@@ -248,7 +248,7 @@
     {
       "id": "VEG_102",
       "name": "香草叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/香草叶",
       "category": "蔬菜",
       "tags": [
         "叶菜",
@@ -276,7 +276,7 @@
     {
       "id": "VEG_103",
       "name": "藤蔓叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/藤蔓叶",
       "category": "蔬菜",
       "tags": [
         "叶菜",
@@ -304,7 +304,7 @@
     {
       "id": "VEG_104",
       "name": "月光叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/月光叶",
       "category": "蔬菜",
       "tags": [
         "叶菜",
@@ -332,7 +332,7 @@
     {
       "id": "VEG_105",
       "name": "叶之冠",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/叶之冠",
       "category": "道具",
       "tags": [
         "叶菜核心",
@@ -360,7 +360,7 @@
     {
       "id": "VEG_201",
       "name": "土豆泥",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/土豆泥",
       "category": "蔬菜",
       "tags": [
         "根茎",
@@ -388,7 +388,7 @@
     {
       "id": "VEG_202",
       "name": "胡萝卜丁",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/胡萝卜",
       "category": "蔬菜",
       "tags": [
         "根茎",
@@ -416,7 +416,7 @@
     {
       "id": "VEG_203",
       "name": "南瓜丁",
-      "iconPath": "Art/Card_img/pumpkin",
+      "iconPath": "Art/Card_img/爆裂南瓜",
       "category": "蔬菜",
       "tags": [
         "果实",
@@ -444,7 +444,7 @@
     {
       "id": "VEG_204",
       "name": "完美土豆泥",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/完美土豆泥",
       "category": "蔬菜",
       "tags": [
         "根茎",
@@ -472,7 +472,7 @@
     {
       "id": "VEG_205",
       "name": "完美萝卜块",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/完美萝卜块",
       "category": "蔬菜",
       "tags": [
         "根茎",
@@ -500,7 +500,7 @@
     {
       "id": "VEG_206",
       "name": "根须结晶",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/根须结晶",
       "category": "道具",
       "tags": [
         "根茎核心",
@@ -613,7 +613,7 @@
     {
       "id": "VEG_401",
       "name": "烧焦菜叶",
-      "iconPath": "Art/Card_img/carrot",
+      "iconPath": "Art/Card_img/烧焦菜叶",
       "category": "废料",
       "tags": [
         "叶菜",
@@ -641,7 +641,7 @@
     {
       "id": "VEG_402",
       "name": "烧焦土豆",
-      "iconPath": "Art/Card_img/potato",
+      "iconPath": "Art/Card_img/烧焦土豆",
       "category": "废料",
       "tags": [
         "根茎",
