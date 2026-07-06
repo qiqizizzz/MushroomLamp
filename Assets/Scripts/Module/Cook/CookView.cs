@@ -492,7 +492,7 @@ namespace Module.Cook
 
             _itemTooltipOwner = owner;
             _itemTooltip.transform.SetAsLastSibling();
-            _itemTooltip.Bind(slotData);
+            _itemTooltip.Bind(slotData, showPrice: false);
             MoveShopTooltip(screenPosition);
         }
 

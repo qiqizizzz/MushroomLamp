@@ -110,7 +110,7 @@ namespace Module.Item
         }
 
         // 从商店槽位构建 Tooltip 展示数据
-        public static ItemTooltipData FromShopSlot(ShopSlotData slotData)
+        public static ItemTooltipData FromShopSlot(ShopSlotData slotData, bool showPrice = true)
         {
             if (slotData == null)
                 return null;
@@ -120,7 +120,7 @@ namespace Module.Item
                 Mode = ItemTooltipMode.Shop,
                 Name = string.IsNullOrWhiteSpace(slotData.name) ? "未知商品" : slotData.name,
                 Desc = slotData.description,
-                PriceText = $"￥{slotData.price}",
+                PriceText = showPrice ? $"￥{slotData.price}" : string.Empty,
                 Icon = ArtAssetLoader.LoadSprite(slotData.iconPath, logOnFail: false)
             };
 

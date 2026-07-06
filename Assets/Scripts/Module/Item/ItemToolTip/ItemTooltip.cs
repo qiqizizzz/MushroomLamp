@@ -61,9 +61,9 @@ namespace Module.Item
         }
 
         // 绑定商店商品数据
-        public void Bind(ShopSlotData slotData)
+        public void Bind(ShopSlotData slotData, bool showPrice = true)
         {
-            Bind(ItemTooltipData.FromShopSlot(slotData));
+            Bind(ItemTooltipData.FromShopSlot(slotData, showPrice));
         }
 
         // 绑定通用详情数据
