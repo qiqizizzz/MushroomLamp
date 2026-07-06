@@ -1,0 +1,13 @@
+
+daguo.png
+size: 753,345
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+g
+  rotate: false
+  xy: 2, 2
+  size: 749, 341
+  orig: 749, 341
+  offset: 0, 0
+  index: -1
